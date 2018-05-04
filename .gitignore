@@ -1,0 +1,5 @@
+*.idea
+*.iml
+cfg/
+node_modules/
+.env
