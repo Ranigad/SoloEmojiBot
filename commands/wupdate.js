@@ -3,6 +3,7 @@ const BaseCommand = require('../BaseCommand.js');
 module.exports = class WUpdate extends BaseCommand {
     constructor(debug=false) {
         super(debug);
+        this.girl_list = path.normalize(`${this._basePath}/data/megucas.json`);
     }
 
     run(...args) {

@@ -135,6 +135,7 @@ class Wikia {
             if (err === null) {
                 const $ = cheerio.load(body);
                 this.megucaList = $('p').text().split('\n').join('').split(';');
+                // Save in ./data/megucas.json, should be an array of names
                 return true;
             } else {
                 console.log(`Update Meguca List Error: {err}`);
@@ -150,17 +151,18 @@ class Wikia {
         this.megucaList.forEach((meguca) => {
             // Checks if the name is inside any of the elements
             //if (meguca.includes(megucaName)) {
-            let splitName = meguca.split(' ');
+            let splitName = meguca.split(' ');  // Divide full name into first/last
             splitName.forEach((name) => {
-                if (megucaName.toLowerCase() === name.toLowerCase()) matchedmeguca = splitName.join('_');
+                // Check passed in name against each name part
+                if (megucaName.toLowerCase() === name.toLowerCase()) matchedmeguca = splitName;//.join('_');
                     //lowest = meguca;
                     //score = name.length;
                 //}
             });
             //}
         });
-        
-        return matchedmeguca;
+
+        return matchedmeguca;   // Returns array of split name due to new titleCase function (check if all work)
     }
 
     getMegucaList() {

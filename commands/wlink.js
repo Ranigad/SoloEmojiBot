@@ -1,13 +1,23 @@
 const BaseCommand = require('../BaseCommand.js');
 const path = require('path');
+const fs = require('fs');
 
 module.exports = class WLink extends BaseCommand {
     constructor(debug=false) {
         super(debug);
         //this._wiki = wiki;
-        this.title_caps = ["a", "for", "so", "an", "in", "the", "and", "nor", "to", "at", "of", "up", "but", "on",
+        let megucaPath = path.normalize(`${this._basePath}/data/megucas.json`);
+        this.megucaList = (fs.existsSync(megucaPath) && JSON.parse(fs.readFileSync(megucaPath))) || [];
+
+        let titleCapsPath = `${this._basePath`}/cfg/titleCaps.json`;
+
+        if (fs.existsSync(titleCapsPath)) {
+            this.print("Title case imported")
+            this.title_caps = JSON.parse(fs.readFileSync(titleCapsPath))
+        } else {
+            this.title_caps = ["a", "for", "so", "an", "in", "the", "and", "nor", "to", "at", "of", "up", "but", "on",
                             "yet", "by", "or", "le", "la"]
-        this.girl_list = path.normalize(`${this._basePath}/data/megucas.json`);
+        }
     }
 
     run(...args) {
@@ -16,13 +26,19 @@ module.exports = class WLink extends BaseCommand {
         const serverID = '197546763916279809';
 
         let [wiki, bot, message, page] = args[0];
+
+        if (page.length == 1) {
+            // Check for shortcut or matching magical girl, matching girl gets priority (to avoid trolling)
+            page = wiki.matchMeguca(page) || wiki.customPages[serverID][page.toLowerCase()] || page;
+        }
+
         let titleCased = this.titleCase(page);
 
         this.print(args[0]);
         // Check if server exists
         // If it does, then title case page name
         // Return link? Print link?
-        if (Object.keys(wiki.serverMap)[0] in wiki.serverMap) {  // Change when linked with bot
+        if (Object.keys(wiki.serverMap)[0] in wiki.serverMap) {  // Change when linked with bot, if server is registered
             this.print(titleCased, "message.channel.send");
             this.print(`${wiki.getWiki(serverID)}${titleCased}`, "message.channel.send");
         } else {
@@ -44,4 +60,25 @@ module.exports = class WLink extends BaseCommand {
 
     // Magical Girl search
     // Check shortcuts (tolower comparison)
+
+    matchMeguca(megucaName) {
+        let matchedmeguca = "";
+        // let lowest = "";
+        // let score = 100;
+        this.megucaList.forEach((meguca) => {
+            // Checks if the name is inside any of the elements
+            //if (meguca.includes(megucaName)) {
+            let splitName = meguca.split(' ');  // Divide full name into first/last
+            splitName.forEach((name) => {
+                // Check passed in name against each name part
+                if (megucaName.toLowerCase() === name.toLowerCase()) matchedmeguca = splitName;//.join('_');
+                    //lowest = meguca;
+                    //score = name.length;
+                //}
+            });
+            //}
+        });
+
+        return matchedmeguca;   // Returns array of split name due to new titleCase function (check if all work)
+    }
 }
