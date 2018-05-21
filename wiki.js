@@ -7,19 +7,54 @@ class Wikia {
 
     constructor() {
         this.megucaGirlListURL = "http://magireco.wikia.com/wiki/Template:CharacterList";
-        this.externalFileName = "./cfg/serverwikiasettings.json";
-        this.megucaList = {}; 
-        this.importData();
-        this.updateMegucaList();
+        this.externalFileName = "./data/wiki.json";
+        this.megucaList = {};
+        this.serverMap = {};
+        this.customPages = {};
+
+        // Download and Store
+        this.updateMegucaList(); // Download and update magical girl list | this.megucaList
+        this.importData();  // this.serverMap (Server to wiki), this.customPages (Word to link)
     }
 
-    setWikia(server, wikia) {
-        this.serverMap[server.id] = wikia;
-        this.exportData();
+    getServerMap() {
+        return this.serverMap;
     }
 
     getWiki(serverID) {
         return !(serverID in this.serverMap) || this.serverMap[serverID];
+    }
+
+    setWiki(serverID, wikia) {
+        let wikilink = `${wikia}.wikia.com/wiki/`;
+        this.serverMap[serverID] = wikilink;
+        this.exportData();
+        return wikilink;
+    }
+
+    addShortcut(serverID, shortcut, page) {
+        if (!(serverID in this.customPages)) {
+            this.customPages[serverID] = {};
+        }
+        console.log(shortcut);
+        this.customPages[serverID][shortcut.toLowerCase()] = page;
+        this.exportData();
+    }
+
+    deleteShortcut(serverID, shortcut) {
+        if (!(serverID in this.customPages)) {
+            this.customPages[serverID] = {};
+        }
+
+        shortcut = shortcut.toLowerCase();
+
+        if (shortcut in this.customPages[serverID]) {
+            delete this.customPages[serverID][shortcut];
+            this.exportData();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     linkWikia(server, page) {
@@ -47,6 +82,7 @@ class Wikia {
         }
     }
 
+/*
     customWikiaAdd(server, customName, page) {
         page = page.join("_");
         if (!(server.id in this.customPages)) {
@@ -69,6 +105,8 @@ class Wikia {
         this.exportData();
     }
 
+// */
+
     exportData() {
         let mappings = {};
         mappings.serverMap = this.serverMap;
@@ -82,8 +120,7 @@ class Wikia {
             this.serverMap = mappings.serverMap;
             this.customPages = mappings.customPages;
         } else {
-            this.serverMap = {};
-            this.customPages = {};
+            console.error("Wiki data file not found.")
         }
     }
 
@@ -98,8 +135,10 @@ class Wikia {
             if (err === null) {
                 const $ = cheerio.load(body);
                 this.megucaList = $('p').text().split('\n').join('').split(';');
+                return true;
             } else {
                 console.log(`Update Meguca List Error: {err}`);
+                return false;
             }
         });
     }
@@ -122,6 +161,10 @@ class Wikia {
         });
         
         return matchedmeguca;
+    }
+
+    getMegucaList() {
+        return this.megucaList;
     }
 }
 
