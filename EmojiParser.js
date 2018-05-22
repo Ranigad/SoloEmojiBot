@@ -43,7 +43,7 @@ class EmojiParser {
             let emoji = server.emojis.get(m[2]);
             if (emoji !== undefined) {
                 //let emojiID = m[2];
-                this.dbadd(m[1], m[2], message.author.id, server.id, emoji);
+                //this.dbadd(m[1], m[2], message.author.id, server.id, emoji);
             }
         }
     }
@@ -51,7 +51,7 @@ class EmojiParser {
     printEmojiCount(server, time=null) {
         // Consider if we want to lookup by userid
 
-        let emojis = emojiLookup(server, time || "Start time");
+        //let emojis = emojiLookup(server, time || "Start time");
 
         /*
         sortedEmojis.map((emoji, emojiID, z) => { //for (let key in sortedEmojis) {

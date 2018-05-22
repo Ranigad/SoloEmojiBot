@@ -4,3 +4,4 @@ cfg/
 node_modules/
 .env
 ^package*
+data/*

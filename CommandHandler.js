@@ -33,7 +33,7 @@ module.exports = class CommandHandler {
     handle(message) {
         //-----------------------------------------------------------------------------------
         // 1. Parse message
-        let parsedMessage = this.parser(message);
+        let parsedMessage = this.parser(message.content);
         if (!parsedMessage) return; // Return if the prefix is not correct
 
         let [command, args] = [parsedMessage["command"], parsedMessage["arguments"]];
@@ -56,7 +56,9 @@ module.exports = class CommandHandler {
         if (args[0] === "help") {
             // this.debug_print("help", `${runnableCommand.help}`);
         } else {
-            runnableCommand.handler(wiki, this.bot, {'guild': {'id': '197546763916279809'}, 'message': 'dinosaurs'}, args);
+            // Wikia object, Bot object, message object,
+            //runnableCommand.handler(wiki, this.bot, {'guild': {'id': '197546763916279809'}, 'message': 'dinosaurs'}, args);
+            runnableCommand.handler(wiki, this.bot, message, args);
         }
     }
 

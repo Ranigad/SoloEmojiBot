@@ -135,7 +135,11 @@ class Wikia {
             if (err === null) {
                 const $ = cheerio.load(body);
                 this.megucaList = $('p').text().split('\n').join('').split(';');
+                //console.log(this.megucaList);
                 // Save in ./data/megucas.json, should be an array of names
+                fs.writeFileSync('./data/megucas.json', JSON.stringify(this.megucaList), (err) => {
+                    console.log(err);
+                });
                 return true;
             } else {
                 console.log(`Update Meguca List Error: {err}`);

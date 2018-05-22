@@ -10,10 +10,10 @@ module.exports = class WAdd extends BaseCommand {
     run(...args) {
         // Arg[0] == wikia object | Arg[1] == bot object | Arg[2] == message object | Arg[3] == page name
 
-        const serverID = '197546763916279809';
-
         let [wiki, bot, message, [shortcut, ...page]] = args[0];
         //let titleCased = this.titleCase(page);
+
+        const serverID = message.guild.id;
 
         this.print(shortcut);
         this.print(page);
