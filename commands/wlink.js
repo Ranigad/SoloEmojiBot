@@ -9,11 +9,11 @@ module.exports = class WLink extends BaseCommand {
         let megucaPath = path.normalize(`${this._basePath}/data/megucas.json`);
         this.megucaList = (fs.existsSync(megucaPath) && JSON.parse(fs.readFileSync(megucaPath))) || [];
 
-        let titleCapsPath = `${this._basePath}/cfg/titleCaps.json`;
+        let titleCapsPath = path.normalize(`${this._basePath}/cfg/titleCaps.json`);
 
         if (fs.existsSync(titleCapsPath)) {
-            this.print("Title case imported")
-            this.title_caps = JSON.parse(fs.readFileSync(titleCapsPath))
+            this.title_caps = JSON.parse(fs.readFileSync(titleCapsPath));
+            //this.print(`Title case imported | ${this.title_caps} ${typeof(this.title_caps)} | ${titleCapsPath}`)
         } else {
             this.title_caps = ["a", "for", "so", "an", "in", "the", "and", "nor", "to", "at", "of", "up", "but", "on",
                             "yet", "by", "or", "le", "la"]
@@ -45,11 +45,11 @@ module.exports = class WLink extends BaseCommand {
         // Check if server exists
         // If it does, then title case page name
         // Return link? Print link?
-        if (Object.keys(wiki.serverMap)[0] in wiki.serverMap) {  // Change when linked with bot, if server is registered
-            this.print(titleCased, "message.channel.send");
-            this.print(`${wiki.getWiki(serverID)}${titleCased}`, "message.channel.send");
+        if (serverID in wiki.serverMap) {  // Change when linked with bot, if server is registered
+            //this.print(titleCased, "message.channel.send");
+            message.channel.send(`<http:\/\/${wiki.getWiki(serverID)}${titleCased}>`);
         } else {
-            this.print("This server does not have registered wiki.", "message.channel.send");
+            //this.print("This server does not have registered wiki.", "message.channel.send");
         }
 
         return `${wiki.getWiki(serverID)}${titleCased}`;
@@ -59,7 +59,7 @@ module.exports = class WLink extends BaseCommand {
         let title_cased_words = [];
 
         for(let i = 0; i < words.length; i++) {
-            this.print(words[i]);
+            //this.print(`${words[i]} in titlecaps is ${this.title_caps.includes(words[i].toLowerCase())}`);
             if(!this.title_caps.includes(words[i].toLowerCase()) || i == 0) {
                 title_cased_words.push(words[i].substring(0,1).toUpperCase() + words[i].substring(1));
             } else {
@@ -80,15 +80,18 @@ module.exports = class WLink extends BaseCommand {
         this.megucaList.forEach((meguca) => {
             // Checks if the name is inside any of the elements
             //if (meguca.includes(megucaName)) {
-            let splitName = meguca.split(' ');  // Divide full name into first/last
-            splitName.forEach((name) => {
-                // Check passed in name against each name part
-                if (megucaName.toLowerCase() === name.replace(/[()]/g,"").toLowerCase()) matchedmeguca = splitName;//.join('_');
-                    //lowest = meguca;
-                    //score = name.length;
+            if (!matchedmeguca) {
+                //this.print(`Testing ${meguca}`);
+                let splitName = meguca.split(' ');  // Divide full name into first/last
+                splitName.forEach((name) => {
+                    // Check passed in name against each name part
+                    if (megucaName.toLowerCase() === name.replace(/[()]/g,"").toLowerCase()) matchedmeguca = splitName;//.join('_');
+                        //lowest = meguca;
+                        //score = name.length;
+                    //}
+                });
                 //}
-            });
-            //}
+            }
         });
 
         return matchedmeguca;   // Returns array of split name due to new titleCase function (check if all work)

@@ -3,5 +3,6 @@
 cfg/
 node_modules/
 .env
-^package*
 data/*
+search.js
+TestCommandHandler.js

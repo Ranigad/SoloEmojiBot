@@ -19,7 +19,7 @@ module.exports = class CommandHandler {
 
     parser(message) {
         // 2. Extract message if proper prefix
-        if(!message.startsWith(this.prefix)) return;
+        if(!message.startsWith(this.prefix)) return false;
         const args = message.slice(this.prefix.length).split(/ +/);
         const command = args.shift().toLowerCase();
         return {"command": command, "arguments": args}
@@ -34,7 +34,7 @@ module.exports = class CommandHandler {
         //-----------------------------------------------------------------------------------
         // 1. Parse message
         let parsedMessage = this.parser(message.content);
-        if (!parsedMessage) return; // Return if the prefix is not correct
+        if (!parsedMessage) return true; // Return if the prefix is not correct
 
         let [command, args] = [parsedMessage["command"], parsedMessage["arguments"]];
 
@@ -44,7 +44,7 @@ module.exports = class CommandHandler {
         // 2. Get the command
         if(!this.isCommand(command)) {
             this.debug_print("commandcheck");
-            return;
+            return true;
         }
 
         let runnableCommand = new (require(`${this.commandDirectory}/${command}.js`))(this.debug);
@@ -53,13 +53,13 @@ module.exports = class CommandHandler {
 
         //-----------------------------------------------------------------------------------
         // 3. Run Command
-        if (args[0] === "help") {
+        //if (args[0] === "help") {
             // this.debug_print("help", `${runnableCommand.help}`);
-        } else {
+        //} else {
             // Wikia object, Bot object, message object,
             //runnableCommand.handler(wiki, this.bot, {'guild': {'id': '197546763916279809'}, 'message': 'dinosaurs'}, args);
-            runnableCommand.handler(wiki, this.bot, message, args);
-        }
+        runnableCommand.handler(wiki, this.bot, message, args);
+        //}
     }
 
     debug_print(section, ...message) {

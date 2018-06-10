@@ -1,4 +1,5 @@
 const BaseCommand = require('../BaseCommand.js');
+const path = require('path');
 
 module.exports = class WUpdate extends BaseCommand {
     constructor(debug=false) {

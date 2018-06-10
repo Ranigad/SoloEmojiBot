@@ -4,6 +4,9 @@ let CommandHandler = require('./CommandHandler.js');
 let CH = new CommandHandler(';', true);
 
 let testCases = [
+    {'content': ';emoji 1d', 'server': {'id': 'test'}}
+/**
+// Test wlink
     ';wlink',
     ';test',
     ';wset magireco',
