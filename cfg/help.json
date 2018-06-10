@@ -1,0 +1,184 @@
+{
+  "Emoji": {
+    "description": "Displays tracked emoji usage in messages and reactions. Only tallies currently active emojis. \n\n If nothing is added to the command, it will print the server's total usage. \n\n __**Subcommands**__",
+    "fields": [
+      {
+        "name": "`;emoji` | `;emoji s` | `;emoji server`\n\n",
+        "value": "Get emoji usage for the current server.\n___\n"
+      },
+      {
+        "name": "`;emoji u` | `;emoji user`\n\n",
+        "value": "Get emoji usage for yourself.\n___\n"
+      },
+      {
+        "name": "`;emoji u @someone` | `;emoji user @someone`\n\n",
+        "value": "Get emoji usage for a specific mentioned user.\n___\n"
+      },
+      {
+        "name": "`;emoji thinking` | `;emoji emoji thinking`\n\n",
+        "value": "Get a list of usage by person of a currently active server emoji.\n___\n"
+      },
+      {
+        "name": "time ",
+        "value": ";emoji 1s | ;emoji u 2min | ;emoji e 3h | ;emoji @user 4d | ;emoji 5m | ;emoji 10y\n\nCan be added to the end of the command to limit the scope of time. Must be an integer combined with a valid key."
+      },
+      {
+        "name": "s",
+        "value": "seconds",
+        "inline": true
+      },
+      {
+        "name": "min",
+        "value": "minutes",
+        "inline": true
+      },
+      {
+        "name": "h",
+        "value": "hours",
+        "inline": true
+      },
+      {
+        "name": "d",
+        "value": "days",
+        "inline": true
+      },
+      {
+        "name": "m",
+        "value": "months",
+        "inline": true
+      },
+      {
+        "name": "y",
+        "value": "years",
+        "inline": true
+      }
+    ]
+  },
+  "E": {
+  "description": "Displays tracked emoji usage in messages and reactions. Only tallies currently active emojis. \n\n If nothing is added to the command, it will print the server's total usage. \n\n __**Subcommands**__",
+  "fields": [
+    {
+      "name": "`;e` | `;e s` | `;e server`\n\n",
+      "value": "Get emoji usage for the current server.\n___\n"
+    },
+    {
+      "name": "`;e u` | `;e user`\n\n",
+      "value": "Get emoji usage for yourself.\n___\n"
+    },
+    {
+      "name": "`;e u @someone` | `;e user @someone`\n\n",
+      "value": "Get emoji usage for a specific mentioned user.\n___\n"
+    },
+    {
+      "name": "`;e thinking` | `;e emoji thinking`\n\n",
+      "value": "Get a list of usage by person of a currently active server emoji.\n___\n"
+    },
+    {
+      "name": "time ",
+      "value": ";e 1s | ;e u 2min | ;e e 3h | ;e @user 4d | ;e 5m | ;e 10y\n\nCan be added to the end of the command to limit the scope of time. Must be an integer combined with a valid key."
+    },
+    {
+      "name": "s",
+      "value": "seconds",
+      "inline": true
+    },
+    {
+      "name": "min",
+      "value": "minutes",
+      "inline": true
+    },
+    {
+      "name": "h",
+      "value": "hours",
+      "inline": true
+    },
+    {
+      "name": "d",
+      "value": "days",
+      "inline": true
+    },
+    {
+      "name": "m",
+      "value": "months",
+      "inline": true
+    },
+    {
+      "name": "y",
+      "value": "years",
+      "inline": true
+    }
+  ]
+},
+  "Wlink": {
+      "description": "Generates a link by combining the server's registered wiki site and a user provided page name.\n___\n",
+      "fields": [
+        {
+          "name": "Usage",
+          "value": ";wlink Example Page\n___\n"
+        },
+        {
+          "name": "Name Search",
+          "value": ";wlink Madoka\n\nGiven first or last name, generates a link to character's page.\n___\n"
+        },
+        {
+          "name": "Shortcuts",
+          "value": "Users can create single keyword shortcuts using the `wadd` command. This command will first search through shortcuts to find pages before generating a link based on user provided text."
+        }
+      ]
+    },
+  "W": {
+  "description": "Generates a link by combining the server's registered wiki site and a user provided page name.\n___\n",
+  "fields": [
+    {
+      "name": "Usage",
+      "value": ";w Example Page\n___\n"
+    },
+    {
+      "name": "Name Search",
+      "value": ";w Nanaka\n\nGiven first or last name, generates a link to character's page.\n___\n"
+    },
+    {
+      "name": "Shortcuts",
+      "value": "Users can create single keyword shortcuts using the `wadd` command. This command will first search through shortcuts to find pages before generating a link based on user provided text."
+    }
+  ]
+},
+  "Wadd": {"description": "Adds a single word keyword as a shortcut to a longer page for `wlink` for the server.\n___\n",
+  "fields": [
+    {
+      "name": "Usage",
+      "value": ";wadd favorite Tokiwa Nanaka\n\nWhen a user enters `;wlink favorite`, it will link as if the user entered `;wlink Tokiwa Nanaka`\n___\n"
+    }
+  ]
+  },
+  "Wdelete": {
+    "description": "Deletes an existing single word keyword shortcut added by `;wadd`.\n___\n",
+    "fields": [
+      {
+        "name": "Usage",
+        "value": ";wdelete favorite\n\nThis deletes the keyword `favorite` from the list of shortcuts if previously set.\n___\n"
+      }
+    ]
+  },
+  "Help": {
+    "description": "Use `;help command` to get help texts for specific commands.\n\n__**List of Commands**__",
+    "fields": [
+      {
+        "name": "e or emoji",
+        "value": "Get emoji usage data. \n___\n"
+      },
+      {
+        "name": "w or wlink",
+        "value": "Generate link to the server's registered wiki.\n___\n"
+      },
+      {
+        "name": "wadd",
+        "value": "Create a keyword shortcut for `wlink`.\n___\n"
+      },
+      {
+        "name": "wdelete",
+        "value": "Delete a keyword created by `wadd`.\n___\n"
+      }
+    ]
+  }
+}
