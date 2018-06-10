@@ -156,7 +156,7 @@ module.exports = class EmojiParser {
     printEmojiCount(message, emojis) {
         // Consider if we want to lookup by userid
 
-        if (message.channel.id !== '454187139517906944') {
+        if (message.guild.id === '349690785332985859' && (message.channel.id !== '349983696134078464' || message.channel.id !== '349981310493917197' || message.channel.id !== '349691956021952515')) {
             console.log("Channel not allowed to get emoji stats");
             return;
         }
