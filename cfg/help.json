@@ -180,5 +180,11 @@
         "value": "Delete a keyword created by `wadd`.\n___\n"
       }
     ]
+  },
+  "React": {
+    "description": "Use `;react command to apply supported custom emotes to specified messages.  The custom emotes can be found in our other emote servers.\n**Syntax:** ;react <message-ID> <emote-ID or $shortcut$>"
+  },
+  "R": {
+    "description": "Use `;r command to apply supported custom emotes to specified messages.  The custom emotes can be found in our other emote servers.\n**Syntax:** ;r <message-ID> <emote-ID or $shortcut$>"
   }
 }
