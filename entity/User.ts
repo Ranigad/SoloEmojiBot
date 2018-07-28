@@ -1,7 +1,7 @@
 import {Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryColumn} from "typeorm";
 
 @Entity()
-export class User {
+class User {
 
     @PrimaryColumn()
     username: string; // Long Discord username
@@ -20,8 +20,15 @@ export class User {
     @Column()
     friend_id: string;
 
-    @Column()
+    @Column({
+        default: false
+    })
     notifications: boolean;
+
+    @Column({
+        default: false
+    })
+    support_opt_out: boolean;
 
     @CreateDateColumn()
     addtimestamp: Date;
@@ -30,3 +37,5 @@ export class User {
     updatetimestamp: Date;
 
 }
+
+module.exports = User;
