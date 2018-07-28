@@ -9,7 +9,7 @@ module.exports = class React extends BaseCommand {
         let [wiki, bot, message, cmdargs] = args;
         if (cmdargs.length == 0) {
             if (message.deletable) message.delete(10000)
-            return message.channel.send('You need to provide a message ID and an emote ID, $emote <message-ID> <emote-ID or $shortcut$')
+            return message.channel.send('You need to provide a message ID and an emote ID, $emote <message-ID> <emote-ID or $shortcut$>')
                 .then(message => {
                     message.delete(10000)
                 });
