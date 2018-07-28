@@ -55,7 +55,13 @@ module.exports = class React extends BaseCommand {
             channel.fetchMessage(message_id)
             .then(message => {
                 message.react(emoji)
-                    .then(() => {if (mainmsg.deletable) mainmsg.delete()})
+                    .then((reaction) => {
+                        if (mainmsg.deletable) mainmsg.delete();
+
+                        setTimeout(function() {
+                            reaction.remove();
+                        }, 20000)
+                    })
                     .catch(() => {
                         mainmsg.channel.send(`Could not apply the given emote.`)
                         .then(message => {
@@ -63,21 +69,11 @@ module.exports = class React extends BaseCommand {
                         });
                         if (mainmsg.deletable) mainmsg.delete(10000)
                     });
-                setTimeout(function() {
-                    var reactions = message.reactions;
-                    reactions.forEach(element => {
-                        if (element.emoji.id == emoji){
-                            element.remove()
-                                .catch(console.error);
-                        }
-                    });
-                }, 20000)
             })
             .catch(() =>{
                 react_to_message(channels);
             });
         }
-
     }
 
 }
