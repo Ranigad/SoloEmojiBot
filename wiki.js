@@ -37,6 +37,19 @@ class Wikia {
             this.customPages[serverID] = {};
         }
         console.log(shortcut);
+
+        // Check validity
+        /*
+        request("https://magireco.wikia.com/wiki/Magical_Girls", (err, response, body) => {
+            if (err === null) {
+                const $ = cheerio.load(body);
+                let valid = $('.noarticletext')[0];
+                return true;
+            } else {
+                console.log(`Find page error: {err}`);
+                return false;
+            }
+        });*/
         this.customPages[serverID][shortcut.toLowerCase()] = page;
         this.exportData();
     }

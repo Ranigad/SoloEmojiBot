@@ -6,11 +6,14 @@
 - Privileges?
 
 #### Wiki
+- Move linking and title casing to wiki class
+- Only allow addition of shortcuts if to a valid page
 
 #### Emoji Parser
 - Make more robust, flag based parsing to generate custom query
 
 #### Twitterbot
+- Figure out embeds and embed previews in Discord post
 
 ---
 

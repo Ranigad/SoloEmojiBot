@@ -6,3 +6,4 @@ node_modules/
 data/*
 search.js
 TestCommandHandler.js
+test.js
