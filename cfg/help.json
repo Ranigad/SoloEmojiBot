@@ -182,9 +182,9 @@
     ]
   },
   "React": {
-    "description": "Use `;react command to apply supported custom emotes to specified messages.  The custom emotes can be found in our other emote servers.\n**Syntax:** ;react <message-ID> <emote-ID or $shortcut$>"
+    "description": "Use `;react command to apply supported custom emotes to specified messages.  The custom emotes can be found in our other emote servers.\n**Syntax:** ;react <message-ID> <emote-name>"
   },
   "R": {
-    "description": "Use `;r command to apply supported custom emotes to specified messages.  The custom emotes can be found in our other emote servers.\n**Syntax:** ;r <message-ID> <emote-ID or $shortcut$>"
+    "description": "Use `;r command to apply supported custom emotes to specified messages.  The custom emotes can be found in our other emote servers.\n**Syntax:** ;r <message-ID> <emote-name>"
   }
 }

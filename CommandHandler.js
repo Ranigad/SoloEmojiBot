@@ -9,7 +9,7 @@ module.exports = class CommandHandler {
         this.commandDirectory = commandDirectory;
         this.prefix = prefix;
         this.debug = debug;
-        this.bot = false;
+        this.bot = bot;
         console.log(path.dirname(require.main.filename));
     }
 

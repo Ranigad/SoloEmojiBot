@@ -9,7 +9,7 @@ module.exports = class React extends BaseCommand {
         let [wiki, bot, message, cmdargs] = args;
         if (cmdargs.length == 0) {
             if (message.deletable) message.delete(10000)
-            return message.channel.send('You need to provide a message ID and an emote ID, $emote <message-ID> <emote-ID or $shortcut$>')
+            return message.channel.send('You need to provide a message ID and an emote name, $emote <message-ID> <emote-name>')
                 .then(message => {
                     message.delete(10000)
                 });
@@ -18,15 +18,12 @@ module.exports = class React extends BaseCommand {
         var message_id = cmdargs[0];
         var emoji = cmdargs[1];
 
-        this.run(message_id, emoji, message);
+        this.run(message_id, emoji, message, bot);
     }
 
-    run(message_id, emoji, message) {
-        var re = new RegExp("$([A-Za-z0-9_])+$");
-        if (re.test(emoji) == true) {
-            var emoji_name = emoji.replace('$', '');
-            // TODO: Check database for emoji ID from shortcode (e.g. $yachiyonice$)
-        }
+    run(message_id, emoji_name, message, bot) {
+        var emojis = bot.emojis;
+        var emoji = emojis.find('name', emoji_name);
 
         var mainmsg = message;
 
