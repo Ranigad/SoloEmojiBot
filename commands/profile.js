@@ -63,9 +63,14 @@ module.exports = class Profile extends BaseCommand {
             case 'notifications':
             case 'notify':    // turn on off notifications use set but with notification as target
                 console.log("notifications");
-                let valuemap = {"on": 1, "off": 0}
+                let valuemap = {"on": true, "off": false}
                 if (value in valuemap) {
                     this.set(channel, user.id, "notifications", valuemap[value]);
+                }
+                else {
+                    channel.send("Error: Please use ;profile notify on or ;profile notify off").then(message => {
+                        message.delete(10000);
+                    });
                 }
                 break;
             case 'check':
@@ -121,25 +126,21 @@ module.exports = class Profile extends BaseCommand {
     set(channel, userid, target, value) {
         // Check which is being changed, then change:
         if (target === "profile") {
-            // Check update syntax
-            // this.db.run("UPDATE test SET profileid=? WHERE userid=?", [value, userid], (err) => {
-            //     if (err) {
-            //         console.log(`Profile ID change error: ${err}`);
-            //         // Message - something went wrong, not able to update profile
-            //     } else {
-            //         // message - Profile id updated successfully
-            //     }
-            // });
+            typeorm.getConnection().createQueryBuilder()
+                .update(User).set({friend_id: value})
+                .where("username = :username", {username: userid})
+                .execute();
+            channel.send("Your friend ID has been updated").then(message => {
+                message.delete(10000);
+            });
         } else if (target === "notifications") {
-            // Check update syntax
-            // this.db.run("UPDATE test SET notifications=? WHERE userid=?", [value, userid], (err) => {
-            //     if (err) {
-            //         console.log(`Profile ID change error: ${err}`);
-            //         // Message - Something went wrong, not able to update notifications
-            //     } else {
-            //         // message - notifications updated successfully
-            //     }
-            // });
+            typeorm.getConnection().createQueryBuilder()
+                .update(User).set({notifications: value})
+                .where("username = :username", {username: userid})
+                .execute();
+            channel.send("Your notifications have been updated").then(message => {
+                message.delete(10000);
+            });
         }
     }
 
