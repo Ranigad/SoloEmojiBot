@@ -96,19 +96,31 @@ module.exports = class Profile extends BaseCommand {
     create(channel, discorduser, profile) {
         // Create new profile, then send message and check if notifications want to be turned on
         var user = entityManager.getRepository(User).findOne({username: discorduser.id});
-        if (user != undefined) {
-            console.log("User already exists.");
+        var mode = undefined;
+        if (user != undefined && user.deleted == false) {
+            console.log("User already exists - updating");
+            mode = "updated";
+        }
+        else if (user != undefined) {
+            console.log("Restoring user");
+            user.deleted = false;
+            mode = "created";
         }
         else {
             console.log("Creating new user");
             var user = new User();
-            user.username = discorduser.id;
-            user.name = discorduser.username;
-            user.discriminator = discorduser.discriminator;
-            user.friend_id = profile;
-
-            entityManager.save(user);
+            mode = "created";
         }
+        user.username = discorduser.id;
+        user.name = discorduser.username;
+        user.discriminator = discorduser.discriminator;
+        user.friend_id = profile;
+
+        entityManager.save(user);
+
+        channel.send(`Your profile has been ${mode}`).then(message => {
+            message.delete(10000);
+        });
 
         // this.db.run("INSERT INTO test (userid, profileid, notifications) VALUES (?, ?, ?)",
         //     [userid, profile, 0], (err) => {
@@ -124,6 +136,12 @@ module.exports = class Profile extends BaseCommand {
     }
 
     set(channel, userid, target, value) {
+        var user = entityManager.getRepository(User).findOne({username: discorduser.id});
+        if (user == undefined || user.deleted == true) {
+            channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID>").then(message => {
+                message.delete(10000);
+            });
+        }
         // Check which is being changed, then change:
         if (target === "profile") {
             typeorm.getConnection().createQueryBuilder()
@@ -168,9 +186,13 @@ module.exports = class Profile extends BaseCommand {
     }
 
     remove(channel, userid) {
-        // this.db.run("DELETE FROM test WHERE userid=?", [user.id], (err) => {
-        //     console.log("Error in deleting user");
-        // });
+        typeorm.getConnection().createQueryBuilder()
+                .update(User).set({deleted: true})
+                .where("username = :username", {username: userid})
+                .execute();
+        channel.send("Your profile has been deleted").then(message => {
+            message.delete(10000);
+        });
     }
 
     all() {

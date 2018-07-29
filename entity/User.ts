@@ -30,6 +30,11 @@ class User {
     })
     support_opt_out: boolean;
 
+    @Column({
+        default: false
+    })
+    deleted: boolean;
+
     @CreateDateColumn()
     addtimestamp: Date;
 
