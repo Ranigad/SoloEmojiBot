@@ -1,9 +1,15 @@
-import "reflect-metadata";
-import {createConnection} from "typeorm";
-//import {User} from "./entity/User";
-const User = require("./entity/User");
+const typeorm = require("typeorm");
+const User = require("./model/User").User;
 
-createConnection().then(async connection => {
+typeorm.createConnection({
+    "type": "sqlite",
+    "database": "data/magireco.db",
+    "synchronize": true,
+    "logging": false,
+    "entities": [
+        require("./entity/UserSchema")
+    ]
+}).then(async connection => {
 
     // console.log("Inserting a new user into the database...");
     // const user = new User();

@@ -3,7 +3,7 @@
 const BaseCommand = require('../BaseCommand.js');
 const sqlite3 = require('sqlite3').verbose();
 const typeorm = require('typeorm');
-const User = require('../entity/User');
+const User = require('../model/User').User;
 const entityManager = typeorm.getManager();
 
 module.exports = class Profile extends BaseCommand {
@@ -95,32 +95,35 @@ module.exports = class Profile extends BaseCommand {
 
     create(channel, discorduser, profile) {
         // Create new profile, then send message and check if notifications want to be turned on
-        var user = entityManager.getRepository(User).findOne({username: discorduser.id});
-        var mode = undefined;
-        if (user != undefined && user.deleted == false) {
-            console.log("User already exists - updating");
-            mode = "updated";
-        }
-        else if (user != undefined) {
-            console.log("Restoring user");
-            user.deleted = false;
-            mode = "created";
-        }
-        else {
-            console.log("Creating new user");
-            var user = new User();
-            mode = "created";
-        }
-        user.username = discorduser.id;
-        user.name = discorduser.username;
-        user.discriminator = discorduser.discriminator;
-        user.friend_id = profile;
+        entityManager.getRepository(User).findOne({username: discorduser.id}).then(user => {
+            var mode = undefined;
+            if (user != undefined && user.deleted == false) {
+                console.log("User already exists - updating");
+                mode = "updated";
+            }
+            else if (user != undefined) {
+                console.log("Restoring user");
+                user.deleted = false;
+                mode = "created";
+            }
+            else {
+                console.log("Creating new user");
+                var user = new User();
+                user.addtimestamp = new Date().toUTCString();
+                mode = "created";
+            }
+            user.username = discorduser.id;
+            user.discordname = discorduser.username;
+            user.discriminator = discorduser.discriminator;
+            user.friend_id = profile;
 
-        entityManager.save(user);
-
-        channel.send(`Your profile has been ${mode}`).then(message => {
-            message.delete(10000);
+            entityManager.save(user);
+    
+            channel.send(`Your profile has been ${mode}`).then(message => {
+                message.delete(10000);
+            });
         });
+
 
         // this.db.run("INSERT INTO test (userid, profileid, notifications) VALUES (?, ?, ?)",
         //     [userid, profile, 0], (err) => {
