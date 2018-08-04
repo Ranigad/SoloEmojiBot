@@ -29,6 +29,9 @@ let CH = null;
 
 client.on('ready', () => {
     CH = new CommandHandler(prefix, false, client);
+    client.user.setPresence({game: {name: 'Magia Record | ;help'}})
+        .then(console.log)
+        .catch(console.error);
 });
 
 client.on('message', msg => {
