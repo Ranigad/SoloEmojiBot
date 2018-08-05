@@ -7,7 +7,8 @@ typeorm.createConnection({
     "synchronize": true,
     "logging": false,
     "entities": [
-        require("./entity/UserSchema")
+        require("./entity/UserSchema"),
+        require("./entity/MagiRecoUserSchema")
     ]
 }).then(async connection => {
 

@@ -1,5 +1,5 @@
 class User {
-    consttructor(username, name, discriminator, displayname, friend_id, notifications, addtimestamp) {
+    constructor(username, name, discriminator, displayname, friend_id, notifications, addtimestamp) {
         this.username = username;
         this.discordname = name;
         this.discriminator = discriminator;
