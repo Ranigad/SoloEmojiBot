@@ -8,7 +8,9 @@ typeorm.createConnection({
     "logging": false,
     "entities": [
         require("./entity/UserSchema"),
-        require("./entity/MagiRecoUserSchema")
+        require("./entity/MagiRecoUserSchema"),
+        require("./entity/MegucaSchema"),
+        require("./entity/MasterMegucaSchema")
     ]
 }).then(async connection => {
 
