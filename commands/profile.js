@@ -6,8 +6,6 @@ const typeorm = require('typeorm');
 const User = require('../model/User').User;
 const entityManager = typeorm.getManager();
 
-var bot_messages = [];
-
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
         super(debug);
@@ -101,6 +99,7 @@ module.exports = class Profile extends BaseCommand {
             var mode = undefined;
             if (user != undefined && user.deleted == false) {
                 console.log("User already exists - updating");
+                user.notifications = false;
                 mode = "updated";
             }
             else if (user != undefined) {
@@ -120,14 +119,10 @@ module.exports = class Profile extends BaseCommand {
             user.friend_id = profile;
 
             entityManager.save(user);
-    
+
             channel.send(`Your profile has been ${mode}`).then(message => {
                 if (mode == "created") {
-                    channel.send(`Would you like to enable notifications from other players?`).then(message => {
-                        message.react("regional_indicator_y");
-                        message.react("regional_indicator_n");
-                        var msg_data = {message: message.id, user: discorduser.id, type: 1};
-                        bot_messages.push(msg_data);
+                    channel.send(`Reply ;profile notify on to enable notifications from other players`).then(message => {
                     });
                 }
                 else {
@@ -151,7 +146,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     set(channel, userid, target, value) {
-        var user = entityManager.getRepository(User).findOne({username: discorduser.id});
+        var user = entityManager.getRepository(User).findOne({username: userid});
         if (user == undefined || user.deleted == true) {
             channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID>").then(message => {
                 message.delete(10000);

@@ -28,6 +28,10 @@ module.exports = new EntitySchema({
         },
         addtimestamp: {
             type: "date"
+        },
+        deleted: {
+            type: "boolean",
+            default: false
         }
     }
 });
