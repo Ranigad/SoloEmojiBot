@@ -6,6 +6,8 @@ const typeorm = require('typeorm');
 const User = require('../model/User').User;
 const entityManager = typeorm.getManager();
 
+var bot_messages = [];
+
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
         super(debug);
@@ -120,7 +122,17 @@ module.exports = class Profile extends BaseCommand {
             entityManager.save(user);
     
             channel.send(`Your profile has been ${mode}`).then(message => {
-                message.delete(10000);
+                if (mode == "created") {
+                    channel.send(`Would you like to enable notifications from other players?`).then(message => {
+                        message.react("regional_indicator_y");
+                        message.react("regional_indicator_n");
+                        var msg_data = {message: message.id, user: discorduser.id, type: 1};
+                        bot_messages.push(msg_data);
+                    });
+                }
+                else {
+                    message.delete(10000);
+                }
             });
         });
 

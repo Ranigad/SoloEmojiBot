@@ -10,7 +10,9 @@ typeorm.createConnection({
         require("./entity/UserSchema"),
         require("./entity/MagiRecoUserSchema"),
         require("./entity/MegucaSchema"),
-        require("./entity/MasterMegucaSchema")
+        require("./entity/MasterMegucaSchema"),
+        require("./entity/MasterMemoriaSchema"),
+        require("./entity/MemoriaSchema")
     ]
 }).then(async connection => {
 

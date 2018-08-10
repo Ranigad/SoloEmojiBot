@@ -1,11 +1,10 @@
 const EntitySchema = require("typeorm").EntitySchema;
-const Meguca = require("../model/Meguca").Meguca;
-const MasterMeguca = require("../model/MasterMeguca").MasterMeguca;
+const MasterMemoria = require("../model/MasterMemoria").MasterMemoria;
 const Memoria = require("../model/Memoria").Memoria;
 
 module.exports = new EntitySchema({
-    name: "Meguca",
-    target: Meguca,
+    name: "MasterMemoria",
+    target: MasterMemoria,
     columns: {
         id: {
             primary: true,
@@ -15,27 +14,20 @@ module.exports = new EntitySchema({
         jpn_name: {
             type: "varchar"
         },
-        eng_sur: {
-            type: "varchar"
+        eng_name: {
+            type: "varchar",
+            nullable: true
         },
-        eng_given: {
-            type: "varchar"
+        active: {
+            type: "boolean",
+            nullable: true
         },
-        nick: {
-            type: "varchar"
-        },
-        meguca_type: {
+        rating: {
             type: "int",
             nullable: true
         }
     },
     relations: {
-        masterMeguca: {
-            target: "MasterMeguca",
-            type: "many-to-one",
-            joinTable: false,
-            cascade: false
-        },
         memes: {
             target: "Memoria",
             type: "one-to-many",
