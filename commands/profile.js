@@ -29,7 +29,7 @@ module.exports = class Profile extends BaseCommand {
             // check subcommand
             let [command, user, channel, value] = [subcommand.toLowerCase(), message.author, message.channel, etc || 0];
 
-            if (etc.isPing) {
+            if (etc && etc.isPing) {
                 user = value; // User object of mention
             }
 
@@ -86,6 +86,9 @@ module.exports = class Profile extends BaseCommand {
             case 'delete':  // remove
                 console.log("break");
                 // this.remove(channel, user.id);
+                break;
+            case 'reset':
+                this.reset(channel, user.id);
                 break;
             default:
                 console.log("error message");
@@ -196,6 +199,10 @@ module.exports = class Profile extends BaseCommand {
     }
 
     remove(channel, userid) {
+        //TODO
+    }
+
+    reset(channel, userid) {
         typeorm.getConnection().createQueryBuilder()
                 .update(User).set({deleted: true})
                 .where("username = :username", {username: userid})
