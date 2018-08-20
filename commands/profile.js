@@ -61,7 +61,7 @@ module.exports = class Profile extends BaseCommand {
             case 'change':
                 console.log("set");
                 if (value) {
-                    this.set(channel, user.id, "profile", value);
+                    this.set(channel, user, "profile", value);
                 }
                 else {
                     channel.send(`Error: You need to provide your friend ID`).then(message => {
@@ -110,6 +110,7 @@ module.exports = class Profile extends BaseCommand {
         // Create new profile, then send message and check if notifications want to be turned on
         entityManager.getRepository(User).findOne({username: discorduser.id}).then(user => {
             var mode = undefined;
+
             if (user != undefined && user.deleted == false) {
                 console.log("User already exists - updating");
                 user.notifications = false;
@@ -122,14 +123,15 @@ module.exports = class Profile extends BaseCommand {
             }
             else {
                 console.log("Creating new user");
-                var user = new User();
+                user = new User();
                 user.addtimestamp = new Date().toUTCString();
                 mode = "created";
             }
+
             user.username = discorduser.id;
             user.discordname = discorduser.username;
             user.discriminator = discorduser.discriminator;
-            user.friend_id = profile;
+            user.friend_id = profile;    
 
             entityManager.save(user);
 
@@ -143,46 +145,40 @@ module.exports = class Profile extends BaseCommand {
                 }
             });
         });
-
-
-        // this.db.run("INSERT INTO test (userid, profileid, notifications) VALUES (?, ?, ?)",
-        //     [userid, profile, 0], (err) => {
-        //         // channel.send( message + await response);
-        //             // if notification is yes, call this.set on notification and 1
-        //         if (err) {
-        //             console.log(`Error in insert ${err}`);
-        //             // Send channel message about existing user + profile. If you want to change use other command
-        //         } else {
-        //             console.log(`${profile} added`);
-        //         }
-        //     });
     }
 
-    set(channel, userid, target, value) {
-        var user = entityManager.getRepository(User).findOne({username: userid});
-        if (user == undefined || user.deleted == true) {
-            channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID>").then(message => {
-                message.delete(10000);
-            });
-        }
-        // Check which is being changed, then change:
-        if (target === "profile") {
-            typeorm.getConnection().createQueryBuilder()
-                .update(User).set({friend_id: value})
-                .where("username = :username", {username: userid})
-                .execute();
-            channel.send("Your friend ID has been updated").then(message => {
-                message.delete(10000);
-            });
-        } else if (target === "notifications") {
-            typeorm.getConnection().createQueryBuilder()
-                .update(User).set({notifications: value})
-                .where("username = :username", {username: userid})
-                .execute();
-            channel.send("Your notifications have been updated").then(message => {
-                message.delete(10000);
-            });
-        }
+    set(channel, discorduser, target, value) {
+        var userid = discorduser.id;
+        var user = entityManager.getRepository(User).findOne({username: userid}).then(user => {
+            if (user == undefined || user.deleted == true) {
+                if (target === "profile") {
+                    return this.create(channel, discorduser, value);
+                }
+                else {
+                    return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID>").then(message => {
+                        message.delete(10000);
+                    });
+                }
+            }
+            // Check which is being changed, then change:
+            if (target === "profile") {
+                typeorm.getConnection().createQueryBuilder()
+                    .update(User).set({friend_id: value})
+                    .where("username = :username", {username: userid})
+                    .execute();
+                channel.send("Your friend ID has been updated").then(message => {
+                    message.delete(10000);
+                });
+            } else if (target === "notifications") {
+                typeorm.getConnection().createQueryBuilder()
+                    .update(User).set({notifications: value})
+                    .where("username = :username", {username: userid})
+                    .execute();
+                channel.send("Your notifications have been updated").then(message => {
+                    message.delete(10000);
+                });
+            }
+        })
     }
 
     check(channel, user, request=false) {
