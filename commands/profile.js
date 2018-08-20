@@ -51,12 +51,22 @@ module.exports = class Profile extends BaseCommand {
                 if (value) {
                     this.create(channel, user, value)
                 }
+                else {
+                    channel.send(`Error: You need to provide your friend ID`).then(message => {
+                        message.delete(5000);
+                    });
+                }
                 break;
             case 'set': // set with target as userid
             case 'change':
                 console.log("set");
                 if (value) {
                     this.set(channel, user.id, "profile", value);
+                }
+                else {
+                    channel.send(`Error: You need to provide your friend ID`).then(message => {
+                        message.delete(5000);
+                    });
                 }
                 break;
             case 'mentions':
