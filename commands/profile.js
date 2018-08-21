@@ -23,17 +23,17 @@ module.exports = class Profile extends BaseCommand {
 */
 
     handler(...args) {
-        let [wiki, bot, message, [subcommand, etc]] = args;
+        let [wiki, bot, message, [subcommand, etc, etc2]] = args;
         if (subcommand) {
             // check mention - subcommand becomes request? or check. Pass in mentioned user, check it's not self
             // check subcommand
-            let [command, user, channel, value] = [subcommand.toLowerCase(), message.author, message.channel, etc || 0];
+            let [command, user, channel, value, value2] = [subcommand.toLowerCase(), message.author, message.channel, etc, etc2 || 0];
 
             if (etc && etc.isPing) {
                 user = value; // User object of mention
             }
 
-            this.run(command, user, channel, value);
+            this.run(command, user, channel, value, value2);
 
         } else {
             this.run("check", message.author, message.channel, undefined);
@@ -44,7 +44,9 @@ module.exports = class Profile extends BaseCommand {
         //this.run();
     }
 
-    run(subcommand, user, channel, value) {
+
+
+    run(subcommand, user, channel, value, value2) {
         switch(subcommand) {
             case 'create':  // --
                 console.log("create");
@@ -83,10 +85,32 @@ module.exports = class Profile extends BaseCommand {
                     });
                 }
                 break;
+            case 'profile':
             case 'check':
             case 'actual mention': // check someone else, also is check command
                 console.log("mention");
-                this.check(channel, user); // Double check
+                var guild = channel.guild;
+                var userid = undefined;
+                if (value) {
+                    let mentions = message.mentions.members;
+                    if (mentions.size > 0) {
+                        userid = mentions.first().id;
+                    }
+                    else {
+                        var words = value.split("#");
+                        if (words.length != 2) {
+                            let [name, discriminator] = [words[0]]
+                        }
+                        else {
+
+                        }
+
+                    }
+                }
+                if (userid == undefined) {
+                    userid = user.id;
+                }
+                this.check(channel, userid);
                 break;
             case 'request': // check with request
                 console.log("request");
@@ -131,7 +155,7 @@ module.exports = class Profile extends BaseCommand {
             user.username = discorduser.id;
             user.discordname = discorduser.username;
             user.discriminator = discorduser.discriminator;
-            user.friend_id = profile;    
+            user.friend_id = profile;
 
             entityManager.save(user);
 
@@ -178,30 +202,25 @@ module.exports = class Profile extends BaseCommand {
                     message.delete(10000);
                 });
             }
-        })
+        });
     }
 
-    check(channel, user, request=false) {
-        // Given a userid, check their profile. If add request, then check notifications and send private message
-        // else, just display profile message
-        // this.db.get("SELECT profileid, notifications FROM test WHERE userid=?", [user.id], (err, results) => {
-        //     // if add request, then send message to userid
-        //     if (err) {
-        //         // Message about error
-        //         return
-        //     } if (request) {
-        //         if (results.notifications) {
-        //             // user.send(); // Send pm to user
-        //             console.log("Sent request")
-        //         } else {
-        //             // This person has requested not to be notified
-        //         }
-        //     }
+    check(channel, userid, request=false) {
+        entityManager.getRepository(User).findOne({username: userid}).then(user => {
+            if (user == undefined) {
+                return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                    message.delete(5000);
+                });
+            }
 
-        //     console.log(results);
-        //     // Post message with profileid
+            const discorduser = channel.guild.members.get(userid);
+            user.discordname = discorduser.username;
+            user.discriminator = discorduser.discriminator;
 
-        // });
+            entityManager.save(user);
+
+            channel.send(`${user.discordname}#${user.discriminator}: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`);
+        });
     }
 
     remove(channel, userid) {
