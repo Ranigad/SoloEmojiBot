@@ -92,22 +92,34 @@ module.exports = class Profile extends BaseCommand {
                 var guild = channel.guild;
                 var userid = undefined;
                 if (value) {
-                    let mentions = message.mentions.members;
-                    if (mentions.size > 0) {
-                        userid = mentions.first().id;
+                    console.log(value);
+                    var regex1 = /<@\d+>/;
+                    var regex2 = /\d+/;
+                    if (regex1.test(value)) {
+                        userid = value.replace("<", "");
+                        userid = userid.replace("@", "");
+                        userid = userid.replace(">", "");
                     }
                     else {
                         var words = value.split("#");
-                        if (words.length != 2) {
-                            let [name, discriminator] = [words[0]]
+                        if (words.length == 2) {
+                            let [name, discriminator] = [words[0]];
+                            var guild_member = guild.members.find(member => member.user.username == name && member.user.discriminator);
+                            if (guild_member == undefined) {
+                                // Not Found
+                            }
+                            userid = guild_member.user.id;
+                        }
+                        else if (regex2.test(value)) {
+                            userid = value;
                         }
                         else {
-
+                            // Error - not ping, name&discriminator, or ID
                         }
-
                     }
                 }
                 if (userid == undefined) {
+                    console.log("Undefined ID");
                     userid = user.id;
                 }
                 this.check(channel, userid);
@@ -213,7 +225,7 @@ module.exports = class Profile extends BaseCommand {
                 });
             }
 
-            const discorduser = channel.guild.members.get(userid);
+            const discorduser = channel.guild.members.get(userid).user;
             user.discordname = discorduser.username;
             user.discriminator = discorduser.discriminator;
 
