@@ -5,6 +5,7 @@ const sqlite3 = require('sqlite3').verbose();
 const typeorm = require('typeorm');
 const User = require('../model/User').User;
 const entityManager = typeorm.getManager();
+const Util = require('../Util.js');
 
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
@@ -92,29 +93,18 @@ module.exports = class Profile extends BaseCommand {
                 var guild = channel.guild;
                 var userid = undefined;
                 if (value) {
-                    console.log(value);
-                    var regex1 = /<@\d+>/;
-                    var regex2 = /\d+/;
-                    if (regex1.test(value)) {
-                        userid = value.replace("<", "");
-                        userid = userid.replace("@", "");
-                        userid = userid.replace(">", "");
-                    }
+                    var userdata = new Util().get_user_id_mention(value, guild);
+                    if (userdata.success == true) userid = userdata.userid;
                     else {
-                        var words = value.split("#");
-                        if (words.length == 2) {
-                            let [name, discriminator] = [words[0]];
-                            var guild_member = guild.members.find(member => member.user.username == name && member.user.discriminator);
-                            if (guild_member == undefined) {
-                                // Not Found
-                            }
-                            userid = guild_member.user.id;
+                        if (userdata.reason == 0) {
+                            return channel.send("The given user could not be found.  They may not be in the server now.").then(message => {
+                                message.delete(10000);
+                            });
                         }
-                        else if (regex2.test(value)) {
-                            userid = value;
-                        }
-                        else {
-                            // Error - not ping, name&discriminator, or ID
+                        else if (userdata.reason == 1) {
+                            return channel.send("Error: Please only mention user with their name#discriminator, ID, or ping").then(message => {
+                                message.delete(10000);
+                            });
                         }
                     }
                 }
