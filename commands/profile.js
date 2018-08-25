@@ -30,12 +30,7 @@ module.exports = class Profile extends BaseCommand {
             // check subcommand
             let [command, user, channel, value, value2] = [subcommand.toLowerCase(), message.author, message.channel, etc, etc2 || 0];
 
-            if (etc && etc.isPing) {
-                user = value; // User object of mention
-            }
-
             this.run(command, user, channel, value, value2);
-
         } else {
             this.run("check", message.author, message.channel, undefined);
             console.log("check");
@@ -49,13 +44,14 @@ module.exports = class Profile extends BaseCommand {
 
     run(subcommand, user, channel, value, value2) {
         switch(subcommand) {
+            case 'recreate':
             case 'create':  // --
                 console.log("create");
-                if (value) {
-                    this.create(channel, user, value)
+                if (value && value2) {
+                    this.create(channel, user, value, value2)
                 }
                 else {
-                    channel.send(`Error: You need to provide your friend ID`).then(message => {
+                    channel.send(`Error: You need to provide your friend ID and display name`).then(message => {
                         message.delete(5000);
                     });
                 }
@@ -132,7 +128,7 @@ module.exports = class Profile extends BaseCommand {
 
     }
 
-    create(channel, discorduser, profile) {
+    create(channel, discorduser, profile, displayname) {
         // Create new profile, then send message and check if notifications want to be turned on
         entityManager.getRepository(User).findOne({username: discorduser.id}).then(user => {
             var mode = undefined;
@@ -158,6 +154,7 @@ module.exports = class Profile extends BaseCommand {
             user.discordname = discorduser.username;
             user.discriminator = discorduser.discriminator;
             user.friend_id = profile;
+            user.displayname = displayname;
 
             entityManager.save(user);
 
@@ -177,14 +174,9 @@ module.exports = class Profile extends BaseCommand {
         var userid = discorduser.id;
         var user = entityManager.getRepository(User).findOne({username: userid}).then(user => {
             if (user == undefined || user.deleted == true) {
-                if (target === "profile") {
-                    return this.create(channel, discorduser, value);
-                }
-                else {
-                    return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID>").then(message => {
-                        message.delete(10000);
-                    });
-                }
+                return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
+                    message.delete(10000);
+                });
             }
             // Check which is being changed, then change:
             if (target === "profile") {

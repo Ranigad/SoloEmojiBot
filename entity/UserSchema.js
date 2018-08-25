@@ -17,7 +17,7 @@ module.exports = new EntitySchema({
         },
         displayname: {
             nullable: true,
-            type: "boolean"
+            type: "varchar"
         },
         friend_id : {
             type: "varchar"
