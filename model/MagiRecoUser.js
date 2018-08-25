@@ -1,5 +1,5 @@
 class MagiRecoUser {
-    constructor(user_id, friend_id, display_name, user_rank, class_rank, last_access, comment, addtimestamp, updatetimestamp) {
+    constructor(user_id, friend_id, display_name, user_rank, class_rank, last_access, comment, addtimestamp, updatetimestamp, meguca) {
         this.user_id = user_id;
         this.friend_id = friend_id;
         this.displayname = display_name;
@@ -9,6 +9,7 @@ class MagiRecoUser {
         this.comment = comment;
         this.addtimestamp = addtimestamp;
         this.updatetimestamp = updatetimestamp;
+        this.meguca = meguca;
     }
 }
 

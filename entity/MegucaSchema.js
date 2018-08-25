@@ -2,6 +2,7 @@ const EntitySchema = require("typeorm").EntitySchema;
 const Meguca = require("../model/Meguca").Meguca;
 const MasterMeguca = require("../model/MasterMeguca").MasterMeguca;
 const Memoria = require("../model/Memoria").Memoria;
+const MagiRecoUser = require("../model/MagiRecoUser").MagiRecoUser;
 
 module.exports = new EntitySchema({
     name: "Meguca",
@@ -41,6 +42,12 @@ module.exports = new EntitySchema({
             type: "one-to-many",
             joinTable: false,
             cascade: true
+        },
+        user: {
+            target: "MagiRecoUser",
+            type: "many-to-one",
+            joinTable: false,
+            cascade: false
         }
     }
 });
