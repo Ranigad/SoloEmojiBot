@@ -244,7 +244,14 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async friend(channel, senderid, recipientid) {
-        var user = await entityManager.getRepository(User).findOne({username: recipientid});
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        user = await entityManager.getRepository(User).findOne({username: recipientid});
         if (user == undefined || user.deleted == true) {
             return channel.send("That user does not have a profile or their profile was deleted").then(message => {
                 message.delete(5000);
