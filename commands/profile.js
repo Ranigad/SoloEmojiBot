@@ -83,7 +83,7 @@ module.exports = class Profile extends BaseCommand {
                 console.log("notifications");
                 let valuemap = {"on": true, "off": false}
                 if (value in valuemap) {
-                    this.set(channel, user.id, "notifications", valuemap[value]);
+                    this.set(channel, user, "notifications", valuemap[value]);
                 }
                 else {
                     channel.send("Error: Please use ;profile notify on or ;profile notify off").then(message => {
@@ -181,7 +181,7 @@ module.exports = class Profile extends BaseCommand {
 
     set(channel, discorduser, target, value) {
         var userid = discorduser.id;
-        var user = entityManager.getRepository(User).findOne({username: userid}).then(user => {
+        entityManager.getRepository(User).findOne({username: userid}).then(user => {
             if (user == undefined || user.deleted == true) {
                 return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
                     message.delete(10000);
