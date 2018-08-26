@@ -13,7 +13,7 @@ module.exports = new EntitySchema({
         user_a: {
             type: "varchar"
         },
-        user_a: {
+        user_b: {
             type: "varchar"
         },
         friends: {

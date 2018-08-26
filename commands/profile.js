@@ -115,7 +115,7 @@ module.exports = class Profile extends BaseCommand {
                     if (userid == undefined) {
                         return;
                     }
-                    this.friend(channel, user.userid, userid);
+                    this.friend(channel, user.id, userid);
                 }
                 else {
                     channel.send("Error: Please mention a user to friend, using a ping, name#discriminator, or ID").then(message => {
@@ -293,10 +293,11 @@ module.exports = class Profile extends BaseCommand {
             var friend = new Friend();
             friend.user_a = senderid;
             friend.user_b = recipientid;
+            console.log(friend);
             entityManager.save(friend);
 
             if (user.notifications) {
-                var sender = this.bot.users.get(user_a);
+                var sender = this.bot.users.get(senderid);
                 discordrecipient.send(`You have received a friend request from ${discordsender.discordname}#${discordsender.discriminator}!  Use ;profile friend to accept or ;profile check to view their info`).then(message => {
                     message.edit(`You have received a friend request from <@${senderid}>!  Use ;profile friend to accept or ;profile check to view their info`)
                 })
