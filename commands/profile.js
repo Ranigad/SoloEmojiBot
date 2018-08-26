@@ -336,11 +336,11 @@ module.exports = class Profile extends BaseCommand {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         if (user == undefined || user.deleted == true) {
             return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(5000);
+                message.delete(10000);
             });
         }
 
-        var users = await entityManager.getRepository(User)
+        var friends = await entityManager.getRepository(User)
             .createQueryBuilder("user")
             .where(qb => {
                 const subQuery = qb.subQuery()
@@ -363,7 +363,25 @@ module.exports = class Profile extends BaseCommand {
             .printSql()
             .getMany();
 
-        //console.log(users);
+        if (friends.length == 0) {
+            return channel.send("You currently do not have any friends.  Use ;profile friend to add friends").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var initialmessage = "**Your Friends**:";
+        var finalmessage = initialmessage;
+
+        for (var i = 0; i < friends.length; i++) {
+            initialmessage += `\n★ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
+            finalmessage += `\n★ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+        }
+
+        return channel.send(initialmessage).then(message => {
+            message.edit(finalmessage).then(message => {
+                message.delete(5000);
+            });
+        });
     }
 
     remove(channel, userid) {
