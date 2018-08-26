@@ -317,10 +317,6 @@ module.exports = class Profile extends BaseCommand {
         return channel.send(`You have sent a friend request to ${user.discordname}#${user.discriminator}.  Please note, they do not have notifications on.`).then(message => {
             message.edit(`You have sent a friend request to <@${user.username}>.  Please note, they do not have notifications on.`);
         });
-
-        channel.send(`${user.discordname}#${user.discriminator}: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`).then(message => {
-            message.edit(`<@${user.username}>: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`);
-        });
     }
 
     async check_friends(user1, user2) {
