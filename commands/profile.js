@@ -36,8 +36,6 @@ module.exports = class Profile extends BaseCommand {
             console.log("check");
             // do a self profile check
         }
-
-        //this.run();
     }
 
 
@@ -59,11 +57,20 @@ module.exports = class Profile extends BaseCommand {
             case 'set': // set with target as userid
             case 'change':
                 console.log("set");
-                if (value) {
-                    this.set(channel, user, "profile", value);
+                console.log(value);
+                var settings = ["id", "name"];
+                if (value && settings.includes(value)) {
+                    if (value2) {
+                        this.set(channel, user, value, value2);
+                    }
+                    else {
+                        channel.send(`Error: You need to provide your ${value}`).then(message => {
+                            message.delete(5000);
+                        });
+                    }
                 }
                 else {
-                    channel.send(`Error: You need to provide your friend ID`).then(message => {
+                    channel.send(`Command Error: You need to set either an id or a name, e.g. ;profile set id Q69KBCAA`).then(message => {
                         message.delete(5000);
                     });
                 }
@@ -179,7 +186,7 @@ module.exports = class Profile extends BaseCommand {
                 });
             }
             // Check which is being changed, then change:
-            if (target === "profile") {
+            if (target === "id") {
                 typeorm.getConnection().createQueryBuilder()
                     .update(User).set({friend_id: value})
                     .where("username = :username", {username: userid})
@@ -187,7 +194,17 @@ module.exports = class Profile extends BaseCommand {
                 channel.send("Your friend ID has been updated").then(message => {
                     message.delete(10000);
                 });
-            } else if (target === "notifications") {
+            }
+            else if (target === "name") {
+                typeorm.getConnection().createQueryBuilder()
+                    .update(User).set({displayname: value})
+                    .where("username = :username", {username: userid})
+                    .execute();
+                channel.send("Your game display name has been updated").then(message => {
+                    message.delete(10000);
+                });
+            }
+            else if (target === "notifications") {
                 typeorm.getConnection().createQueryBuilder()
                     .update(User).set({notifications: value})
                     .where("username = :username", {username: userid})
