@@ -35,4 +35,24 @@ module.exports = class Util {
         return {success: true, userid: userid};
     }
 
+    get_user_id_or_error(value, channel) {
+        var guild = channel.guild;
+        var userdata = new Util().get_user_id_mention(value, guild);
+        if (userdata.success == true) return userdata.userid;
+        else {
+            if (userdata.reason == 0) {
+                channel.send("The given user could not be found.  They may not be in the server now.").then(message => {
+                    message.delete(10000);
+                });
+                return undefined;
+            }
+            else if (userdata.reason == 1) {
+                channel.send("Error: Please only mention user with their name#discriminator, ID, or ping").then(message => {
+                    message.delete(10000);
+                });
+                return undefined;
+            }
+        }
+    }
+
 }

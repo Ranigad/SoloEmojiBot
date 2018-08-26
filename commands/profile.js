@@ -93,33 +93,31 @@ module.exports = class Profile extends BaseCommand {
             case 'check':
             case 'actual mention': // check someone else, also is check command
                 console.log("mention");
-                var guild = channel.guild;
                 var userid = undefined;
                 if (value) {
-                    var userdata = new Util().get_user_id_mention(value, guild);
-                    if (userdata.success == true) userid = userdata.userid;
-                    else {
-                        if (userdata.reason == 0) {
-                            return channel.send("The given user could not be found.  They may not be in the server now.").then(message => {
-                                message.delete(10000);
-                            });
-                        }
-                        else if (userdata.reason == 1) {
-                            return channel.send("Error: Please only mention user with their name#discriminator, ID, or ping").then(message => {
-                                message.delete(10000);
-                            });
-                        }
-                    }
+                    userid = new Util().get_user_id_or_error(value, channel);
+                    if (userid == undefined) return;
                 }
                 if (userid == undefined) {
-                    console.log("Undefined ID");
                     userid = user.id;
                 }
                 this.check(channel, userid);
                 break;
-            case 'request': // check with request
+            case 'friend':
+            case 'request':
                 console.log("request");
-                this.check(channel, user, true);
+                if (value) {
+                    var userid = new Util().get_user_id_or_error(value, channel);
+                    if (userid == undefined) {
+                        return;
+                    }
+                    this.friend(channel, user.userid, userid);
+                }
+                else {
+                    channel.send("Error: Please mention a user to friend, using a ping, name#discriminator, or ID").then(message => {
+                        message.delete(5000);
+                    });
+                }
                 break;
             case 'remove':
             case 'delete':  // remove
@@ -234,6 +232,10 @@ module.exports = class Profile extends BaseCommand {
                 message.edit(`<@${user.username}>: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`);
             });
         });
+    }
+
+    friend(channel, senderid, recipientid) {
+        //TODO: Implement friend adding logic
     }
 
     remove(channel, userid) {
