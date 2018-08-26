@@ -235,8 +235,82 @@ module.exports = class Profile extends BaseCommand {
     }
 
     friend(channel, senderid, recipientid) {
-        //TODO: Implement friend adding logic
+        entityManager.getRepository(User).findOne({username: recipientid}).then(user => {
+            if (user == undefined) {
+                return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                    message.delete(5000);
+                });
+            }
+
+            const discorduser = channel.guild.members.get(userid).user;
+            user.discordname = discorduser.username;
+            user.discriminator = discorduser.discriminator;
+
+            entityManager.save(user);
+
+            var friend = check_friends(senderid, recipientid);
+
+            if (friend != undefined) {
+                if (friend.friends == true) {
+                    return channel.send(`You are already friends with ${user.discordname}#${user.discriminator}`).then(message => {
+                        message.edit(`You are already friends with <@${user.username}>`);
+                    });
+                }
+
+                if (friend.user_a == senderid) {
+                    return channel.send(`You have already sent a friend request to ${user.discordname}#${user.discriminator}`).then(message => {
+                        message.edit(`You have already sent a friend request to <@${user.username}>`);
+                    });
+                }
+
+                // If neither of these are true, then someone else sent them a friend request previously - accept friends
+                friend.friends = true;
+                entityManager.save(friend);
+
+                return channel.send(`You are now friends with ${user.discordname}#${user.discriminator}.  Make sure to follow them ingame`).then(message => {
+                    message.edit(`You are now friends with <@${user.username}>.  Make sure to follow them ingame`);
+                });
+            }
+
+            // A friend relation does not already exist --> create one:
+            var friend = new Friend();
+            friend.user_a = senderid;
+            friend.user_b = recipientid;
+            entityManager.save(friend);
+
+            if (user.notifications) {
+                var sender = bot.users.get(user_a);
+                discorduser.send(`You have received a friend request from ${sender.discordname}#${sender.discriminator}!  Use ;profile friend to accept or ;profile check to view their info`).then(message => {
+                    message.edit(`You have received a friend request from <@${senderid}>!  Use ;profile friend to accept or ;profile check to view their info`)
+                })
+
+                return channel.send(`You have sent a friend request to ${user.discordname}#${user.discriminator}!`).then(message => {
+                    message.edit(`You have sent a friend request to <@${user.username}>!`);
+                });
+            }
+
+            return channel.send(`You have sent a friend request to ${user.discordname}#${user.discriminator}.  Please note, they do not have notifications on.`).then(message => {
+                message.edit(`You have sent a friend request to <@${user.username}>.  Please note, they do not have notifications on.`);
+            });
+
+            channel.send(`${user.discordname}#${user.discriminator}: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`).then(message => {
+                message.edit(`<@${user.username}>: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`);
+            });
+        });
     }
+
+    check_friends(user1, user2) {
+        entityManager.getRepository(Friend).findOne({user_a: user1, user_b: user2}).then(friend => {
+            if (user != undefined) {
+                return friend;
+            }
+
+            entityManager.getRepository(Friend).findOne({user_b: user1, user_a: user2}).then(friend => {
+                return friend;
+            });
+        });
+    }
+
 
     remove(channel, userid) {
         //TODO
