@@ -4,6 +4,7 @@ const BaseCommand = require('../BaseCommand.js');
 const sqlite3 = require('sqlite3').verbose();
 const typeorm = require('typeorm');
 const User = require('../model/User').User;
+const Friend = require('../model/Friend').Friend;
 const entityManager = typeorm.getManager();
 const Util = require('../Util.js');
 
@@ -25,6 +26,7 @@ module.exports = class Profile extends BaseCommand {
 
     handler(...args) {
         let [wiki, bot, message, [subcommand, etc, etc2]] = args;
+        this.bot = bot;
         if (subcommand) {
             // check mention - subcommand becomes request? or check. Pass in mentioned user, check it's not self
             // check subcommand
@@ -249,13 +251,14 @@ module.exports = class Profile extends BaseCommand {
                 });
             }
 
-            const discorduser = channel.guild.members.get(userid).user;
-            user.discordname = discorduser.username;
-            user.discriminator = discorduser.discriminator;
-
+            const discordrecipient = this.bot.users.get(recipientid);
+            user.discordname = discordrecipient.username;
+            user.discriminator = discordrecipient.discriminator;
             entityManager.save(user);
 
-            var friend = check_friends(senderid, recipientid);
+            const discordsender = this.bot.users.get(senderid);
+
+            var friend = this.check_friends(senderid, recipientid);
 
             if (friend != undefined) {
                 if (friend.friends == true) {
@@ -274,9 +277,16 @@ module.exports = class Profile extends BaseCommand {
                 friend.friends = true;
                 entityManager.save(friend);
 
-                return channel.send(`You are now friends with ${user.discordname}#${user.discriminator}.  Make sure to follow them ingame`).then(message => {
+                channel.send(`You are now friends with ${user.discordname}#${user.discriminator}.  Make sure to follow them ingame`).then(message => {
                     message.edit(`You are now friends with <@${user.username}>.  Make sure to follow them ingame`);
                 });
+
+                if (user.notifications) {
+                    discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator} accepted your friend request, you are now friends!  Make sure to follow them ingame`).then(message => {
+                        message.edit(`<@${senderid}> accepted your friend request, you are now friends!  Make sure to follow them ingame`)
+                    });
+                }
+                return;
             }
 
             // A friend relation does not already exist --> create one:
@@ -286,8 +296,8 @@ module.exports = class Profile extends BaseCommand {
             entityManager.save(friend);
 
             if (user.notifications) {
-                var sender = bot.users.get(user_a);
-                discorduser.send(`You have received a friend request from ${sender.discordname}#${sender.discriminator}!  Use ;profile friend to accept or ;profile check to view their info`).then(message => {
+                var sender = this.bot.users.get(user_a);
+                discordrecipient.send(`You have received a friend request from ${discordsender.discordname}#${discordsender.discriminator}!  Use ;profile friend to accept or ;profile check to view their info`).then(message => {
                     message.edit(`You have received a friend request from <@${senderid}>!  Use ;profile friend to accept or ;profile check to view their info`)
                 })
 
@@ -308,7 +318,7 @@ module.exports = class Profile extends BaseCommand {
 
     check_friends(user1, user2) {
         entityManager.getRepository(Friend).findOne({user_a: user1, user_b: user2}).then(friend => {
-            if (user != undefined) {
+            if (friend != undefined) {
                 return friend;
             }
 
