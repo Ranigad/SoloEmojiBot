@@ -94,14 +94,16 @@ module.exports = class Profile extends BaseCommand {
             case 'actual mention': // check someone else, also is check command
                 console.log("mention");
                 var userid = undefined;
+                var selfcheck = false;
                 if (value) {
                     userid = new Util().get_user_id_or_error(value, channel);
                     if (userid == undefined) return;
                 }
                 if (userid == undefined) {
                     userid = user.id;
+                    selfcheck = true;
                 }
-                this.check(channel, userid);
+                this.check(channel, userid, selfcheck);
                 break;
             case 'friend':
             case 'request':
@@ -214,9 +216,14 @@ module.exports = class Profile extends BaseCommand {
         });
     }
 
-    check(channel, userid, request=false) {
+    check(channel, userid, selfcheck) {
         entityManager.getRepository(User).findOne({username: userid}).then(user => {
             if (user == undefined) {
+                if (selfcheck) {
+                    return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                        message.delete(5000);
+                    });
+                }
                 return channel.send("That user does not have a profile or their profile was deleted").then(message => {
                     message.delete(5000);
                 });
