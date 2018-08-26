@@ -123,6 +123,9 @@ module.exports = class Profile extends BaseCommand {
                     });
                 }
                 break;
+            case 'friends':
+                console.log("friends");
+                this.friends(channel, user.id);
             case 'remove':
             case 'delete':  // remove
                 console.log("break");
@@ -329,6 +332,39 @@ module.exports = class Profile extends BaseCommand {
         return friend;
     }
 
+    async friends(channel, senderid, recipientid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var users = await entityManager.getRepository(User)
+            .createQueryBuilder("user")
+            .where(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_b")
+                    .from(Friend, "friend")
+                    .where("friend.user_a = :username", {username: senderid})
+                    .andWhere("friend.friends = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .orWhere(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_a")
+                    .from(Friend, "friend")
+                    .where("friend.user_b = :username", {username: senderid})
+                    .andWhere("friend.friends = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .printSql()
+            .getMany();
+
+        //console.log(users);
+    }
 
     remove(channel, userid) {
         //TODO
