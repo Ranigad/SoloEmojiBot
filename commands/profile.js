@@ -236,7 +236,7 @@ module.exports = class Profile extends BaseCommand {
 
     friend(channel, senderid, recipientid) {
         entityManager.getRepository(User).findOne({username: recipientid}).then(user => {
-            if (user == undefined) {
+            if (user == undefined || user.deleted == true) {
                 return channel.send("That user does not have a profile or their profile was deleted").then(message => {
                     message.delete(5000);
                 });
