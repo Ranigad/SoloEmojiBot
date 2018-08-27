@@ -93,7 +93,6 @@ module.exports = class Profile extends BaseCommand {
                 break;
             case 'profile':
             case 'check':
-            case 'actual mention': // check someone else, also is check command
                 console.log("mention");
                 var userid = undefined;
                 var selfcheck = false;
