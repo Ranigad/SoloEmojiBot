@@ -126,10 +126,26 @@ module.exports = class Profile extends BaseCommand {
             case 'friends':
                 console.log("friends");
                 this.friends(channel, user.id);
+                break;
+            case 'requests':
+                console.log("requests");
+                this.requests(channel, user.id);
+                break;
             case 'remove':
-            case 'delete':  // remove
-                console.log("break");
-                // this.remove(channel, user.id);
+            case 'delete':
+                console.log("remove");
+                if (value) {
+                    var userid = new Util().get_user_id_or_error(value, channel);
+                    if (userid == undefined) {
+                        return;
+                    }
+                    this.remove(channel, user.id, userid);
+                }
+                else {
+                    channel.send("Error: Please mention a user to friend, using a ping, name#discriminator, or ID").then(message => {
+                        message.delete(5000);
+                    });
+                }
                 break;
             case 'reset':
                 this.reset(channel, user.id);
@@ -332,7 +348,7 @@ module.exports = class Profile extends BaseCommand {
         return friend;
     }
 
-    async friends(channel, senderid, recipientid) {
+    async friends(channel, senderid) {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         if (user == undefined || user.deleted == true) {
             return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
@@ -384,8 +400,87 @@ module.exports = class Profile extends BaseCommand {
         });
     }
 
-    remove(channel, userid) {
-        //TODO
+    async requests(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await entityManager.getRepository(User)
+            .createQueryBuilder("user")
+            .where(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_a")
+                    .from(Friend, "friend")
+                    .where("friend.user_b = :username", {username: senderid})
+                    .andWhere("friend.friends = :value", {value: false})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .getMany();
+
+        if (friends.length == 0) {
+            return channel.send("You currently do not have any incoming friend requests").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var initialmessage = "**Friend Requests**:";
+        var finalmessage = initialmessage;
+
+        for (var i = 0; i < friends.length; i++) {
+            initialmessage += `\n★ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
+            finalmessage += `\n★ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+        }
+
+        return channel.send(initialmessage).then(message => {
+            message.edit(finalmessage).then(message => {
+                message.delete(5000);
+            });
+        });
+    }
+
+
+    async remove(channel, senderid, userid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        user = await entityManager.getRepository(User).findOne({username: userid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var user = this.bot.users.get(userid);
+        var sender = this.bot.users.get(senderid);
+
+        var friend = await this.check_friends(senderid, userid);
+        if (friend == undefined || friend.friends == false) {
+            return channel.send(`You are not friends with ${user.username}#${user.discriminator}`).then(message => {
+                message.edit(`You are not friends with <@${userid}>`).then(message => {
+                    message.delete(5000);
+                });
+            });
+        }
+
+        await entityManager.remove(friend);
+
+        channel.send(`You are no longer friends with  ${user.username}#${user.discriminator}`).then(message => {
+            message.edit(`You are no longer friends with <@${userid}>`).then(message => {
+                message.delete(5000);
+            });
+        });
+
+        user.send(`${sender.username}#${sender.discriminator} has removed you as a friend`).then(message => {
+            message.edit(`<@${senderid}> has removed you as a friend`);
+        })
     }
 
     reset(channel, userid) {
