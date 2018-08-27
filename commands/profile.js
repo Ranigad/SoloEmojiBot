@@ -142,7 +142,7 @@ module.exports = class Profile extends BaseCommand {
                     this.remove(channel, user.id, userid);
                 }
                 else {
-                    channel.send("Error: Please mention a user to friend, using a ping, name#discriminator, or ID").then(message => {
+                    channel.send("Error: Please mention a user to remove, using a ping, name#discriminator, or ID").then(message => {
                         message.delete(5000);
                     });
                 }
