@@ -277,6 +277,12 @@ module.exports = class Profile extends BaseCommand {
             });
         }
 
+        if (senderid == recipientid) {
+            return channel.send("You cannot send a friend request to yourself").then(message => {
+                message.delete(5000);
+            })
+        }
+
         const discordrecipient = this.bot.users.get(recipientid);
         user.discordname = discordrecipient.username;
         user.discriminator = discordrecipient.discriminator;
