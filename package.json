@@ -4,11 +4,11 @@
   "description": "Bot for magia record discord",
   "main": "soloBot.js",
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "node index.js"
   },
   "devDependencies": {
+    "@types/node": "^8.10.22",
     "ts-node": "3.3.0",
-    "@types/node": "^8.0.29",
     "typescript": "2.5.2"
   },
   "author": "Ranigad",

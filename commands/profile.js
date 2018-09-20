@@ -1,17 +1,17 @@
 "use strict";
+
 const BaseCommand = require('../BaseCommand.js');
 const sqlite3 = require('sqlite3').verbose();
+const typeorm = require('typeorm');
+const User = require('../model/User').User;
+const Friend = require('../model/Friend').Friend;
+const entityManager = typeorm.getManager();
+const Util = require('../Util.js');
 
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
         super(debug);
         this.permissions = 0;
-        this._dbname = "test.db";
-        this._dbpath = "/data/"
-        this._tablename = "profile";
-        this.db = new sqlite3.Database(`${this._basePath}${this._dbpath}${this._dbname}`);
-        this.db.serialize()
-        this.db.run("CREATE TABLE IF NOT EXISTS test (userid TEXT, profileid TEXT, notifications INTEGER, PRIMARY KEY (userid))");
     }
 
 /*
@@ -25,64 +25,131 @@ module.exports = class Profile extends BaseCommand {
 */
 
     handler(...args) {
-        let [wiki, bot, message, [subcommand, etc]] = args;
+        let [wiki, bot, message, [subcommand, etc, etc2]] = args;
+        this.bot = bot;
         if (subcommand) {
             // check mention - subcommand becomes request? or check. Pass in mentioned user, check it's not self
             // check subcommand
-            let [command, user, channel, value] = [subcommand.toLowerCase(), message.author, message.channel, etc || 0];
+            let [command, user, channel, value, value2] = [subcommand.toLowerCase(), message.author, message.channel, etc, etc2 || 0];
 
-            if (etc.isPing) {
-                user = value; // User object of mention
-            }
-
-            this.run(command, user, channel, value);
-
+            this.run(command, user, channel, value, value2);
         } else {
-            this.run("check", message.author, message.channel);
+            this.run("check", message.author, message.channel, undefined);
             console.log("check");
             // do a self profile check
         }
-
-        //this.run();
     }
 
-    run(subcommand, user, channel, value) {
+
+
+    run(subcommand, user, channel, value, value2) {
         switch(subcommand) {
+            case 'recreate':
             case 'create':  // --
                 console.log("create");
-                if (value) {
-                    this.create(channel, user.id, value)
+                if (value && value2) {
+                    this.create(channel, user, value, value2)
+                }
+                else {
+                    channel.send(`Error: You need to provide your friend ID and display name`).then(message => {
+                        message.delete(5000);
+                    });
                 }
                 break;
             case 'set': // set with target as userid
             case 'change':
                 console.log("set");
-                if (value) {
-                    this.set(channel, user.id, "profile", value);
+                console.log(value);
+                var settings = ["id", "name"];
+                if (value && settings.includes(value)) {
+                    if (value2) {
+                        this.set(channel, user, value, value2);
+                    }
+                    else {
+                        channel.send(`Error: You need to provide your ${value}`).then(message => {
+                            message.delete(5000);
+                        });
+                    }
+                }
+                else {
+                    channel.send(`Command Error: You need to set either an id or a name, e.g. ;profile set id Q69KBCAA`).then(message => {
+                        message.delete(5000);
+                    });
                 }
                 break;
             case 'mentions':
             case 'notifications':
             case 'notify':    // turn on off notifications use set but with notification as target
                 console.log("notifications");
-                let valuemap = {"on": 1, "off": 0}
+                let valuemap = {"on": true, "off": false}
                 if (value in valuemap) {
-                    this.set(channel, user.id, "notifications", valuemap[value]);
+                    this.set(channel, user, "notifications", valuemap[value]);
+                }
+                else {
+                    channel.send("Error: Please use ;profile notify on or ;profile notify off").then(message => {
+                        message.delete(10000);
+                    });
                 }
                 break;
+            case 'profile':
             case 'check':
-            case 'actual mention': // check someone else, also is check command
                 console.log("mention");
-                this.check(channel, user); // Double check
+                var userid = undefined;
+                var selfcheck = false;
+                if (value) {
+                    userid = new Util().get_user_id_or_error(value, channel);
+                    if (userid == undefined) return;
+                }
+                if (userid == undefined) {
+                    userid = user.id;
+                    selfcheck = true;
+                }
+                this.check(channel, userid, selfcheck);
                 break;
-            case 'request': // check with request
-                console.log("request");
-                this.check(channel, user, true);
+            case 'follow':
+                console.log("follow");
+                if (value) {
+                    var userid = new Util().get_user_id_or_error(value, channel);
+                    if (userid == undefined) {
+                        return;
+                    }
+                    this.follow(channel, user.id, userid);
+                }
+                else {
+                    channel.send("Error: Please mention a user to friend, using a ping, name#discriminator, or ID").then(message => {
+                        message.delete(5000);
+                    });
+                }
                 break;
-            case 'remove':
-            case 'delete':  // remove
-                console.log("break");
-                // this.remove(channel, user.id);
+            case 'following':
+                console.log("following");
+                this.following(channel, user.id);
+                break;
+            case 'followers':
+                console.log("followers");
+                this.followers(channel, user.id);
+                break;
+            case 'mutuals':
+                console.log("friends");
+                this.mutuals(channel, user.id);
+                break;
+            case 'unfollow':
+                console.log("unfollow");
+                if (value) {
+                    var userid = new Util().get_user_id_or_error(value, channel);
+                    if (userid == undefined) {
+                        return;
+                    }
+                    this.unfollow(channel, user.id, userid);
+                }
+                else {
+                    channel.send("Error: Please mention a user to unfollow, using a ping, name#discriminator, or ID").then(message => {
+                        message.delete(5000);
+                    });
+                }
+                break;
+            case 'reset':
+                this.reset(channel, user.id);
                 break;
             default:
                 console.log("error message");
@@ -90,92 +157,504 @@ module.exports = class Profile extends BaseCommand {
 
     }
 
-    create(channel, userid, profile) {
+    create(channel, discorduser, profile, displayname) {
         // Create new profile, then send message and check if notifications want to be turned on
-        this.db.run("INSERT INTO test (userid, profileid, notifications) VALUES (?, ?, ?)",
-            [userid, profile, 0], (err) => {
-                // channel.send( message + await response);
-                    // if notification is yes, call this.set on notification and 1
-                if (err) {
-                    console.log(`Error in insert ${err}`);
-                    // Send channel message about existing user + profile. If you want to change use other command
-                } else {
-                    console.log(`${profile} added`);
-                }
-            });
-    }
+        entityManager.getRepository(User).findOne({username: discorduser.id}).then(user => {
+            var mode = undefined;
 
-    set(channel, userid, target, value) {
-        // Check which is being changed, then change:
-        if (target === "profile") {
-            // Check update syntax
-            this.db.run("UPDATE test SET profileid=? WHERE userid=?", [value, userid], (err) => {
-                if (err) {
-                    console.log(`Profile ID change error: ${err}`);
-                    // Message - something went wrong, not able to update profile
-                } else {
-                    // message - Profile id updated successfully
-                }
-            });
-        } else if (target === "notifications") {
-            // Check update syntax
-            this.db.run("UPDATE test SET notifications=? WHERE userid=?", [value, userid], (err) => {
-                if (err) {
-                    console.log(`Profile ID change error: ${err}`);
-                    // Message - Something went wrong, not able to update notifications
-                } else {
-                    // message - notifications updated successfully
-                }
-            });
-        }
-    }
-
-    check(channel, user, request=false) {
-        // Given a userid, check their profile. If add request, then check notifications and send private message
-        // else, just display profile message
-        this.db.get("SELECT profileid, notifications FROM test WHERE userid=?", [user.id], (err, results) => {
-            // if add request, then send message to userid
-            if (err) {
-                // Message about error
-                return
-            } if (request) {
-                if (results.notifications) {
-                    // user.send(); // Send pm to user
-                    console.log("Sent request")
-                } else {
-                    // This person has requested not to be notified
-                }
+            if (user != undefined && user.deleted == false) {
+                console.log("User already exists - updating");
+                user.notifications = false;
+                mode = "updated";
+            }
+            else if (user != undefined) {
+                console.log("Restoring user");
+                user.deleted = false;
+                mode = "created";
+            }
+            else {
+                console.log("Creating new user");
+                user = new User();
+                user.addtimestamp = new Date().toUTCString();
+                mode = "created";
             }
 
-            console.log(results);
-            // Post message with profileid
+            user.username = discorduser.id;
+            user.discordname = discorduser.username;
+            user.discriminator = discorduser.discriminator;
+            user.friend_id = profile;
+            user.displayname = displayname;
 
+            entityManager.save(user);
+
+            channel.send(`Your profile has been ${mode}`).then(message => {
+                if (mode == "created") {
+                    channel.send(`Reply ;profile notify on to enable notifications from other players`).then(message => {
+                    });
+                }
+                else {
+                    message.delete(10000);
+                }
+            });
         });
     }
 
-    remove(channel, userid) {
-        this.db.run("DELETE FROM test WHERE userid=?", [user.id], (err) => {
-            console.log("Error in deleting user");
+    set(channel, discorduser, target, value) {
+        var userid = discorduser.id;
+        entityManager.getRepository(User).findOne({username: userid}).then(user => {
+            if (user == undefined || user.deleted == true) {
+                return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
+                    message.delete(10000);
+                });
+            }
+            // Check which is being changed, then change:
+            if (target === "id") {
+                typeorm.getConnection().createQueryBuilder()
+                    .update(User).set({friend_id: value})
+                    .where("username = :username", {username: userid})
+                    .execute();
+                channel.send("Your friend ID has been updated").then(message => {
+                    message.delete(10000);
+                });
+            }
+            else if (target === "name") {
+                typeorm.getConnection().createQueryBuilder()
+                    .update(User).set({displayname: value})
+                    .where("username = :username", {username: userid})
+                    .execute();
+                channel.send("Your game display name has been updated").then(message => {
+                    message.delete(10000);
+                });
+            }
+            else if (target === "notifications") {
+                typeorm.getConnection().createQueryBuilder()
+                    .update(User).set({notifications: value})
+                    .where("username = :username", {username: userid})
+                    .execute();
+                channel.send("Your notifications have been updated").then(message => {
+                    message.delete(10000);
+                });
+            }
+        });
+    }
+
+    check(channel, userid, selfcheck) {
+        entityManager.getRepository(User).findOne({username: userid}).then(user => {
+            if (user == undefined) {
+                if (selfcheck) {
+                    return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                        message.delete(5000);
+                    });
+                }
+                return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                    message.delete(5000);
+                });
+            }
+
+            const discorduser = channel.guild.members.get(userid).user;
+            user.discordname = discorduser.username;
+            user.discriminator = discorduser.discriminator;
+
+            entityManager.save(user);
+
+            channel.send(`${user.discordname}#${user.discriminator}: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`).then(message => {
+                message.edit(`<@${user.username}>: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`);
+            });
+        });
+    }
+
+    // Send follow / follow-back
+    async follow(channel, senderid, recipientid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        user = await entityManager.getRepository(User).findOne({username: recipientid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        if (senderid == recipientid) {
+            return channel.send("You cannot follow yourself").then(message => {
+                message.delete(5000);
+            })
+        }
+
+        const discordrecipient = this.bot.users.get(recipientid);
+        user.discordname = discordrecipient.username;
+        user.discriminator = discordrecipient.discriminator;
+        entityManager.save(user);
+
+        const discordsender = this.bot.users.get(senderid);
+
+        var friend = await this.check_friends(senderid, recipientid);
+
+        if (friend != undefined) {
+            if (friend.friends == true) {
+                return channel.send(`You are already following ${user.discordname}#${user.discriminator}`).then(message => {
+                    message.edit(`You are already following <@${user.username}>`);
+                });
+            }
+
+            if (friend.user_a == senderid) {
+                return channel.send(`You have already followed ${user.discordname}#${user.discriminator}`).then(message => {
+                    message.edit(`You have already followed <@${user.username}>`);
+                });
+            }
+
+            // If neither of these are true, then someone else sent them a friend request previously - accept friends
+            if (friend.a_follows == true) friend.b_follows = true;
+            else friend.a_follows = true;
+            entityManager.save(friend);
+
+            channel.send(`You are now mutually following ${user.discordname}#${user.discriminator}.  Make sure to follow them ingame`).then(message => {
+                message.edit(`You are now mutually following <@${user.username}>.  Make sure to follow them ingame`);
+            });
+
+            if (user.notifications) {
+                discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator} followed you back!  Make sure to follow them ingame`).then(message => {
+                    message.edit(`<@${senderid}> followed you back!  Make sure to follow them ingame`)
+                });
+            }
+            return;
+        }
+
+        // A friend relation does not already exist --> create one:
+        var friend = new Friend();
+        friend.user_a = senderid;
+        friend.user_b = recipientid;
+        friend.a_follows = true;
+        console.log(friend);
+        entityManager.save(friend);
+
+        if (user.notifications) {
+            var sender = this.bot.users.get(senderid);
+            discordrecipient.send(`You have been followed by ${discordsender.discordname}#${discordsender.discriminator}!  Use ;profile friend to accept or ;profile check to view their info`).then(message => {
+                message.edit(`You have been followed by <@${senderid}>!  Use ;profile follow to follow back or ;profile check to view their info`)
+            });
+
+            return channel.send(`You have followed ${user.discordname}#${user.discriminator}!`).then(message => {
+                message.edit(`You have followed <@${user.username}>!`);
+            });
+        }
+
+        return channel.send(`You have followed ${user.discordname}#${user.discriminator}.  Please note, they do not have notifications on.`).then(message => {
+            message.edit(`You have followed <@${user.username}>.  Please note, they do not have notifications on.`);
+        });
+    }
+
+    // Get follow/friend relationship
+    async check_friends(user1, user2) {
+        var friend = await entityManager.getRepository(Friend).findOne({user_a: user1, user_b: user2});
+        if (friend != undefined) {
+            return friend;
+        }
+
+        friend = await entityManager.getRepository(Friend).findOne({user_b: user1, user_a: user2});
+        return friend;
+    }
+
+    // Mutual follows
+    async mutuals(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await entityManager.getRepository(User)
+            .createQueryBuilder("user")
+            .where(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_b")
+                    .from(Friend, "friend")
+                    .where("friend.user_a = :username", {username: senderid})
+                    .andWhere("friend.a_follows = :value", {value: true})
+                    .andWhere("friend.b_follows = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .orWhere(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_a")
+                    .from(Friend, "friend")
+                    .where("friend.user_b = :username", {username: senderid})
+                    .andWhere("friend.a_follows = :value", {value: true})
+                    .andWhere("friend.b_follows = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .printSql()
+            .getMany();
+
+        if (friends.length == 0) {
+            return channel.send("You currently do not have any mutual follows.  Use ;profile follow to follow players").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var initialmessage = "**Your Mutual Follows**:";
+        var finalmessage = initialmessage;
+
+        for (var i = 0; i < friends.length; i++) {
+            initialmessage += `\n★ ❤️ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
+            finalmessage += `\n★ ❤️ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+        }
+
+        return channel.send(initialmessage).then(message => {
+            message.edit(finalmessage).then(message => {
+                message.delete(50000);
+            });
+        });
+    }
+
+    async followers(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await entityManager.getRepository(User)
+            .createQueryBuilder("user")
+            .where(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_b")
+                    .from(Friend, "friend")
+                    .where("friend.user_a = :username", {username: senderid})
+                    .andWhere("friend.b_follows = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .orWhere(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_a")
+                    .from(Friend, "friend")
+                    .where("friend.user_b = :username", {username: senderid})
+                    .andWhere("friend.a_follows = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .printSql()
+            .getMany();
+
+        if (friends.length == 0) {
+            return channel.send("You currently do not have any followers").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var initialmessage = "**Your Followers**:";
+        var finalmessage = initialmessage;
+
+        for (var i = 0; i < friends.length; i++) {
+            var friendship = await this.check_friends(senderid, friends[i].username);
+            initialmessage += "\n★ ";
+            finalmessage += "\n★ ";
+            if (friendship != undefined && friendship.a_follows == true && friendship.b_follows == true) {
+                initialmessage += "❤️ ";
+                finalmessage += "❤️ ";
+            }
+            initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
+            finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+        }
+
+        return channel.send(initialmessage).then(message => {
+            message.edit(finalmessage).then(message => {
+                message.delete(50000);
+            });
+        });
+    }
+
+    async following(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await entityManager.getRepository(User)
+            .createQueryBuilder("user")
+            .where(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_b")
+                    .from(Friend, "friend")
+                    .where("friend.user_a = :username", {username: senderid})
+                    .andWhere("friend.a_follows = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .orWhere(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_a")
+                    .from(Friend, "friend")
+                    .where("friend.user_b = :username", {username: senderid})
+                    .andWhere("friend.b_follows = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .printSql()
+            .getMany();
+
+        if (friends.length == 0) {
+            return channel.send("You currently do not follow anyone.  Use ;profile follow to follow players").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var initialmessage = "**Following**:";
+        var finalmessage = initialmessage;
+
+        for (var i = 0; i < friends.length; i++) {
+            var friendship = await this.check_friends(senderid, friends[i].username);
+            initialmessage += "\n★ ";
+            finalmessage += "\n★ ";
+            if (friendship && friendship.a_follows == true && friendship.b_follows == true) {
+                initialmessage += "❤️ ";
+                finalmessage += "❤️ ";
+            }
+            initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
+            finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+        }
+
+        return channel.send(initialmessage).then(message => {
+            message.edit(finalmessage).then(message => {
+                message.delete(50000);
+            });
+        });
+    }
+
+    /** @deprecated */
+    async requests(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await entityManager.getRepository(User)
+            .createQueryBuilder("user")
+            .where(qb => {
+                const subQuery = qb.subQuery()
+                    .select("friend.user_a")
+                    .from(Friend, "friend")
+                    .where("friend.user_b = :username", {username: senderid})
+                    .andWhere("friend.b_follows = :value", {value: false})
+                    .andWhere("friend.a_follows = :value", {value: true})
+                    .getQuery();
+                return "user.username IN " + subQuery;
+            })
+            .getMany();
+
+        if (friends.length == 0) {
+            return channel.send("You currently do not have any non-mutual follows").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var initialmessage = "**Non-Mutual Follows**:";
+        var finalmessage = initialmessage;
+
+        for (var i = 0; i < friends.length; i++) {
+            initialmessage += `\n★ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
+            finalmessage += `\n★ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+        }
+
+        return channel.send(initialmessage).then(message => {
+            message.edit(finalmessage).then(message => {
+                message.delete(50000);
+            });
+        });
+    }
+
+
+    async unfollow(channel, senderid, userid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        user = await entityManager.getRepository(User).findOne({username: userid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        var user = this.bot.users.get(userid);
+        var sender = this.bot.users.get(senderid);
+
+        var friend = await this.check_friends(senderid, userid);
+        console.log(friend);
+        if (friend == undefined || friend.a_follows == false && friend.user_a == senderid || friend.user_b == senderid && friend.b_follows == false) {
+            return channel.send(`You are not following ${user.username}#${user.discriminator}`).then(message => {
+                message.edit(`You are not following <@${userid}>`).then(message => {
+                    message.delete(5000);
+                });
+            });
+        }
+
+        if (friend.user_a == senderid) {
+            friend.a_follows = false;
+        }
+        else friend.b_follows = false;
+
+        if (friend.a_follows == false && friend.b_follows == false) {
+            entityManager.remove(friend);
+        }
+        else {
+            entityManager.save(friend);
+        }
+
+        channel.send(`You are no longer following  ${user.username}#${user.discriminator}`).then(message => {
+            message.edit(`You are no longer following <@${userid}>`).then(message => {
+                message.delete(5000);
+            });
+        });
+
+        user.send(`${sender.username}#${sender.discriminator} has unfollowed you`).then(message => {
+            message.edit(`<@${senderid}> has unfollowed you`);
+        })
+    }
+
+    reset(channel, userid) {
+        typeorm.getConnection().createQueryBuilder()
+                .update(User).set({deleted: true})
+                .where("username = :username", {username: userid})
+                .execute();
+        channel.send("Your profile has been deleted").then(message => {
+            message.delete(10000);
         });
     }
 
     all() {
-        this.db.run("select * from test"); // userid lookup?
+        // this.db.run("select * from test"); // userid lookup?
     }
 
     other() {
-        let db = new sqlite3.Database(`./data/test.db`);
-        //db.run("CREATE TABLE IF NOT EXISTS test (userid TEXT, profileid TEXT, notifications INTEGER)")
-        const [user_one, user_two] = ["Ranigad", "Bracket"];
-        //db.run("DELETE FROM test WHERE userid=?", [user_two])
-        //db.run("INSERT INTO test (userid, profileid, notifications) VALUES (?, ?, ?)", [user_two, "Aoba", 1]);
-        db.all("SELECT profileid FROM test WHERE userid=?", [user_one], (err, results) => {
-            console.log(results);
-        });
+        // let db = new sqlite3.Database(`./data/test.db`);
+        // //db.run("CREATE TABLE IF NOT EXISTS test (userid TEXT, profileid TEXT, notifications INTEGER)")
+        // const [user_one, user_two] = ["Ranigad", "Bracket"];
+        // //db.run("DELETE FROM test WHERE userid=?", [user_two])
+        // //db.run("INSERT INTO test (userid, profileid, notifications) VALUES (?, ?, ?)", [user_two, "Aoba", 1]);
+        // db.all("SELECT profileid FROM test WHERE userid=?", [user_one], (err, results) => {
+        //     console.log(results);
+        // });
 
-        db.all("SELECT profileid, notifications FROM test WHERE userid=?", [user_two], (err, results) => {
-            console.log(results);
-        });
-        //console.log(message.mentions.members.first().id);
+        // db.all("SELECT profileid, notifications FROM test WHERE userid=?", [user_two], (err, results) => {
+        //     console.log(results);
+        // });
+        // //console.log(message.mentions.members.first().id);
     }
 }
