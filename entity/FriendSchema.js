@@ -16,7 +16,11 @@ module.exports = new EntitySchema({
         user_b: {
             type: "varchar"
         },
-        friends: {
+        a_follows: {
+            default: false,
+            type: "boolean"
+        },
+        b_follows: {
             default: false,
             type: "boolean"
         }
