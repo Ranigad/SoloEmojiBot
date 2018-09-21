@@ -56,10 +56,13 @@ module.exports = class React extends BaseCommand {
         };
         var result = await rp(options);
 
-        var event_title_data = await noodle.query({url: "https://magireco.wikia.com/wiki/We_Passed_the_First_of_That_Day", 
+        var general_event_url = "https://magireco.wikia.com/wiki/Current_Event";
+        var event_title_data = await noodle.query({url: general_event_url, 
             type: 'html', selector: '#PageHeader div.page-header__main h1.page-header__title', 
             extract: 'text', "cache": "false"});
         var event_name = event_title_data.results[0].results[0];
+        var url_end = event_name.replace(/ /g, '_');
+        var event_url = general_event_url.replace("Current_Event", url_end);
 
         var data = await noodle.query(query);
         var cd_days = data.results[0].results[0];
@@ -94,10 +97,9 @@ module.exports = class React extends BaseCommand {
 
         var full_date = `${month} ${date_day_val}, ${date_year} ${date_hour}:${date_minute}:${date_second}`;
 
-        var reply = `**Event**: ${event_name} (https://magireco.wikia.com/wiki/Current_Event)
-**Event Drops**: .eventdrops
-**Ends in**: ${countdown_time} (*${full_date} JST*)
-**Countdown**: ${brief_url}`;
+        var reply = `**Event**: ${event_name} (${event_url})
+Use **.eventdrops** to see event farming information.
+**Ends in**: ${countdown_time} (*${full_date} JST*)`;
         return message.channel.send(reply);
     }
 
