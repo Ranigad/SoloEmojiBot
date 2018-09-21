@@ -57,18 +57,20 @@ module.exports = class React extends BaseCommand {
         var result = await rp(options);
 
 
-        var days = await noodle.query({url: url, type: 'html', selector: '#el_d1', 
+        var event_title_data = await noodle.query({url: "https://magireco.wikia.com/wiki/We_Passed_the_First_of_That_Day", 
+            type: 'html', selector: '#PageHeader div.page-header__main h1.page-header__title', 
             extract: 'text', "cache": "false"});
-        console.log(days);
-        console.log(days.results[0]);
+        //console.log(event_title_data);
+        var event_name = event_title_data.results[0].results[0];
+        console.log(event_name);
 
         var data = await noodle.query(query);
-        console.log(data);
+        //console.log(data);
         var cd_days = data.results[0].results[0];
         var cd_hours = data.results[1].results[0];
         var cd_minutes = data.results[2].results[0];
         var cd_seconds = data.results[3].results[0];
-        var countdown_time = `${cd_days} days, ${cd_hours}:${cd_minutes}`;
+        var countdown_time = `${cd_days} days, ${cd_hours} hours, and ${cd_minutes} minutes`;
 
         var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -96,12 +98,15 @@ module.exports = class React extends BaseCommand {
 
         var full_date = `${month} ${date_day_val}, ${date_year} ${date_hour}:${date_minute}:${date_second}`;
 
-        console.log(result.request.uri.href);
-        console.log(date_retrieved);
-        console.log(full_date + "Ends in: " + countdown_time);
+        //console.log(result.request.uri.href);
+        //console.log(date_retrieved);
+        //console.log(full_date + "Ends in: " + countdown_time);
 
-        //var message = 
-
+        var reply = `**Event**: ${event_name} (https://magireco.wikia.com/wiki/Current_Event)
+**Event Drops**: .eventdrops
+**Ends in**: ${countdown_time} (*${full_date} JST*)
+**Countdown**: ${brief_url}`;
+        return message.channel.send(reply);
     }
 
 }
