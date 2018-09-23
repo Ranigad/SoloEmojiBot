@@ -13,6 +13,7 @@ module.exports = class React extends BaseCommand {
     }
 
     async run(bot, message, cmdargs) {
+        return;
         var query_string = "inviteCode: Q68KBCAA~ OR inviteCode: RQ1WSexF OR inviteCode: R6cBkrMH";
 
         var url = "https://rice.qyu.be/search/friend_search/_search";
