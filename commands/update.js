@@ -1,7 +1,7 @@
 const BaseCommand = require('../BaseCommand.js');
 const rp = require('request-promise');
 
-module.exports = class React extends BaseCommand {
+module.exports = class Update extends BaseCommand {
     constructor(debug=false) {
         super(debug);
     }
