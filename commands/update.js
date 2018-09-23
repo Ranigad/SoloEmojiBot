@@ -43,6 +43,7 @@ module.exports = class React extends BaseCommand {
         // return message.channel.send(result);
 
         /** Support Select - Support Data */
+        const userid = process.env.USER_ID;
         url = "https://android.magi-reco.com/magica/api/page/SupportSelect";
         var options2 = {
             method: "POST",
@@ -50,7 +51,7 @@ module.exports = class React extends BaseCommand {
             gzip: true,
             headers: {
                 "content-Type": "application/json",
-                "user-id-fba9x88mae": "<actual-user-id-here>",
+                "user-id-fba9x88mae": userid,
                 "f4s-client-ver": "1.5.6",
             },
             body: JSON.stringify({
@@ -59,7 +60,7 @@ module.exports = class React extends BaseCommand {
         };
         var result = await rp(options2);
         console.log(result);
-        return message.channel.send(result);
+        return;
 
 
 
