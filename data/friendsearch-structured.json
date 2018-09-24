@@ -1,0 +1,157 @@
+{
+    "hits": {
+      "hits": [
+        {
+          "_score": 11.772057,
+          "_type": "user",
+          "_id": "1d21c371-a29c-11e8-b480-06d1eab83f02",
+          "fields": {
+            "userName": [
+              "竜丸愛々心"
+            ],
+            "comment": [
+              "よろしくお願いします！"
+            ],
+            "displayCardId": [
+              10124
+            ],
+            "level": [
+              47
+            ],
+            "inviteCode": [
+              "R6cBkrMH"
+            ],
+            "lastAccessDate": [
+              "2018-09-22T20:48:21.000Z"
+            ],
+            "cardRank": [
+              "RANK_4"
+            ],
+            "attributeId": [
+              "FIRE"
+            ],
+            "charaName": [
+              "御園 かりん"
+            ],
+            "cardId": [
+              10124
+            ],
+            "userRank": [
+              14
+            ],
+            "id": [
+              "1d21c371-a29c-11e8-b480-06d1eab83f02"
+            ],
+            "revision": [
+              0
+            ]
+          },
+          "_index": "friend_search"
+        },
+        {
+          "_score": 11.058079,
+          "_type": "user",
+          "_id": "9fedd82c-a44a-11e8-8997-06384dc95a86",
+          "fields": {
+            "userName": [
+              "竜丸王妃"
+            ],
+            "comment": [
+              "よろしくお願いします！"
+            ],
+            "displayCardId": [
+              21015
+            ],
+            "level": [
+              100
+            ],
+            "inviteCode": [
+              "RQ1WSexF"
+            ],
+            "lastAccessDate": [
+              "2018-09-22T20:50:11.000Z"
+            ],
+            "cardRank": [
+              "RANK_5"
+            ],
+            "attributeId": [
+              "LIGHT"
+            ],
+            "charaName": [
+              "アルティメットまどか"
+            ],
+            "cardId": [
+              21015
+            ],
+            "userRank": [
+              39
+            ],
+            "id": [
+              "9fedd82c-a44a-11e8-8997-06384dc95a86"
+            ],
+            "revision": [
+              0
+            ]
+          },
+          "_index": "friend_search"
+        },
+        {
+          "_score": 9.712092,
+          "_type": "user",
+          "_id": "b6d1c78a-1ff5-11e8-b76c-0612dec7c570",
+          "fields": {
+            "userName": [
+              "竜丸貴美子+10"
+            ],
+            "comment": [
+              "まどか3sが到着しました! | マギレコDiscordのJohn"
+            ],
+            "displayCardId": [
+              30294
+            ],
+            "level": [
+              80
+            ],
+            "inviteCode": [
+              "Q69KBCAA"
+            ],
+            "lastAccessDate": [
+              "2018-09-22T20:50:40.000Z"
+            ],
+            "cardRank": [
+              "RANK_4"
+            ],
+            "attributeId": [
+              "LIGHT"
+            ],
+            "charaName": [
+              "加賀見 まさら"
+            ],
+            "cardId": [
+              30294
+            ],
+            "userRank": [
+              98
+            ],
+            "id": [
+              "b6d1c78a-1ff5-11e8-b76c-0612dec7c570"
+            ],
+            "revision": [
+              2
+            ]
+          },
+          "_index": "friend_search"
+        }
+      ],
+      "total": 3,
+      "max_score": 11.772057
+    },
+    "_shards": {
+      "successful": 20,
+      "failed": 0,
+      "total": 20
+    },
+    "took": 12,
+    "timed_out": false
+  }
+  
