@@ -41,7 +41,7 @@ module.exports = class Util {
         if (userdata.success == true) return userdata.userid;
         else {
             if (userdata.reason == 0) {
-                channel.send("The given user could not be found.  They may not be in the server now.").then(message => {
+                channel.send("The given user could not be found.  They may not be in the server now").then(message => {
                     message.delete(10000);
                 });
                 return undefined;
