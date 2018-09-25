@@ -25,7 +25,6 @@ module.exports = class Parse extends BaseCommand {
     async run(bot, message, cmdargs) {
         let friendDataPath = path.normalize(`${this._basePath}/data/friendsearch.json`);
         this.data = (fs.existsSync(friendDataPath) && JSON.parse(fs.readFileSync(friendDataPath))) || {};
-        //console.log(this.data);
 
         if ("resultCode" in this.data){
             message.channel.send(`ERROR: The query failed: ${this.data.resultCode}`);
@@ -46,7 +45,6 @@ module.exports = class Parse extends BaseCommand {
 
         let supportsPath = path.normalize(`${this._basePath}/data/supports.json`);
         this.supportsData = (fs.existsSync(friendDataPath) && JSON.parse(fs.readFileSync(supportsPath))) || {};
-        //console.log(this.supportsData);
 
         if ("interrupt" in this.supportsData || !("supportUserList" in this.supportsData)) {
             message.channel.send(`ERROR: The query failed: ${JSON.stringify(this.supportsData)}`);
@@ -69,7 +67,6 @@ module.exports = class Parse extends BaseCommand {
             memes = [];
 
             var supportUser = this.supportsData.supportUserList[supportUserIndex];
-            //console.log(supportUser);
 
             userIds.push(supportUser.userId);
 
@@ -87,7 +84,6 @@ module.exports = class Parse extends BaseCommand {
 
             user = await entityManager.getRepository(MagiRecoUser).findOne({where: {user_id: supportUser.userId}, relations: ["meguca"]});
             var savedGirls = user.meguca;
-            //console.log(savedGirls);
             for (var girl in savedGirls) {
                 await typeorm.getConnection().createQueryBuilder()
                     .delete()
@@ -133,7 +129,6 @@ module.exports = class Parse extends BaseCommand {
                     meme.memoriaId = memeData.id;
 
                     memes.push(meme);
-                    //console.log(meme);
                 }
             }
 
@@ -176,7 +171,6 @@ module.exports = class Parse extends BaseCommand {
 
                     for (var i = 1; i <= meguca.revision + 1; i++) {
                         var field = "userPieceId0" + positionIdNum + i;
-                        //console.log(field);
                         if (!(field in supportUser.userDeck) || supportUser.userDeck[field] == undefined) {
                             continue;
                         }
@@ -189,12 +183,10 @@ module.exports = class Parse extends BaseCommand {
                             meme.meguca = meguca;
                             delete meme.memoriaId;
                             allMemes.push(meme);
-                            //console.log(meme);
                         }
                     }
 
                     allGirls.push(meguca);
-                    //console.log(meguca);
                 }
             }
         }
