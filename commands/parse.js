@@ -98,13 +98,13 @@ module.exports = class Parse extends BaseCommand {
                     meguca.masterMeguca = masterMeguca;
                     var positionIdNum = parseInt(megucaIndex) + 1;
                     var positionId = "questPositionId" + positionIdNum;
-                    meguca.support_type = supportUser.userDeck[positionId];
-                    meguca.level = supportMeguca.level;
-                    meguca.magia_level = supportMeguca.magiaLevel + "";
-                    meguca.revision = supportMeguca.revision;
-                    meguca.attack = supportMeguca.attack;
-                    meguca.defense = supportMeguca.defense;
-                    meguca.hp = supportMeguca.hp;
+                    meguca.support_type = parseInt(supportUser.userDeck[positionId]);
+                    meguca.level = parseInt(supportMeguca.level);
+                    meguca.magia_level = parseInt(supportMeguca.magiaLevel);
+                    meguca.revision = parseInt(supportMeguca.revision);
+                    meguca.attack = parseInt(supportMeguca.attack);
+                    meguca.defense = parseInt(supportMeguca.defense);
+                    meguca.hp = parseInt(supportMeguca.hp);
 
                     meguca.user = user;
                     console.log(meguca);
