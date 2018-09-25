@@ -24,28 +24,28 @@ module.exports = class React extends BaseCommand {
                 selector: '#el_d1',
                 type: 'html',
                 extract: 'text',
-                cache: 'false'
+                cache: false
             },
             {
                 url: url,
                 selector: '#el_h1',
                 type: 'html',
                 extract: 'text',
-                cache: 'false'
+                cache: false
             },
             {
                 url: url,
                 selector: '#el_m1',
                 type: 'html',
                 extract: 'text',
-                cache: 'false'
+                cache: false
             },
             {
                 url: url,
                 selector: '#el_s1',
                 type: 'html',
                 extract: 'text',
-                cache: 'false'
+                cache: false
             }
         ];
 
@@ -59,8 +59,9 @@ module.exports = class React extends BaseCommand {
         var general_event_url = "https://magireco.wikia.com/wiki/Current_Event";
         var event_title_data = await noodle.query({url: general_event_url, 
             type: 'html', selector: '#PageHeader div.page-header__main h1.page-header__title', 
-            extract: 'text', "cache": "false"});
+            extract: 'text', "cache": false});
         var event_name = event_title_data.results[0].results[0];
+        if (event_name == undefined) event_name = "Current_Event";
         var url_end = event_name.replace(/ /g, '_');
         var event_url = general_event_url.replace("Current_Event", url_end);
 
