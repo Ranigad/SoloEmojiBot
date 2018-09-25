@@ -53,18 +53,21 @@ module.exports = new EntitySchema({
         masterMeguca: {
             target: "MasterMeguca",
             type: "many-to-one",
+            inverseSide: "meguca",
             joinTable: false,
             cascade: false
         },
         memes: {
             target: "Memoria",
             type: "one-to-many",
+            inverseSide: "meguca",
             joinTable: false,
             cascade: true
         },
         user: {
             target: "MagiRecoUser",
             type: "many-to-one",
+            inverseSide: "meguca",
             joinTable: false,
             cascade: false
         }
