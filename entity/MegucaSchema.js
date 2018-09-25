@@ -65,6 +65,7 @@ module.exports = new EntitySchema({
         user: {
             target: "MagiRecoUser",
             type: "many-to-one",
+            inverseSide: "meguca",
             joinTable: false,
             cascade: false
         }

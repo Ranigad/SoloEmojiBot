@@ -25,7 +25,7 @@ module.exports = class Parse extends BaseCommand {
     async run(bot, message, cmdargs) {
         let friendDataPath = path.normalize(`${this._basePath}/data/friendsearch.json`);
         this.data = (fs.existsSync(friendDataPath) && JSON.parse(fs.readFileSync(friendDataPath))) || {};
-        console.log(this.data);
+        //console.log(this.data);
 
         if ("resultCode" in this.data){
             message.channel.send(`ERROR: The query failed: ${this.data.resultCode}`);
@@ -58,10 +58,11 @@ module.exports = class Parse extends BaseCommand {
             return;
         }
 
-        var users = [];
         var allMemes = [];
         var memes = [];
         var allGirls = [];
+
+        var userIds = [];
 
         var user = new MagiRecoUser();
         for (var supportUserIndex in this.supportsData.supportUserList) {
@@ -69,6 +70,8 @@ module.exports = class Parse extends BaseCommand {
 
             var supportUser = this.supportsData.supportUserList[supportUserIndex];
             //console.log(supportUser);
+
+            userIds.push(supportUser.userId);
 
             var user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: supportUser.userId});
             if (user == undefined) user = new MagiRecoUser();
@@ -82,10 +85,16 @@ module.exports = class Parse extends BaseCommand {
             user.addtimestamp = new Date();
             user = await entityManager.save(user);
 
+            user = await entityManager.getRepository(MagiRecoUser).findOne({where: {user_id: supportUser.userId}, relations: ["meguca"]});
             var savedGirls = user.meguca;
-            for (girl in savedGirls) {
-                entityManager.delete(savedGirls[girl].memes);
-                entityManager.delete(girl);
+            //console.log(savedGirls);
+            for (var girl in savedGirls) {
+                await typeorm.getConnection().createQueryBuilder()
+                    .delete()
+                    .from(Memoria)
+                    .where("megucaId = :meguca", {meguca: savedGirls[girl].id})
+                    .execute();
+                await entityManager.remove(savedGirls[girl]);
             }
 
             if (!("userPieceList" in supportUser) || supportUser.userPieceList.length == 0) {
@@ -188,16 +197,20 @@ module.exports = class Parse extends BaseCommand {
                     //console.log(meguca);
                 }
             }
+        }
 
+        await entityManager.save(allGirls);
+        await entityManager.save(allMemes);
+
+        var users = [];
+        for (var userIdIndex in userIds) {
+            var userId = userIds[userIdIndex];
+            user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: userId, relations: ["meguca"]});
             users.push(user);
         }
 
-        console.log(allGirls);
-        entityManager.save(allGirls);
-        entityManager.save(allMemes);
-
         //console.log(users);
-        message.channel.send(JSON.stringify(users));
+        //message.channel.send(JSON.stringify(users));
 
         return;
     }
