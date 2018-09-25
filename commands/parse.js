@@ -96,12 +96,17 @@ module.exports = class Parse extends BaseCommand {
 
                     var meguca = new Meguca();
                     meguca.masterMeguca = masterMeguca;
+                    var positionIdNum = parseInt(megucaIndex) + 1;
+                    var positionId = "questPositionId" + positionIdNum;
+                    meguca.support_type = supportUser.userDeck[positionId];
                     meguca.level = supportMeguca.level;
-                    meguca.magia_level = supportMeguca.magia_level + "";
+                    meguca.magia_level = supportMeguca.magiaLevel + "";
                     meguca.revision = supportMeguca.revision;
                     meguca.attack = supportMeguca.attack;
                     meguca.defense = supportMeguca.defense;
                     meguca.hp = supportMeguca.hp;
+
+                    meguca.user = user;
                     console.log(meguca);
 
                 }
@@ -112,7 +117,7 @@ module.exports = class Parse extends BaseCommand {
             user = new MagiRecoUser();
         }
 
-        console.log(users);
+        //console.log(users);
         message.channel.send(JSON.stringify(users));
 
         return;
