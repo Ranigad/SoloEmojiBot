@@ -99,6 +99,9 @@ module.exports = class Parse extends BaseCommand {
                     meguca.level = supportMeguca.level;
                     meguca.magia_level = supportMeguca.magia_level + "";
                     meguca.revision = supportMeguca.revision;
+                    meguca.attack = supportMeguca.attack;
+                    meguca.defense = supportMeguca.defense;
+                    meguca.hp = supportMeguca.hp;
                     console.log(meguca);
 
                 }

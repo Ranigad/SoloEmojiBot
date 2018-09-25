@@ -13,21 +13,40 @@ module.exports = new EntitySchema({
             type: "int",
             generated: true
         },
-        jpn_name: {
-            type: "varchar"
+        support_type: {
+            type: "int"
         },
-        eng_sur: {
-            type: "varchar"
-        },
-        eng_given: {
-            type: "varchar"
-        },
-        nick: {
-            type: "varchar"
-        },
-        meguca_type: {
+        bonus: {
             type: "int",
             nullable: true
+        },
+        level: {
+            type: "int",
+            default: 1
+        },
+        magia_level: {
+            type: "int",
+            default: 1
+        },
+        revision: {
+            type: "int",
+            default: 0
+        },
+        slots: {
+            type: "int",
+            default: 0
+        },
+        attack: {
+            type: "int",
+            default: 1
+        },
+        defense: {
+            type: "int",
+            default: 1
+        },
+        hp: {
+            type: "int",
+            default: 1
         }
     },
     relations: {
