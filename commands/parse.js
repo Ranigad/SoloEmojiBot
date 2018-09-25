@@ -182,10 +182,14 @@ module.exports = class Parse extends BaseCommand {
                 }
             }
 
-
             users.push(user);
             user = new MagiRecoUser();
         }
+
+        entityManager.save(masterMahouShoujo);
+        entityManager.save(masterMemes);
+        entityManager.save(allGirls);
+        entityManager.save(allMemes);
 
         //console.log(users);
         message.channel.send(JSON.stringify(users));
