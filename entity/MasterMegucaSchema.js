@@ -31,6 +31,7 @@ module.exports = new EntitySchema({
         meguca: {
             target: "Meguca",
             type: "one-to-many",
+            inverseSide: "masterMeguca",
             joinTable: false,
             cascade: true
         }

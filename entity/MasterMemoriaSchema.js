@@ -27,6 +27,7 @@ module.exports = new EntitySchema({
         memes: {
             target: "Memoria",
             type: "one-to-many",
+            inverseSide: "masterMemoria",
             joinTable: false,
             cascade: true
         }
