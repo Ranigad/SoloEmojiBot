@@ -295,7 +295,7 @@ module.exports = class Profile extends BaseCommand {
         var friend = await this.check_friends(senderid, recipientid);
 
         if (friend != undefined) {
-            if (friend.friends == true) {
+            if (friend.a_follows == true && friend.b_follows == true) {
                 return channel.send(`You are already following ${user.discordname}#${user.discriminator}`).then(message => {
                     message.edit(`You are already following <@${user.username}>`);
                 });
