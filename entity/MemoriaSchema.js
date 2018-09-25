@@ -25,12 +25,14 @@ module.exports = new EntitySchema({
         masterMemoria: {
             target: "MasterMemoria",
             type: "many-to-one",
+            inverseSide: "memes",
             joinTable: false,
             cascade: false
         },
         meguca: {
             target: "Meguca",
             type: "many-to-one",
+            inverseSide: "memes",
             joinTable: false,
             cascade: false
         }

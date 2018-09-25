@@ -1,7 +1,6 @@
 class Meguca {
-    constructor(id, user_id, support_type, bonus, level, magia_level, revision, slots, masterMeguca, memes, user) {
+    constructor(id, user_id, support_type, bonus, level, magia_level, revision, slots, masterMeguca, memes, user, attack, defense, hp) {
         this.id = id;
-        this.user_id = user_id;
         this.support_type = support_type;
         this.bonus = bonus;
         this.level = level;
@@ -11,6 +10,9 @@ class Meguca {
         this.masterMeguca = masterMeguca;
         this.memes = memes;
         this.user = user;
+        this.attack = attack;
+        this.defense = defense;
+        this.hp = hp;
     }
 }
 

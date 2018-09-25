@@ -72,7 +72,7 @@ module.exports = class Profile extends BaseCommand {
                     }
                 }
                 else {
-                    channel.send(`Command Error: You need to set either an id or a name, e.g. ;profile set id Q69KBCAA`).then(message => {
+                    channel.send(`Error: You need to set either an id or a name, e.g. ;profile ${subcommand} id Q69KBCAA`).then(message => {
                         message.delete(5000);
                     });
                 }
@@ -83,10 +83,10 @@ module.exports = class Profile extends BaseCommand {
                 console.log("notifications");
                 let valuemap = {"on": true, "off": false}
                 if (value in valuemap) {
-                    this.set(channel, user, "notifications", valuemap[value]);
+                    this.set(channel, user.id, "notifications", valuemap[value]);
                 }
                 else {
-                    channel.send("Error: Please use ;profile notify on or ;profile notify off").then(message => {
+                    channel.send(`Error: Please use ;profile ${subcommand} on or ;profile ${subcommand} off`).then(message => {
                         message.delete(10000);
                     });
                 }
@@ -164,12 +164,12 @@ module.exports = class Profile extends BaseCommand {
 
             if (user != undefined && user.deleted == false) {
                 console.log("User already exists - updating");
-                user.notifications = false;
                 mode = "updated";
             }
             else if (user != undefined) {
                 console.log("Restoring user");
                 user.deleted = false;
+                user.notifications = false;
                 mode = "created";
             }
             else {
@@ -199,8 +199,7 @@ module.exports = class Profile extends BaseCommand {
         });
     }
 
-    set(channel, discorduser, target, value) {
-        var userid = discorduser.id;
+    set(channel, userid, target, value) {
         entityManager.getRepository(User).findOne({username: userid}).then(user => {
             if (user == undefined || user.deleted == true) {
                 return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
@@ -257,8 +256,8 @@ module.exports = class Profile extends BaseCommand {
 
             entityManager.save(user);
 
-            channel.send(`${user.discordname}#${user.discriminator}: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`).then(message => {
-                message.edit(`<@${user.username}>: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`);
+            channel.send(`${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`).then(message => {
+                message.edit(`<@${user.username}>: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`);
             });
         });
     }
@@ -295,7 +294,7 @@ module.exports = class Profile extends BaseCommand {
         var friend = await this.check_friends(senderid, recipientid);
 
         if (friend != undefined) {
-            if (friend.friends == true) {
+            if (friend.a_follows == true && friend.b_follows == true) {
                 return channel.send(`You are already following ${user.discordname}#${user.discriminator}`).then(message => {
                     message.edit(`You are already following <@${user.username}>`);
                 });
