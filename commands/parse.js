@@ -59,10 +59,18 @@ module.exports = class Parse extends BaseCommand {
         }
 
         var users = [];
+        var masterMemes = [];
+        var masterMahouShoujo = [];
+        var allMemes = [];
+        var memes = [];
+        var allGirls = [];
+
         var user = new MagiRecoUser();
         for (var supportUserIndex in this.supportsData.supportUserList) {
+            memes = [];
+
             var supportUser = this.supportsData.supportUserList[supportUserIndex];
-            console.log(supportUser);
+            //console.log(supportUser);
             user.user_id = supportUser.userId;
             user.friend_id = supportUser.inviteCode;
             user.display_name = supportUser.userName;
@@ -91,6 +99,8 @@ module.exports = class Parse extends BaseCommand {
                         }
 
                         masterMeme.rating = parseInt(memeData.piece.rank.replace("RANK_", ""));
+
+                        masterMemes.push(masterMeme);
                     }
 
                     var meme = new Memoria();
@@ -104,7 +114,9 @@ module.exports = class Parse extends BaseCommand {
                     meme.level = memeData.level;
                     meme.memoriaId = memeData.id;
 
-                    console.log(meme);
+                    memes.push(meme);
+                    allMemes.push(meme);
+                    //console.log(meme);
                 }
             }
 
@@ -128,6 +140,8 @@ module.exports = class Parse extends BaseCommand {
                         masterMeguca = new MasterMeguca();
                         masterMeguca.jpn_name = girlName;
                         masterMeguca.meguca_type= attributeVal;
+
+                        masterMahouShoujo.push(masterMeguca);
                         //entityManager.save(masterMeguca);
                     }
 
@@ -143,9 +157,28 @@ module.exports = class Parse extends BaseCommand {
                     meguca.defense = parseInt(supportMeguca.defense);
                     meguca.hp = parseInt(supportMeguca.hp);
 
-                    meguca.user = user;
-                    //console.log(meguca);
+                    for (var i = 1; i <= meguca.revision + 1; i++) {
+                        var field = "userPieceId0" + positionIdNum + i;
+                        console.log(field);
+                        if (!(field in supportUser.userDeck) || supportUser.userDeck[field] == undefined) {
+                            continue;
+                        }
 
+                        var memeId = supportUser.userDeck[field];
+                        var meme = memes.find(function(element) {
+                            return element.memoriaId == memeId;
+                        });
+                        if (meme != undefined) {
+                            meme.meguca = meguca;
+                            delete meme.memoriaId;
+                            console.log(meme);
+                        }
+                    }
+
+                    meguca.user = user;
+
+                    allGirls.push(meguca);
+                    //console.log(meguca);
                 }
             }
 
