@@ -72,7 +72,7 @@ module.exports = class Profile extends BaseCommand {
                     }
                 }
                 else {
-                    channel.send(`Command Error: You need to set either an id or a name, e.g. ;profile set id Q69KBCAA`).then(message => {
+                    channel.send(`Error: You need to set either an id or a name, e.g. ;profile ${subcommand} id Q69KBCAA`).then(message => {
                         message.delete(5000);
                     });
                 }
@@ -86,7 +86,7 @@ module.exports = class Profile extends BaseCommand {
                     this.set(channel, user, "notifications", valuemap[value]);
                 }
                 else {
-                    channel.send("Error: Please use ;profile notify on or ;profile notify off").then(message => {
+                    channel.send(`Error: Please use ;profile ${subcommand} on or ;profile ${subcommand} off`).then(message => {
                         message.delete(10000);
                     });
                 }
