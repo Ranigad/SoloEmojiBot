@@ -6,22 +6,21 @@ module.exports = new EntitySchema({
     name: "MasterMeguca",
     target: MasterMeguca,
     columns: {
-        id: {
-            primary: true,
-            type: "int",
-            generated: true
-        },
         jpn_name: {
+            primary: true,
             type: "varchar"
         },
         eng_sur: {
-            type: "varchar"
+            type: "varchar",
+            nullable: true
         },
         eng_given: {
-            type: "varchar"
+            type: "varchar",
+            nullable: true
         },
         nick: {
-            type: "varchar"
+            type: "varchar",
+            nullable: true
         },
         meguca_type: {
             type: "int",

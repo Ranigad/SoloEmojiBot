@@ -6,12 +6,8 @@ module.exports = new EntitySchema({
     name: "MasterMemoria",
     target: MasterMemoria,
     columns: {
-        id: {
-            primary: true,
-            type: "int",
-            generated: true
-        },
         jpn_name: {
+            primary: true,
             type: "varchar"
         },
         eng_name: {

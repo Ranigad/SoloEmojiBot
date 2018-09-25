@@ -59,8 +59,6 @@ module.exports = class Parse extends BaseCommand {
         }
 
         var users = [];
-        var masterMemes = [];
-        var masterMahouShoujo = [];
         var allMemes = [];
         var memes = [];
         var allGirls = [];
@@ -71,6 +69,9 @@ module.exports = class Parse extends BaseCommand {
 
             var supportUser = this.supportsData.supportUserList[supportUserIndex];
             //console.log(supportUser);
+
+            var user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: supportUser.userId});
+            if (user == undefined) user = new MagiRecoUser();
             user.user_id = supportUser.userId;
             user.friend_id = supportUser.inviteCode;
             user.display_name = supportUser.userName;
@@ -78,6 +79,14 @@ module.exports = class Parse extends BaseCommand {
             user.class_rank = supportUser.definitiveClassRank;
             user.last_access = supportUser.lastAccessDate;
             user.comment = supportUser.comment;
+            user.addtimestamp = new Date();
+            user = await entityManager.save(user);
+
+            var savedGirls = user.meguca;
+            for (girl in savedGirls) {
+                entityManager.delete(savedGirls[girl].memes);
+                entityManager.delete(girl);
+            }
 
             if (!("userPieceList" in supportUser) || supportUser.userPieceList.length == 0) {
                 // No Memoria
@@ -100,7 +109,7 @@ module.exports = class Parse extends BaseCommand {
 
                         masterMeme.rating = parseInt(memeData.piece.rank.replace("RANK_", ""));
 
-                        masterMemes.push(masterMeme);
+                        masterMeme = await entityManager.save(masterMeme);
                     }
 
                     var meme = new Memoria();
@@ -115,7 +124,6 @@ module.exports = class Parse extends BaseCommand {
                     meme.memoriaId = memeData.id;
 
                     memes.push(meme);
-                    allMemes.push(meme);
                     //console.log(meme);
                 }
             }
@@ -141,8 +149,7 @@ module.exports = class Parse extends BaseCommand {
                         masterMeguca.jpn_name = girlName;
                         masterMeguca.meguca_type= attributeVal;
 
-                        masterMahouShoujo.push(masterMeguca);
-                        //entityManager.save(masterMeguca);
+                        masterMeguca = await entityManager.save(masterMeguca);
                     }
 
                     var meguca = new Meguca();
@@ -156,10 +163,11 @@ module.exports = class Parse extends BaseCommand {
                     meguca.attack = parseInt(supportMeguca.attack);
                     meguca.defense = parseInt(supportMeguca.defense);
                     meguca.hp = parseInt(supportMeguca.hp);
+                    meguca.user = user;
 
                     for (var i = 1; i <= meguca.revision + 1; i++) {
                         var field = "userPieceId0" + positionIdNum + i;
-                        console.log(field);
+                        //console.log(field);
                         if (!(field in supportUser.userDeck) || supportUser.userDeck[field] == undefined) {
                             continue;
                         }
@@ -171,11 +179,10 @@ module.exports = class Parse extends BaseCommand {
                         if (meme != undefined) {
                             meme.meguca = meguca;
                             delete meme.memoriaId;
-                            console.log(meme);
+                            allMemes.push(meme);
+                            //console.log(meme);
                         }
                     }
-
-                    meguca.user = user;
 
                     allGirls.push(meguca);
                     //console.log(meguca);
@@ -183,11 +190,9 @@ module.exports = class Parse extends BaseCommand {
             }
 
             users.push(user);
-            user = new MagiRecoUser();
         }
 
-        entityManager.save(masterMahouShoujo);
-        entityManager.save(masterMemes);
+        console.log(allGirls);
         entityManager.save(allGirls);
         entityManager.save(allMemes);
 

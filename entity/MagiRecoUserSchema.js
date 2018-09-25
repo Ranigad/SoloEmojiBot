@@ -21,7 +21,8 @@ module.exports = new EntitySchema({
             type: "int"
         },
         class_rank: {
-            type: "varchar"
+            type: "varchar",
+            nullable: true
         },
         last_access: {
             nullable: true,
@@ -29,13 +30,15 @@ module.exports = new EntitySchema({
         },
         comment: {
             default: "",
-            type: "varchar"
+            type: "varchar",
+            nullable: true
         },
         addtimestamp: {
             type: "date"
         },
         updatetimestamp: {
-            type: "date"
+            type: "date",
+            nullable: true
         }
     },
     relations: {
