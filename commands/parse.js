@@ -71,6 +71,43 @@ module.exports = class Parse extends BaseCommand {
             user.last_access = supportUser.lastAccessDate;
             user.comment = supportUser.comment;
 
+            if (!("userPieceList" in supportUser) || supportUser.userPieceList.length == 0) {
+                // No Memoria
+            }
+            else {
+                for (var memeIndex in supportUser.userPieceList) {
+                    var memeData = supportUser.userPieceList[memeIndex];
+                    var memeName = memeData.piece.pieceName;
+
+                    var masterMeme = await entityManager.getRepository(MasterMemoria).findOne({jpn_name: memeName});
+                    if (masterMeme == null) {
+                        masterMeme = new MasterMemoria();
+                        masterMeme.jpn_name = memeName;
+                        if (memeData.piece.pieceType == "SKILL") {
+                            masterMeme.active = false;
+                        }
+                        else {
+                            masterMeme.active = true;
+                        }
+
+                        masterMeme.rating = parseInt(memeData.piece.rank.replace("RANK_", ""));
+                    }
+
+                    var meme = new Memoria();
+                    meme.masterMemoria = masterMeme;
+                    if (memeData.lbCount == 4) {
+                        meme.mlb = true;
+                    }
+                    else {
+                        meme.mlb = false;
+                    }
+                    meme.level = memeData.level;
+                    meme.memoriaId = memeData.id;
+
+                    console.log(meme);
+                }
+            }
+
             if (!("userCardList" in supportUser) || supportUser.userCardList.length == 0) {
                 // No Supports
             }
@@ -107,7 +144,7 @@ module.exports = class Parse extends BaseCommand {
                     meguca.hp = parseInt(supportMeguca.hp);
 
                     meguca.user = user;
-                    console.log(meguca);
+                    //console.log(meguca);
 
                 }
             }
