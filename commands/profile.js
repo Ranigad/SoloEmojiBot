@@ -164,12 +164,12 @@ module.exports = class Profile extends BaseCommand {
 
             if (user != undefined && user.deleted == false) {
                 console.log("User already exists - updating");
-                user.notifications = false;
                 mode = "updated";
             }
             else if (user != undefined) {
                 console.log("Restoring user");
                 user.deleted = false;
+                user.notifications = false;
                 mode = "created";
             }
             else {
