@@ -1,7 +1,15 @@
 const BaseCommand = require('../BaseCommand.js');
 const path = require('path');
 const fs = require('fs');
+const typeorm = require('typeorm');
+const entityManager = typeorm.getManager();
 const MagiRecoUser = require('../model/MagiRecoUser').MagiRecoUser;
+const MasterMeguca = require('../model/MasterMeguca').MasterMeguca;
+const Meguca = require('../model/Meguca').Meguca;
+const MasterMemoria = require('../model/MasterMemoria').MasterMemoria;
+const Memoria = require('../model/Memoria').Memoria;
+
+
 
 module.exports = class Parse extends BaseCommand {
     constructor(debug=false) {
@@ -62,6 +70,41 @@ module.exports = class Parse extends BaseCommand {
             user.class_rank = supportUser.definitiveClassRank;
             user.last_access = supportUser.lastAccessDate;
             user.comment = supportUser.comment;
+
+            if (!("userCardList" in supportUser) || supportUser.userCardList.length == 0) {
+                // No Supports
+            }
+            else {
+                for (var megucaIndex in supportUser.userCardList) {
+                    var supportMeguca = supportUser.userCardList[megucaIndex];
+                    var girlName = supportMeguca.card.cardName;
+
+                    var masterMeguca = await entityManager.getRepository(MasterMeguca).findOne({jpn_name: girlName});
+                    if (masterMeguca == null) {
+                        var girlAtt = supportMeguca.card.attributeId;
+
+                        var attributes = ["VOID","FIRE","WATER", "TIMBER", "LIGHT", "DARK"];
+                        var attributeVal = attributes.indexOf(girlAtt);
+
+                        if (attributeVal != -1) attributeVal++;
+
+                        masterMeguca = new MasterMeguca();
+                        masterMeguca.jpn_name = girlName;
+                        masterMeguca.meguca_type= attributeVal;
+                        //entityManager.save(masterMeguca);
+                    }
+
+                    var meguca = new Meguca();
+                    meguca.masterMeguca = masterMeguca;
+                    meguca.level = supportMeguca.level;
+                    meguca.magia_level = supportMeguca.magia_level + "";
+                    meguca.revision = supportMeguca.revision;
+                    console.log(meguca);
+
+                }
+            }
+
+
             users.push(user);
             user = new MagiRecoUser();
         }
