@@ -256,8 +256,8 @@ module.exports = class Profile extends BaseCommand {
 
             entityManager.save(user);
 
-            channel.send(`${user.discordname}#${user.discriminator}: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`).then(message => {
-                message.edit(`<@${user.username}>: Friend ID: ${user.friend_id}, Display Name: ${user.displayname}`);
+            channel.send(`${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`).then(message => {
+                message.edit(`<@${user.username}>: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`);
             });
         });
     }
