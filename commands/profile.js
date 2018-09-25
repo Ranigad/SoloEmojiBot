@@ -152,6 +152,32 @@ module.exports = class Profile extends BaseCommand {
                 this.reset(channel, user.id);
                 break;
             default:
+                var userid = undefined;
+                var selfcheck = false;
+                if (subcommand) {
+                    var userdata = new Util().get_user_id_mention(subcommand, channel.guild);
+                    if (userdata.success == true) {
+                        userid = userdata.userid;
+                        this.check(channel, userid, selfcheck);
+                    }
+                    else {
+                        if (userdata.reason == 0) {
+                            return channel.send("The given user could not be found.  They may not be in the server now").then(message => {
+                                message.delete(10000);
+                            });
+                        }
+                        else {
+                            return channel.send(`There was an error with your command: ";profile ${subcommand}".  Use ;profile help for supported commands`).then(message => {
+                                message.delete(10000);
+                            });
+                        }
+                    }
+                }
+                if (userid == undefined) {
+                    userid = user.id;
+                    selfcheck = true;
+                    this.check(channel, userid, selfcheck);
+                }
                 console.log("error message");
         }
 
