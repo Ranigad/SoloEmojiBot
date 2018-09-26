@@ -7,6 +7,12 @@ const User = require('../model/User').User;
 const Friend = require('../model/Friend').Friend;
 const entityManager = typeorm.getManager();
 const Util = require('../Util.js');
+const MagiRecoUser = require('../model/MagiRecoUser').MagiRecoUser;
+const MasterMeguca = require('../model/MasterMeguca').MasterMeguca;
+const Meguca = require('../model/Meguca').Meguca;
+const MasterMemoria = require('../model/MasterMemoria').MasterMemoria;
+const Memoria = require('../model/Memoria').Memoria;
+
 
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
@@ -263,29 +269,57 @@ module.exports = class Profile extends BaseCommand {
         });
     }
 
-    check(channel, userid, selfcheck) {
-        entityManager.getRepository(User).findOne({username: userid}).then(user => {
-            if (user == undefined) {
-                if (selfcheck) {
-                    return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                        message.delete(5000);
-                    });
-                }
-                return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+    async check(channel, userid, selfcheck) {
+        var user = await entityManager.getRepository(User).findOne({username: userid});
+        if (user == undefined) {
+            if (selfcheck) {
+                return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
                     message.delete(5000);
                 });
             }
-
-            const discorduser = channel.guild.members.get(userid).user;
-            user.discordname = discorduser.username;
-            user.discriminator = discorduser.discriminator;
-
-            entityManager.save(user);
-
-            channel.send(`${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`).then(message => {
-                message.edit(`<@${user.username}>: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`);
+            return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                message.delete(5000);
             });
-        });
+        }
+
+        const discorduser = channel.guild.members.get(userid).user;
+        user.discordname = discorduser.username;
+        user.discriminator = discorduser.discriminator;
+
+        entityManager.save(user);
+
+        var messageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`;
+        
+        var gameUser = await entityManager.getRepository(MagiRecoUser)
+            .findOne({where: {friend_id: user.friend_id}, relations: ["meguca", "meguca.masterMeguca"]});
+        
+        if (gameUser != undefined) {
+            messageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${gameUser.display_name} **Rank**: ${gameUser.user_rank}`;
+            var girls = gameUser.meguca;
+            
+            if (girls != undefined && girls.length != 0) {
+                girls.sort((a,b) => (a.support_type > b.support_type) ? 1 : ((b.support_type > a.support_type) ? -1 : 0));
+
+                var attributes = ["<:att_void:494355788886704138>", "<:att_fire:494355788878315520>", "<:att_water:494355788681183233>", "<:att_timber:494355788916326401>", "<:att_light:494355788870057984>", "<:att_dark:494355788496764942>"];
+
+                messageTxt += "\n";
+                for (var i = 0; i < girls.length; i++) {
+                    var attribute = girls[i].masterMeguca.meguca_type;
+                    if (attribute > 0 && attribute < 7) messageTxt += `${attributes[attribute - 1]} `;
+                    messageTxt += `${(girls[i].nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name} `;
+                }
+            }
+
+            messageTxt += `\nUpdated: ${gameUser.updatetimestamp}`; 
+        }
+
+        var message = await channel.send(messageTxt);
+        console.log(messageTxt);
+        messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
+        await message.edit("");
+        console.log(messageTxt);
+        await message.edit(messageTxt);
+        // TODO: Update data if necessary
     }
 
     // Send follow / follow-back
