@@ -289,7 +289,7 @@ module.exports = class Profile extends BaseCommand {
         entityManager.save(user);
 
         var messageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`;
-        
+
         var gameUser = await entityManager.getRepository(MagiRecoUser)
             .findOne({where: {friend_id: user.friend_id}, relations: ["meguca", "meguca.masterMeguca"]});
         
@@ -307,6 +307,7 @@ module.exports = class Profile extends BaseCommand {
                     var attribute = girls[i].masterMeguca.meguca_type;
                     if (attribute > 0 && attribute < 7) messageTxt += `${attributes[attribute - 1]} `;
                     messageTxt += `${(girls[i].nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name} `;
+                    messageTxt += `${girls[i].slots}s Lv${girls[i].level} Magia${girls[i].magia_level} `;
                 }
             }
 
