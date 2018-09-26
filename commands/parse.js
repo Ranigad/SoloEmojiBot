@@ -71,7 +71,10 @@ module.exports = class Parse extends BaseCommand {
             userIds.push(supportUser.userId);
 
             var user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: supportUser.userId});
-            if (user == undefined) user = new MagiRecoUser();
+            if (user == undefined) {
+                user = new MagiRecoUser();
+                user.addtimestamp = new Date();
+            }
             user.user_id = supportUser.userId;
             user.friend_id = supportUser.inviteCode;
             user.display_name = supportUser.userName;
@@ -79,7 +82,7 @@ module.exports = class Parse extends BaseCommand {
             user.class_rank = supportUser.definitiveClassRank;
             user.last_access = supportUser.lastAccessDate;
             user.comment = supportUser.comment;
-            user.addtimestamp = new Date();
+            user.updatetimestamp = new Date();
             user = await entityManager.save(user);
 
             user = await entityManager.getRepository(MagiRecoUser).findOne({where: {user_id: supportUser.userId}, relations: ["meguca"]});
@@ -169,9 +172,11 @@ module.exports = class Parse extends BaseCommand {
                     meguca.hp = parseInt(supportMeguca.hp);
                     meguca.user = user;
 
-                    for (var i = 1; i <= meguca.revision + 1; i++) {
+                    var slots = meguca.revision + 1;
+                    for (var i = 1; i <= slots; i++) {
                         var field = "userPieceId0" + positionIdNum + i;
                         if (!(field in supportUser.userDeck) || supportUser.userDeck[field] == undefined) {
+                            slots--;
                             continue;
                         }
 
@@ -184,7 +189,10 @@ module.exports = class Parse extends BaseCommand {
                             delete meme.memoriaId;
                             allMemes.push(meme);
                         }
+                        else slots--;
                     }
+
+                    meguca.slots = slots;
 
                     allGirls.push(meguca);
                 }
