@@ -32,6 +32,17 @@ client.on('ready', () => {
     client.user.setPresence({game: {name: 'Magia Record | ;help'}})
         .then(console.log)
         .catch(console.error);
+    
+    let normal = [], animated = [];
+    client.guilds.get("471030229629009925").emojis.forEach(emoji => emoji.animated ? animated.push([emoji.id, emoji.name]) : normal.push([emoji.id, emoji.name]));
+
+    var message = "Static Emojis";
+    normal.forEach(emoji => message += `\n<:${emoji[1]}:${emoji[0]}> -- ${emoji[1]}, ${emoji[0]}`);
+    message += "\nAnimated Emojis";
+    animated.forEach(emoji => message += `\n<a:${emoji[1]}:${emoji[0]}> -- ${emoji[1]}, ${emoji[0]}`);
+    console.log(message);
+
+    //client.guilds.get("471030229629009925").channels.get("494359317638807572").send(message);
 });
 
 client.on('message', msg => {
