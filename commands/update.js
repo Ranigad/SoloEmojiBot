@@ -13,6 +13,23 @@ module.exports = class Update extends BaseCommand {
     }
 
     async run(bot, message, cmdargs) {
+
+        var options = {
+            method: "GET",
+            uri: "https://rice.qyu.be/cgi-bin/pixiedust.sh",
+        };
+        var proxy = await rp(options);
+        console.log(proxy);
+
+        options = {
+            method: "GET",
+            uri: "https://rice.qyu.be/cgi-bin/pixiedust.sh",
+            proxy: "http://" + proxy,
+        };
+        var proxy2 = await rp(options);
+        console.log(proxy2);
+
+
         return;
         var query_string = "inviteCode: Q68KBCAA~ OR inviteCode: RQ1WSexF OR inviteCode: R6cBkrMH";
 
