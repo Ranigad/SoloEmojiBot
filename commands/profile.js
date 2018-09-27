@@ -173,6 +173,7 @@ module.exports = class Profile extends BaseCommand {
                             });
                         }
                         else {
+                            console.log("Error happened");
                             return channel.send(`There was an error with your command: ";profile ${subcommand}".  Use ;profile help for supported commands`).then(message => {
                                 message.delete(10000);
                             });
@@ -184,7 +185,6 @@ module.exports = class Profile extends BaseCommand {
                     selfcheck = true;
                     this.check(channel, userid, selfcheck);
                 }
-                console.log("error message");
         }
 
     }
