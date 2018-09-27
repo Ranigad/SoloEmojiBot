@@ -14,6 +14,7 @@ module.exports = class SupportsManager {
     constructor() {
         this.loadingInvites = []; // Invites currently loading from friend-search
         this.loadingIds = []; // Ids currently loading from support query
+        this.callbacks = [];
     }
 
     testFriendsParsing() {
@@ -26,6 +27,80 @@ module.exports = class SupportsManager {
         var supportsPath = path.normalize(`./data/supports.json`);
         var data = (fs.existsSync(supportsPath) && JSON.parse(fs.readFileSync(supportsPath))) || {};
         this.parseSupports(data);
+    }
+
+    async fetchUserWithInvite(inviteCodeRequest) {
+        var inviteCode = inviteCodeRequest.inviteCode;
+        var callback = inviteCodeRequest.callback;
+
+        this.callbacks.push(inviteCodeRequest);
+
+        if (this.loadingInvites.includes(inviteCode)) {
+            return;
+        }
+        else {
+            this.loadingInvites.push(inviteCode);
+        }
+
+        // TODO Send query with inviteCode to get id
+        //var data = friendSearch(inviteCode);
+        var id = undefined;
+        //var id = parseFriends(data);
+
+        if (id == undefined) {
+            for (const callback of this.callbacks) {
+                if (callback.inviteCode == inviteCode) {
+                    callbacks.remove(callback);
+                    callback(false);
+                }
+            }
+        }
+
+        fetchUserWithId(id);
+    }
+
+    async fetchUserWithId(idRequest) {
+        var id = idRequest.id;
+        var callback = idRequest.callback;
+
+        if (callback != undefined) {
+            this.callbacks.push(idRequest);
+        }
+
+        if (this.loadingIds.includes(id)) {
+            return;
+        }
+        else {
+            this.loadingIds.push(id);
+        }
+
+        var ids = [id];
+
+        var yesterday = new Date();
+        yesterday.setDate(yesterday.getDate()-1);
+        const users = entityManager.createQueryBuilder("MagiRecoUser")
+            .where("MagiRecoUser.updatetimestamp < :date", {date: yesterday})
+            .getMany();
+
+        for (user of users) {
+            if (ids.length == 15) {
+                break;
+            }
+            if (this.loadingIds.includes(user.user_id)) {
+                continue;
+            }
+            else {
+                this.loadingIds.push(user.user_id);
+                ids.push(user.user_id);
+            }
+        }
+
+        // TODO Send query with combined 15 ids to get data
+        var idString = ids.join();
+        //var data = supportSearch(idString);
+        //var users = parseSupports(data);
+
+        // TODO Handle callbacks
     }
 
     parseFriends(data) {
@@ -249,10 +324,11 @@ module.exports = class SupportsManager {
         var users = [];
         for (var userIdIndex in userIds) {
             var userId = userIds[userIdIndex];
-            user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: userId, relations: ["meguca"]});
+            user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: userId});
             users.push(user);
         }
         console.log(`Parsed ${users.length} user accounts`);
+        return users;
     }
 
 
