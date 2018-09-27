@@ -59,12 +59,16 @@ module.exports = class Parse extends BaseCommand {
         var allMemes = [];
         var memes = [];
         var allGirls = [];
+        var doppelIds = [];
+        var doppelGirlNames = [];
 
         var userIds = [];
 
         var user = new MagiRecoUser();
         for (var supportUserIndex in this.supportsData.supportUserList) {
             memes = [];
+            doppelIds = [];
+            doppelGirlNames = [];
 
             var supportUser = this.supportsData.supportUserList[supportUserIndex];
 
@@ -94,6 +98,36 @@ module.exports = class Parse extends BaseCommand {
                     .where("megucaId = :meguca", {meguca: savedGirls[girl].id})
                     .execute();
                 await entityManager.remove(savedGirls[girl]);
+            }
+
+            if (!("userDoppelList" in supportUser) || supportUser.userDoppelList.length == 0) {
+                // No Doppels
+            }
+            else {
+                for (var index in supportUser.userDoppelList) {
+                    var doppelData = supportUser.userDoppelList[index];
+                    doppelIds.push(doppelData.doppelId);
+                }
+            }
+
+            if (!("userCharaList" in supportUser) || supportUser.userCharaList.length == 0) {
+                // No Doppels
+            }
+            else {
+                for (var index in supportUser.userCharaList) {
+                    var characterData = supportUser.userCharaList[index];
+                    if (!("chara" in characterData) || characterData.chara == undefined ||
+                        !("doppel" in characterData.chara) || characterData.chara.doppel == undefined ||
+                        !("id" in characterData.chara.doppel) || 
+                        characterData.chara.doppel.id == undefined ||
+                        !("name" in characterData.chara) || characterData.chara.name == undefined) {
+                            continue;
+                    }
+
+                    if (doppelIds.includes(characterData.chara.doppel.id)) {
+                        doppelGirlNames.push(characterData.chara.name);
+                    }
+                }
             }
 
             if (!("userPieceList" in supportUser) || supportUser.userPieceList.length == 0) {
@@ -171,6 +205,10 @@ module.exports = class Parse extends BaseCommand {
                     meguca.defense = parseInt(supportMeguca.defense);
                     meguca.hp = parseInt(supportMeguca.hp);
                     meguca.user = user;
+
+                    if (doppelGirlNames.includes(girlName)) {
+                        meguca.magia_level = 6;
+                    }
 
                     var slots = meguca.revision + 1;
                     for (var i = 1; i <= slots; i++) {
