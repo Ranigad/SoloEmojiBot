@@ -28,26 +28,28 @@ module.exports = class SupportsManager {
         this.parseSupports(data);
     }
 
-    async parseFriends(data) {
+    parseFriends(data) {
         console.log(data);
         if ("resultCode" in data){
             console.log(`ERROR: The query failed: ${data.resultCode}`);
-            return;
+            return undefined;
         }
         if (data.hits.total <= 0) {
             console.log("No results");
             // Check if current data, notify users if nothing (typo suspected)
-            return;
+            return undefined;
         }
 
-        // Get user_id // id from friendSearchData
-        // and send request to Supports with user_id
+        var results = [];
 
+        for (const hit of data.hits.hits) {
+            var result = {invite: hit.fields["inviteCode"], id: hit.fields["id"]};
+            results.push(result);
+        }
 
-        console.log(JSON.stringify(data));
-
+        console.log(results);
+        return results;
     }
-
 
     async parseSupports(data) {
         if ("interrupt" in data || !("supportUserList" in data)) {
