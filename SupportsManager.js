@@ -8,6 +8,8 @@ const MasterMeguca = require('./model/MasterMeguca').MasterMeguca;
 const Meguca = require('./model/Meguca').Meguca;
 const MasterMemoria = require('./model/MasterMemoria').MasterMemoria;
 const Memoria = require('./model/Memoria').Memoria;
+const rp = require('request-promise');
+const LessThan = typeorm.LessThan;
 
 
 module.exports = class SupportsManager {
@@ -15,6 +17,16 @@ module.exports = class SupportsManager {
         this.loadingInvites = []; // Invites currently loading from friend-search
         this.loadingIds = []; // Ids currently loading from support query
         this.callbacks = [];
+    }
+
+    async getProxy() {
+        var options = {
+            method: "GET",
+            uri: "https://rice.qyu.be/cgi-bin/pixiedust.sh",
+        };
+        var proxy = await rp(options);
+        console.log(proxy);
+        return `http://${proxy}`;
     }
 
     testFriendsParsing() {
@@ -29,11 +41,21 @@ module.exports = class SupportsManager {
         this.parseSupports(data);
     }
 
+    testQueries() {
+        this.fetchUserWithInvite({inviteCode: "4HwUJJMf"});
+    }
+
     async fetchUserWithInvite(inviteCodeRequest) {
         var inviteCode = inviteCodeRequest.inviteCode;
         var callback = inviteCodeRequest.callback;
 
-        this.callbacks.push(inviteCodeRequest);
+        if (inviteCode == undefined) {
+            return;
+        }
+
+        if (callback != undefined) {
+            this.callbacks.push(inviteCodeRequest);
+        }
 
         if (this.loadingInvites.includes(inviteCode)) {
             return;
@@ -42,12 +64,10 @@ module.exports = class SupportsManager {
             this.loadingInvites.push(inviteCode);
         }
 
-        // TODO Send query with inviteCode to get id
-        //var data = friendSearch(inviteCode);
-        var id = undefined;
-        //var id = parseFriends(data);
+        var data = await this.queryFriendSearch(inviteCode);
+        var ids = this.parseFriends(data);
 
-        if (id == undefined) {
+        if (ids == undefined || ids.length == 0 || ids[0] == undefined) {
             for (const callback of this.callbacks) {
                 if (callback.inviteCode == inviteCode) {
                     callbacks.remove(callback);
@@ -56,12 +76,18 @@ module.exports = class SupportsManager {
             }
         }
 
-        fetchUserWithId(id);
+        var id = ids[0];
+
+        await this.fetchUserWithId(id);
     }
 
     async fetchUserWithId(idRequest) {
         var id = idRequest.id;
         var callback = idRequest.callback;
+
+        if (id == undefined) {
+            return;
+        }
 
         if (callback != undefined) {
             this.callbacks.push(idRequest);
@@ -74,19 +100,27 @@ module.exports = class SupportsManager {
             this.loadingIds.push(id);
         }
 
-        var ids = [id];
+        var ids = [];
+        ids.push(id);
 
         var yesterday = new Date();
         yesterday.setDate(yesterday.getDate()-1);
-        const users = entityManager.createQueryBuilder("MagiRecoUser")
-            .where("MagiRecoUser.updatetimestamp < :date", {date: yesterday})
-            .getMany();
+        // const users = await entityManager.createQueryBuilder("user")
+        //     .from(MagiRecoUser, "user")
+        //     .where("user.updatetimestamp < :date", {date: yesterday})
+        //     .getMany();
+
+        const users = await entityManager.getRepository(MagiRecoUser)
+            .find({
+                updatetimestamp: LessThan(yesterday)
+            });
 
         for (user of users) {
+            console.log(user.user_id);
             if (ids.length == 15) {
                 break;
             }
-            if (this.loadingIds.includes(user.user_id)) {
+            if (this.loadingIds.includes(user.user_id) || ids.includes(user.user_id)) {
                 continue;
             }
             else {
@@ -95,16 +129,82 @@ module.exports = class SupportsManager {
             }
         }
 
-        // TODO Send query with combined 15 ids to get data
+        console.log(JSON.stringify(ids));
         var idString = ids.join();
-        //var data = supportSearch(idString);
-        //var users = parseSupports(data);
+        console.log(idString);
+
+        var data = await this.querySupportSearch(idString);
+
+        var parsedUsers = await this.parseSupports(data);
+        console.log(parsedUsers);
 
         // TODO Handle callbacks
     }
 
+    /** Friend Search - General Player Information */
+    async queryFriendSearch(inviteCode) {
+        var query_string = `inviteCode: ${inviteCode}`;
+
+        var url = "https://rice.qyu.be/search/friend_search/_search";
+        var proxy = await this.getProxy();
+
+        var options = {
+            method: "POST",
+            uri: url,
+            proxy: proxy,
+            gzip: true,
+            headers: {
+                "content-Type": "application/json",
+                "user-id-fba9x88mae": "8badf00d-dead-4444-beef-deadbeefcafe",
+                "charset": "UTF-16",
+            },
+            body: JSON.stringify({
+                query: {
+                    query_string: {
+                        query: query_string,
+                        lenient: true,
+                    },
+                },
+                stored_fields: "*",
+                size: 50,
+            })
+        };
+        var result = await rp(options);
+        console.log(result);
+        return result;
+    }
+
+    /** Support Select - Support Data */
+    async querySupportSearch(idString) {
+        const userid = process.env.USER_ID;
+        var url = "https://android.magi-reco.com/magica/api/page/SupportSelect";
+        var proxy = await this.getProxy();
+
+        var options = {
+            method: "POST",
+            uri: url,
+            proxy: proxy,
+            gzip: true,
+            headers: {
+                "content-Type": "application/json",
+                "user-id-fba9x88mae": userid,
+                "f4s-client-ver": "1.5.6",
+            },
+            body: JSON.stringify({
+                strUserIds: idString
+            })
+        };
+        var result = await rp(options);
+        console.log(result);
+        return result;
+    }
+
     parseFriends(data) {
         console.log(data);
+        data = JSON.parse(data);
+        if (data == undefined) {
+            return undefined;
+        }
         if ("resultCode" in data){
             console.log(`ERROR: The query failed: ${data.resultCode}`);
             return undefined;
@@ -118,7 +218,7 @@ module.exports = class SupportsManager {
         var results = [];
 
         for (const hit of data.hits.hits) {
-            var result = {invite: hit.fields["inviteCode"], id: hit.fields["id"]};
+            var result = {id: hit.fields["id"][0]};
             results.push(result);
         }
 
@@ -127,6 +227,11 @@ module.exports = class SupportsManager {
     }
 
     async parseSupports(data) {
+        console.log(data);
+        data = JSON.parse(data);
+        if (data == undefined) {
+            return undefined;
+        }
         if ("interrupt" in data || !("supportUserList" in data)) {
             console.log(`ERROR: The query failed: ${JSON.stringify(data)}`);
             return;
