@@ -117,7 +117,7 @@ module.exports = class SupportsManager {
             }
 
             if (!("userCharaList" in supportUser) || supportUser.userCharaList.length == 0) {
-                // No Doppels
+                // No Characters - something probably isn't right
             }
             else {
                 for (var index in supportUser.userCharaList) {
