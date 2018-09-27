@@ -27,7 +27,14 @@ client.login(token);
 const CommandHandler = require('./CommandHandler.js');
 let CH = null;
 
+const SupportsManager = require('./SupportsManager.js');
+let SM = null;
+
 client.on('ready', () => {
+
+    SM = new SupportsManager();
+    client.supportsManager = SM;
+
     CH = new CommandHandler(prefix, false, client);
     client.user.setPresence({game: {name: 'Magia Record | ;help'}})
         .then(console.log)
