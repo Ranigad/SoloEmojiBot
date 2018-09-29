@@ -145,7 +145,7 @@ module.exports = class SupportsManager {
     async queryFriendSearch(inviteCode) {
         var query_string = `inviteCode: ${inviteCode}`;
 
-        var url = "https://rice.qyu.be/search/friend_search/_search";
+        var url = "https://android.magi-reco.com/search/friend_search/_search";
         var proxy = await this.getProxy();
 
         var options = {
