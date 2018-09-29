@@ -31,13 +31,19 @@ module.exports = class SupportsManager {
 
     testFriendsParsing() {
         var friendDataPath = path.normalize(`./data/friendsearch.json`);
-        var data = (fs.existsSync(friendDataPath) && JSON.parse(fs.readFileSync(friendDataPath))) || {};
+        var data = "";
+        if (fs.existsSync(friendDataPath)) {
+            data = fs.readFileSync(friendDataPath);
+        }
         this.parseFriends(data);
     }
 
     testSupportsParsing() {
         var supportsPath = path.normalize(`./data/supports.json`);
-        var data = (fs.existsSync(supportsPath) && JSON.parse(fs.readFileSync(supportsPath))) || {};
+        var data = "";
+        if (fs.existsSync(supportsPath)) {
+            data = fs.readFileSync(supportsPath);
+        }
         this.parseSupports(data);
     }
 
