@@ -48,7 +48,8 @@ module.exports = class SupportsManager {
     }
 
     testQueries() {
-        this.fetchUserWithInvite({inviteCode: "4HwUJJMf"});
+        //this.fetchUserWithInvite({inviteCode: "4HwUJJMf"});
+        this.fetchUserWithId({id: "cd24b2f4-8b78-11e7-a2dd-062632d8f11c"});
     }
 
     async fetchUserWithInvite(inviteCodeRequest) {
@@ -118,10 +119,10 @@ module.exports = class SupportsManager {
 
         const users = await entityManager.getRepository(MagiRecoUser)
             .find({
-                updatetimestamp: LessThan(yesterday)
+                where: {updatetimestamp: LessThan(yesterday.toUTCString())}
             });
 
-        for (user of users) {
+        for (var user of users) {
             console.log(user.user_id);
             if (ids.length == 15) {
                 break;
@@ -143,6 +144,8 @@ module.exports = class SupportsManager {
 
         var parsedUsers = await this.parseSupports(data);
         console.log(parsedUsers);
+
+        console.log(yesterday.toUTCString());
 
         // TODO Handle callbacks
     }
