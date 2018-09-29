@@ -148,11 +148,37 @@ module.exports = class Profile extends BaseCommand {
                     });
                 }
                 break;
-            case 'reset':
-                this.reset(channel, user.id);
+            case 'delete':
+                this.delete(channel, user.id);
                 break;
             default:
-                console.log("error message");
+                var userid = undefined;
+                var selfcheck = false;
+                if (subcommand) {
+                    var userdata = new Util().get_user_id_mention(subcommand, channel.guild);
+                    if (userdata.success == true) {
+                        userid = userdata.userid;
+                        this.check(channel, userid, selfcheck);
+                    }
+                    else {
+                        if (userdata.reason == 0) {
+                            return channel.send("The given user could not be found.  They may not be in the server now").then(message => {
+                                message.delete(10000);
+                            });
+                        }
+                        else {
+                            console.log("Error happened");
+                            return channel.send(`There was an error with your command: ";profile ${subcommand}".  Use ;profile help for supported commands`).then(message => {
+                                message.delete(10000);
+                            });
+                        }
+                    }
+                }
+                if (userid == undefined) {
+                    userid = user.id;
+                    selfcheck = true;
+                    this.check(channel, userid, selfcheck);
+                }
         }
 
     }
@@ -239,7 +265,7 @@ module.exports = class Profile extends BaseCommand {
 
     check(channel, userid, selfcheck) {
         entityManager.getRepository(User).findOne({username: userid}).then(user => {
-            if (user == undefined) {
+            if (user == undefined || user.deleted == true) {
                 if (selfcheck) {
                     return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
                         message.delete(5000);
@@ -400,10 +426,19 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Your Mutual Follows**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             initialmessage += `\n★ ❤️ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `\n★ ❤️ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not have any mutual follows.  Use ;profile follow to follow players").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -452,8 +487,10 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Your Followers**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             var friendship = await this.check_friends(senderid, friends[i].username);
             initialmessage += "\n★ ";
             finalmessage += "\n★ ";
@@ -463,6 +500,13 @@ module.exports = class Profile extends BaseCommand {
             }
             initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not have any followers").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -511,8 +555,10 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Following**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             var friendship = await this.check_friends(senderid, friends[i].username);
             initialmessage += "\n★ ";
             finalmessage += "\n★ ";
@@ -522,6 +568,13 @@ module.exports = class Profile extends BaseCommand {
             }
             initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not follow anyone.  Use ;profile follow to follow players").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -562,10 +615,19 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Non-Mutual Follows**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             initialmessage += `\n★ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `\n★ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not have any non-mutual follows").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -627,7 +689,7 @@ module.exports = class Profile extends BaseCommand {
         })
     }
 
-    reset(channel, userid) {
+    delete(channel, userid) {
         typeorm.getConnection().createQueryBuilder()
                 .update(User).set({deleted: true})
                 .where("username = :username", {username: userid})
