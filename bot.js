@@ -36,13 +36,15 @@ client.on('ready', () => {
 
 client.on('message', msg => {
     if (msg.channel.type !== 'text') return;
+    if (msg.author.id == client.user.id) return;
     let parse = CH.handle(msg);
-    if (parse) {
+    if (parse && msg.author.bot == false) {
         EC.parseMessage(msg);
     }
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
+    if (user.bot == true) return;
     let emoji = reaction.emoji;
     let server = reaction.message.guild;
     console.log(`${(new Date()).toLocaleString()} | Reaction | ${emoji.name} in ${server.name} by ${user.username} in ${reaction.message.channel.name}`);   // Logging
@@ -50,6 +52,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 });
 
 client.on('messageReactionRemove', (reaction, user) => {
+    if (user.bot == true) return;
     let emoji = reaction.emoji;
     let server = reaction.message.guild;
     console.log(`${(new Date()).toLocaleString()} | Remove Reaction | ${emoji.name} in ${server.name} by ${user.username} in ${reaction.message.channel.name}`);   // Logging
