@@ -341,7 +341,7 @@ module.exports = class Profile extends BaseCommand {
                 message.edit(`You are now mutually following <@${user.username}>.  Make sure to follow them ingame`);
             });
 
-            if (user.notifications) {
+            if (user.deleted == false && user.notifications) {
                 discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator} followed you back!  Make sure to follow them ingame`).then(message => {
                     message.edit(`<@${senderid}> followed you back!  Make sure to follow them ingame`)
                 });
@@ -684,9 +684,11 @@ module.exports = class Profile extends BaseCommand {
             });
         });
 
-        user.send(`${sender.username}#${sender.discriminator} has unfollowed you`).then(message => {
-            message.edit(`<@${senderid}> has unfollowed you`);
-        })
+        if (user.deleted == false && user.notifications) {
+            user.send(`${sender.username}#${sender.discriminator} has unfollowed you`).then(message => {
+                message.edit(`<@${senderid}> has unfollowed you`);
+            });
+        }
     }
 
     delete(channel, userid) {
