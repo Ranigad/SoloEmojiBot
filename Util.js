@@ -51,11 +51,21 @@ const get_user_id_or_error = (value, channel) => {
     }
 }
 
-
+const log_message = (message, client) => {
+    if (message == undefined || client == undefined) return;
+    const server_id = process.env.SERVER_ID;
+    const log_id = process.env.LOG_CHANNEL;
+    const date = new Date();
+    const date_string = date.toUTCString();
+    const full_msg = `${date_string}: #${message.channel.name} - ${message.author.tag}: ${message.content}`;
+    const msg = full_msg.substr(0, 1999);
+    client.guilds.get(server_id).channels.get(log_id).send(msg);
+}
 
 
 module.exports = {
     get_user_id_mention,
-    get_user_id_or_error
+    get_user_id_or_error,
+    log_message
 }
 
