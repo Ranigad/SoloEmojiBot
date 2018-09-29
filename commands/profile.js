@@ -97,7 +97,7 @@ module.exports = class Profile extends BaseCommand {
                 var userid = undefined;
                 var selfcheck = false;
                 if (value) {
-                    userid = new Util().get_user_id_or_error(value, channel);
+                    userid = Util.get_user_id_or_error(value, channel);
                     if (userid == undefined) return;
                 }
                 if (userid == undefined) {
@@ -109,7 +109,7 @@ module.exports = class Profile extends BaseCommand {
             case 'follow':
                 console.log("follow");
                 if (value) {
-                    var userid = new Util().get_user_id_or_error(value, channel);
+                    var userid = Util.get_user_id_or_error(value, channel);
                     if (userid == undefined) {
                         return;
                     }
@@ -136,7 +136,7 @@ module.exports = class Profile extends BaseCommand {
             case 'unfollow':
                 console.log("unfollow");
                 if (value) {
-                    var userid = new Util().get_user_id_or_error(value, channel);
+                    var userid = Util.get_user_id_or_error(value, channel);
                     if (userid == undefined) {
                         return;
                     }
@@ -155,7 +155,7 @@ module.exports = class Profile extends BaseCommand {
                 var userid = undefined;
                 var selfcheck = false;
                 if (subcommand) {
-                    var userdata = new Util().get_user_id_mention(subcommand, channel.guild);
+                    var userdata = Util.get_user_id_mention(subcommand, channel.guild);
                     if (userdata.success == true) {
                         userid = userdata.userid;
                         this.check(channel, userid, selfcheck);
