@@ -555,6 +555,7 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Following**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
             if (friends[i].deleted == true) continue;
