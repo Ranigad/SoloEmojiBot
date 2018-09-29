@@ -263,7 +263,7 @@ module.exports = class SupportsManager {
             var user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: supportUser.userId});
             if (user == undefined) {
                 user = new MagiRecoUser();
-                user.addtimestamp = new Date();
+                user.addtimestamp = new Date().toUTCString();
             }
             user.user_id = supportUser.userId;
             user.friend_id = supportUser.inviteCode;
@@ -272,7 +272,7 @@ module.exports = class SupportsManager {
             user.class_rank = supportUser.definitiveClassRank;
             user.last_access = supportUser.lastAccessDate;
             user.comment = supportUser.comment;
-            user.updatetimestamp = new Date();
+            user.updatetimestamp = new Date().toUTCString();
             user = await entityManager.save(user);
 
             user = await entityManager.getRepository(MagiRecoUser).findOne({where: {user_id: supportUser.userId}, relations: ["meguca"]});
