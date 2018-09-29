@@ -26,7 +26,7 @@ module.exports = new EntitySchema({
         },
         last_access: {
             nullable: true,
-            type: "date"
+            type: "datetime"
         },
         comment: {
             default: "",
@@ -34,10 +34,10 @@ module.exports = new EntitySchema({
             nullable: true
         },
         addtimestamp: {
-            type: "date"
+            type: "datetime"
         },
         updatetimestamp: {
-            type: "date",
+            type: "datetime",
             nullable: true
         }
     },

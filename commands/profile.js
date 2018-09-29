@@ -154,8 +154,8 @@ module.exports = class Profile extends BaseCommand {
                     });
                 }
                 break;
-            case 'reset':
-                this.reset(channel, user.id);
+            case 'delete':
+                this.delete(channel, user.id);
                 break;
             default:
                 var userid = undefined;
@@ -271,7 +271,7 @@ module.exports = class Profile extends BaseCommand {
 
     async check(channel, userid, selfcheck) {
         var user = await entityManager.getRepository(User).findOne({username: userid});
-        if (user == undefined) {
+        if (user == undefined || user.deleted == true) {
             if (selfcheck) {
                 return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
                     message.delete(5000);
@@ -461,10 +461,19 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Your Mutual Follows**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             initialmessage += `\n★ ❤️ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `\n★ ❤️ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not have any mutual follows.  Use ;profile follow to follow players").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -513,8 +522,10 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Your Followers**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             var friendship = await this.check_friends(senderid, friends[i].username);
             initialmessage += "\n★ ";
             finalmessage += "\n★ ";
@@ -524,6 +535,13 @@ module.exports = class Profile extends BaseCommand {
             }
             initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not have any followers").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -572,8 +590,10 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Following**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             var friendship = await this.check_friends(senderid, friends[i].username);
             initialmessage += "\n★ ";
             finalmessage += "\n★ ";
@@ -583,6 +603,13 @@ module.exports = class Profile extends BaseCommand {
             }
             initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not follow anyone.  Use ;profile follow to follow players").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -623,10 +650,19 @@ module.exports = class Profile extends BaseCommand {
 
         var initialmessage = "**Non-Mutual Follows**:";
         var finalmessage = initialmessage;
+        var count = 0;
 
         for (var i = 0; i < friends.length; i++) {
+            if (friends[i].deleted == true) continue;
             initialmessage += `\n★ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
             finalmessage += `\n★ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            count++;
+        }
+
+        if (count == 0) {
+            return channel.send("You currently do not have any non-mutual follows").then(message => {
+                message.delete(5000);
+            });
         }
 
         return channel.send(initialmessage).then(message => {
@@ -688,7 +724,7 @@ module.exports = class Profile extends BaseCommand {
         })
     }
 
-    reset(channel, userid) {
+    delete(channel, userid) {
         typeorm.getConnection().createQueryBuilder()
                 .update(User).set({deleted: true})
                 .where("username = :username", {username: userid})
