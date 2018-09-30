@@ -225,13 +225,20 @@ module.exports = class Profile extends BaseCommand {
         });
     }
 
+    error_if_no_profile(user, channel) {
+        if (user == undefined || user.deleted == true) {
+            channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
+                message.delete(10000);
+            });
+            return true;
+        }
+        return false;
+    }
+
     set(channel, userid, target, value) {
         entityManager.getRepository(User).findOne({username: userid}).then(user => {
-            if (user == undefined || user.deleted == true) {
-                return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
-                    message.delete(10000);
-                });
-            }
+            var error = this.error_if_no_profile(user, channel);
+            if (error) return;
             // Check which is being changed, then change:
             if (target === "id") {
                 typeorm.getConnection().createQueryBuilder()
@@ -291,11 +298,8 @@ module.exports = class Profile extends BaseCommand {
     // Send follow / follow-back
     async follow(channel, senderid, recipientid) {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(5000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         if (senderid == recipientid) {
             return channel.send("You cannot follow yourself").then(message => {
@@ -413,11 +417,8 @@ module.exports = class Profile extends BaseCommand {
     // Mutual follows
     async mutuals(channel, senderid) {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await this.mutuals_entities(senderid);
 
@@ -478,11 +479,8 @@ module.exports = class Profile extends BaseCommand {
 
     async followers(channel, senderid) {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await this.followers_entities(senderid);
 
@@ -550,11 +548,8 @@ module.exports = class Profile extends BaseCommand {
 
     async following(channel, senderid) {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await this.following_entities(senderid);
 
@@ -598,11 +593,8 @@ module.exports = class Profile extends BaseCommand {
     /** @deprecated */
     async requests(channel, senderid) {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await entityManager.getRepository(User)
             .createQueryBuilder("user")
@@ -651,11 +643,8 @@ module.exports = class Profile extends BaseCommand {
 
     async unfollow(channel, senderid, userid) {
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         user = await entityManager.getRepository(User).findOne({username: userid});
         if (user == undefined || user.deleted == true) {
@@ -703,7 +692,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async delete(channel, userid) {
-        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        var user = await entityManager.getRepository(User).findOne({username: userid});
         if (user == undefined || user.deleted == true) {
             return channel.send("Your profile does not exist or was already deleted").then(message => {
                 message.delete(10000);
