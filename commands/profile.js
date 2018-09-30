@@ -63,7 +63,7 @@ module.exports = class Profile extends BaseCommand {
                 var settings = ["id", "name"];
                 if (value && settings.includes(value)) {
                     if (value2) {
-                        this.set(channel, user, value, value2);
+                        this.set(channel, user.id, value, value2);
                     }
                     else {
                         channel.send(`Error: You need to provide your ${value}`).then(message => {
