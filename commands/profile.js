@@ -703,6 +703,13 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async delete(channel, userid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was already deleted").then(message => {
+                message.delete(10000);
+            });
+        }
+
         typeorm.getConnection().createQueryBuilder()
                 .update(User).set({deleted: true, notifications: false})
                 .where("username = :username", {username: userid})
