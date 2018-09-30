@@ -297,17 +297,17 @@ module.exports = class Profile extends BaseCommand {
             });
         }
 
+        if (senderid == recipientid) {
+            return channel.send("You cannot follow yourself").then(message => {
+                message.delete(5000);
+            })
+        }
+
         user = await entityManager.getRepository(User).findOne({username: recipientid});
         if (user == undefined || user.deleted == true) {
             return channel.send("That user does not have a profile or their profile was deleted").then(message => {
                 message.delete(5000);
             });
-        }
-
-        if (senderid == recipientid) {
-            return channel.send("You cannot follow yourself").then(message => {
-                message.delete(5000);
-            })
         }
 
         const discordrecipient = this.bot.users.get(recipientid);
@@ -326,7 +326,7 @@ module.exports = class Profile extends BaseCommand {
                 });
             }
 
-            if (friend.user_a == senderid) {
+            if ((friend.user_a == senderid && friend.a_follows == true) || (friend_user_b == senderid && friend.b_follows == true)) {
                 return channel.send(`You have already followed ${user.discordname}#${user.discriminator}`).then(message => {
                     message.edit(`You have already followed <@${user.username}>`);
                 });
@@ -358,7 +358,6 @@ module.exports = class Profile extends BaseCommand {
         entityManager.save(friend);
 
         if (user.notifications) {
-            var sender = this.bot.users.get(senderid);
             discordrecipient.send(`You have been followed by ${discordsender.discordname}#${discordsender.discriminator}!  Use ;profile friend to accept or ;profile check to view their info`).then(message => {
                 message.edit(`You have been followed by <@${senderid}>!  Use ;profile follow to follow back or ;profile check to view their info`)
             });
@@ -384,22 +383,14 @@ module.exports = class Profile extends BaseCommand {
         return friend;
     }
 
-    // Mutual follows
-    async mutuals(channel, senderid) {
-        var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
-
+    async mutuals_entities(userid) {
         var friends = await entityManager.getRepository(User)
             .createQueryBuilder("user")
             .where(qb => {
                 const subQuery = qb.subQuery()
                     .select("friend.user_b")
                     .from(Friend, "friend")
-                    .where("friend.user_a = :username", {username: senderid})
+                    .where("friend.user_a = :username", {username: userid})
                     .andWhere("friend.a_follows = :value", {value: true})
                     .andWhere("friend.b_follows = :value", {value: true})
                     .getQuery();
@@ -409,14 +400,26 @@ module.exports = class Profile extends BaseCommand {
                 const subQuery = qb.subQuery()
                     .select("friend.user_a")
                     .from(Friend, "friend")
-                    .where("friend.user_b = :username", {username: senderid})
+                    .where("friend.user_b = :username", {username: userid})
                     .andWhere("friend.a_follows = :value", {value: true})
                     .andWhere("friend.b_follows = :value", {value: true})
                     .getQuery();
                 return "user.username IN " + subQuery;
             })
-            .printSql()
             .getMany();
+        return friends;
+    }
+
+    // Mutual follows
+    async mutuals(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await this.mutuals_entities(senderid);
 
         if (friends.length == 0) {
             return channel.send("You currently do not have any mutual follows.  Use ;profile follow to follow players").then(message => {
@@ -448,21 +451,14 @@ module.exports = class Profile extends BaseCommand {
         });
     }
 
-    async followers(channel, senderid) {
-        var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
-
+    async followers_entities(userid) {
         var friends = await entityManager.getRepository(User)
             .createQueryBuilder("user")
             .where(qb => {
                 const subQuery = qb.subQuery()
                     .select("friend.user_b")
                     .from(Friend, "friend")
-                    .where("friend.user_a = :username", {username: senderid})
+                    .where("friend.user_a = :username", {username: userid})
                     .andWhere("friend.b_follows = :value", {value: true})
                     .getQuery();
                 return "user.username IN " + subQuery;
@@ -471,13 +467,24 @@ module.exports = class Profile extends BaseCommand {
                 const subQuery = qb.subQuery()
                     .select("friend.user_a")
                     .from(Friend, "friend")
-                    .where("friend.user_b = :username", {username: senderid})
+                    .where("friend.user_b = :username", {username: userid})
                     .andWhere("friend.a_follows = :value", {value: true})
                     .getQuery();
                 return "user.username IN " + subQuery;
             })
-            .printSql()
             .getMany();
+        return friends;
+    }
+
+    async followers(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await this.followers_entities(senderid);
 
         if (friends.length == 0) {
             return channel.send("You currently do not have any followers").then(message => {
@@ -516,21 +523,14 @@ module.exports = class Profile extends BaseCommand {
         });
     }
 
-    async following(channel, senderid) {
-        var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
-
+    async following_entities(userid) {
         var friends = await entityManager.getRepository(User)
             .createQueryBuilder("user")
             .where(qb => {
                 const subQuery = qb.subQuery()
                     .select("friend.user_b")
                     .from(Friend, "friend")
-                    .where("friend.user_a = :username", {username: senderid})
+                    .where("friend.user_a = :username", {username: userid})
                     .andWhere("friend.a_follows = :value", {value: true})
                     .getQuery();
                 return "user.username IN " + subQuery;
@@ -539,13 +539,24 @@ module.exports = class Profile extends BaseCommand {
                 const subQuery = qb.subQuery()
                     .select("friend.user_a")
                     .from(Friend, "friend")
-                    .where("friend.user_b = :username", {username: senderid})
+                    .where("friend.user_b = :username", {username: userid})
                     .andWhere("friend.b_follows = :value", {value: true})
                     .getQuery();
                 return "user.username IN " + subQuery;
             })
-            .printSql()
             .getMany();
+        return friends;
+    }
+
+    async following(channel, senderid) {
+        var user = await entityManager.getRepository(User).findOne({username: senderid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                message.delete(10000);
+            });
+        }
+
+        var friends = await this.following_entities(senderid);
 
         if (friends.length == 0) {
             return channel.send("You currently do not follow anyone.  Use ;profile follow to follow players").then(message => {
@@ -652,13 +663,13 @@ module.exports = class Profile extends BaseCommand {
                 message.delete(5000);
             });
         }
+        var bot_user = user;
 
         var user = this.bot.users.get(userid);
         var sender = this.bot.users.get(senderid);
 
         var friend = await this.check_friends(senderid, userid);
-        console.log(friend);
-        if (friend == undefined || friend.a_follows == false && friend.user_a == senderid || friend.user_b == senderid && friend.b_follows == false) {
+        if (friend == undefined || (friend.a_follows == false && friend.user_a == senderid) || (friend.user_b == senderid && friend.b_follows == false)) {
             return channel.send(`You are not following ${user.username}#${user.discriminator}`).then(message => {
                 message.edit(`You are not following <@${userid}>`).then(message => {
                     message.delete(5000);
@@ -684,21 +695,65 @@ module.exports = class Profile extends BaseCommand {
             });
         });
 
-        if (user.deleted == false && user.notifications) {
+        if (bot_user.deleted == false && bot_user.notifications) {
             user.send(`${sender.username}#${sender.discriminator} has unfollowed you`).then(message => {
                 message.edit(`<@${senderid}> has unfollowed you`);
             });
         }
     }
 
-    delete(channel, userid) {
+    async delete(channel, userid) {
         typeorm.getConnection().createQueryBuilder()
-                .update(User).set({deleted: true})
+                .update(User).set({deleted: true, notifications: false})
                 .where("username = :username", {username: userid})
                 .execute();
         channel.send("Your profile has been deleted").then(message => {
             message.delete(10000);
         });
+
+        const discordsender = this.bot.users.get(userid);
+
+        var mutuals = await this.mutuals_entities(userid);
+        for (var user of mutuals) {
+            if (user.deleted == false && user.notifications) {
+                const discordrecipient = this.bot.users.get(user.username);
+                user.discordname = discordrecipient.username;
+                user.discriminator = discordrecipient.discriminator;
+                entityManager.save(user);
+
+                discordrecipient.send(`Your mutual follower, ${discordsender.discordname}#${discordsender.discriminator} deleted their profile`).then(message => {
+                    message.edit(`Your mutual follower, <@${userid}> deleted their profile`);
+                });
+            }
+        }
+
+        var following = await this.following_entities(userid);
+        for (var user of following) {
+            if (user.deleted == false && user.notifications) {
+                const discordrecipient = this.bot.users.get(user.username);
+                user.discordname = discordrecipient.username;
+                user.discriminator = discordrecipient.discriminator;
+                entityManager.save(user);
+
+                discordrecipient.send(`Your follower, ${discordsender.discordname}#${discordsender.discriminator} deleted their profile`).then(message => {
+                    message.edit(`Your follower, <@${userid}> deleted their profile`);
+                });
+            }
+        }
+
+        var followers = await this.followers_entities(userid);
+        for (var user of followers) {
+            if (user.deleted == false && user.notifications) {
+                const discordrecipient = this.bot.users.get(user.username);
+                user.discordname = discordrecipient.username;
+                user.discriminator = discordrecipient.discriminator;
+                entityManager.save(user);
+
+                discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator}, who you follow, deleted their profile`).then(message => {
+                    message.edit(`<@${userid}>, who you follow, deleted their profile`);
+                });
+            }
+        }
     }
 
     all() {
