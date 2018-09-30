@@ -112,18 +112,34 @@ module.exports = class SupportsManager {
 
         var yesterday = new Date();
         yesterday.setDate(yesterday.getDate()-1);
+        console.log(yesterday.toUTCString());
         // const users = await entityManager.createQueryBuilder("user")
         //     .from(MagiRecoUser, "user")
         //     .where("user.updatetimestamp < :date", {date: yesterday})
         //     .getMany();
 
-        const users = await entityManager.getRepository(MagiRecoUser)
-            .find({
-                where: {updatetimestamp: LessThan(yesterday.toUTCString())}
-            });
+        // const users = await entityManager.getRepository(MagiRecoUser)
+        //     .find({
+        //         where: {updatetimestamp: LessThan(yesterday.toUTCString())}
+        //     });
+        
+        // console.log(entityManager.createQueryBuilder(MagiRecoUser)
+        // .where({updatetimestamp: LessThan(yesterday.toUTCString())}).getSql());
+
+        const sql = await entityManager.createQueryBuilder(MagiRecoUser, "user")
+            .where("user.updatetimestamp < :date", {date: yesterday.toUTCString()})
+            .orderBy("user.updatetimestamp", "ASC")
+            .getSql();
+        console.log(sql);
+
+        const users = await entityManager.createQueryBuilder(MagiRecoUser, "user")
+            .where("user.updatetimestamp < :date", {date: yesterday.toUTCString()})
+            .orderBy("user.updatetimestamp", "ASC")
+            .getMany();
 
         for (var user of users) {
             console.log(user.user_id);
+            console.log(user.updatetimestamp);
             if (ids.length == 15) {
                 break;
             }
@@ -140,12 +156,12 @@ module.exports = class SupportsManager {
         var idString = ids.join();
         console.log(idString);
 
-        var data = await this.querySupportSearch(idString);
+        // var data = await this.querySupportSearch(idString);
 
-        var parsedUsers = await this.parseSupports(data);
-        console.log(parsedUsers);
+        // var parsedUsers = await this.parseSupports(data);
+        // console.log(parsedUsers);
 
-        console.log(yesterday.toUTCString());
+        // console.log(yesterday.toUTCString());
 
         // TODO Handle callbacks
     }
