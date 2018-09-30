@@ -157,6 +157,9 @@ module.exports = class Profile extends BaseCommand {
             case 'delete':
                 this.delete(channel, user.id);
                 break;
+            case 'list':
+                this.list();
+                break;
             default:
                 var userid = undefined;
                 var selfcheck = false;
@@ -790,6 +793,15 @@ module.exports = class Profile extends BaseCommand {
             }
         }
     }
+
+    async list() {
+        const users = await entityManager.createQueryBuilder(User, "user")
+            .innerJoinAndMapOne("user.gameInfo", MagiRecoUser, "gameUser", "gameUser.friend_id = user.friend_id")
+            .orderBy("user_rank", "DESC")
+            .getMany();
+        console.log(users);
+    }
+
 
     all() {
         // this.db.run("select * from test"); // userid lookup?
