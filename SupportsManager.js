@@ -19,14 +19,37 @@ module.exports = class SupportsManager {
         this.callbacks = [];
     }
 
+    async repeatQuery(options, occurence) {
+        try {
+            let data = await rp(options);
+            return data;
+        }
+        catch (error) {
+            console.log(error);
+            occurence--;
+            if (occurence > 0) {
+                if (options.proxy != undefined) {
+                    options.proxy = await this.getProxy();
+                }
+                this.repeatQuery(options, occurence);
+            }
+            else return undefined;
+        }
+    }
+
     async getProxy() {
         var options = {
             method: "GET",
             uri: "https://rice.qyu.be/cgi-bin/pixiedust.sh",
         };
-        var proxy = await rp(options);
+        var proxy = await this.repeatQuery(options, 2);
         console.log(proxy);
-        return `http://${proxy}`;
+        if (proxy != undefined) {
+            return `http://${proxy}`;
+        }
+        else {
+            return undefined;
+        }
     }
 
     testFriendsParsing() {
@@ -48,8 +71,8 @@ module.exports = class SupportsManager {
     }
 
     testQueries() {
-        //this.fetchUserWithInvite({inviteCode: "4HwUJJMf"});
-        this.fetchUserWithId({id: "cd24b2f4-8b78-11e7-a2dd-062632d8f11c"});
+        this.fetchUserWithInvite({inviteCode: "4HwUJJMf"});
+        //this.fetchUserWithId({id: "cd24b2f4-8b78-11e7-a2dd-062632d8f11c"});
     }
 
     async fetchUserWithInvite(inviteCodeRequest) {
@@ -57,6 +80,7 @@ module.exports = class SupportsManager {
         var callback = inviteCodeRequest.callback;
 
         if (inviteCode == undefined) {
+            console.log("Error: Cannot fetch user with undefined invite code");
             return;
         }
 
@@ -65,6 +89,7 @@ module.exports = class SupportsManager {
         }
 
         if (this.loadingInvites.includes(inviteCode)) {
+            console.log(`A fetch for user ${inviteCode} has already begun`);
             return;
         }
         else {
@@ -72,13 +97,26 @@ module.exports = class SupportsManager {
         }
 
         var data = await this.queryFriendSearch(inviteCode);
+
+        if (data == undefined) {
+            console.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
+            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+
+            // TODO: Handle callbacks
+
+            return;
+        }
+
         var ids = this.parseFriends(data);
 
         if (ids == undefined || ids.length == 0 || ids[0] == undefined) {
             for (const callback of this.callbacks) {
                 if (callback.inviteCode == inviteCode) {
-                    callbacks.remove(callback);
-                    callback(false);
+                    this.callbacks.filter(e => e.inviteCode != inviteCode);
+                    this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+
+                    callback.callback(false);
+                    return;
                 }
             }
         }
@@ -91,8 +129,10 @@ module.exports = class SupportsManager {
     async fetchUserWithId(idRequest) {
         var id = idRequest.id;
         var callback = idRequest.callback;
+        var inviteCode = idRequest.inviteCode;
 
         if (id == undefined) {
+            console.log("Error: Cannot fetch user with undefined Id");
             return;
         }
 
@@ -101,6 +141,7 @@ module.exports = class SupportsManager {
         }
 
         if (this.loadingIds.includes(id)) {
+            console.log(`A fetch for user ${id} has already begun`);
             return;
         }
         else {
@@ -156,14 +197,28 @@ module.exports = class SupportsManager {
         var idString = ids.join();
         console.log(idString);
 
-        // var data = await this.querySupportSearch(idString);
+        var data = await this.querySupportSearch(idString);
 
-        // var parsedUsers = await this.parseSupports(data);
-        // console.log(parsedUsers);
+        if (data == undefined) {
+            console.log(`ERROR: Fetching users ${idString} (including ${inviteCode}) with support search failed`);
+            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+            this.loadingInvites = this.loadingIds.filter(e => !ids.includes(e));
 
-        // console.log(yesterday.toUTCString());
+            // TODO: Handle callbacks
+
+            return;
+        }
+
+        var parsedUsers = await this.parseSupports(data);
+        console.log(parsedUsers);
+
+        console.log(yesterday.toUTCString());
+
+        this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+        this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
 
         // TODO Handle callbacks
+
     }
 
     /** Friend Search - General Player Information */
@@ -194,7 +249,7 @@ module.exports = class SupportsManager {
                 size: 50,
             })
         };
-        var result = await rp(options);
+        var result = await this.repeatQuery(options, 4);
         console.log(result);
         return result;
     }
@@ -219,7 +274,7 @@ module.exports = class SupportsManager {
                 strUserIds: idString
             })
         };
-        var result = await rp(options);
+        var result = await this.repeatQuery(options, 4);
         console.log(result);
         return result;
     }
@@ -243,7 +298,7 @@ module.exports = class SupportsManager {
         var results = [];
 
         for (const hit of data.hits.hits) {
-            var result = {id: hit.fields["id"][0]};
+            var result = {id: hit.fields["id"][0], inviteCode: hit.fields["inviteCode"][0]};
             results.push(result);
         }
 
