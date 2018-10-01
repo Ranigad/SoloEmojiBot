@@ -110,15 +110,11 @@ module.exports = class SupportsManager {
         var ids = this.parseFriends(data);
 
         if (ids == undefined || ids.length == 0 || ids[0] == undefined) {
-            for (const callback of this.callbacks) {
-                if (callback.inviteCode == inviteCode) {
-                    this.callbacks.filter(e => e.inviteCode != inviteCode);
-                    this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
-
-                    callback.callback(false);
-                    return;
-                }
-            }
+            this.callbacks.filter(e => e.inviteCode == inviteCode)
+                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bcmf));
+            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
+            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+            return;
         }
 
         var id = ids[0];
@@ -150,6 +146,8 @@ module.exports = class SupportsManager {
 
         var ids = [];
         ids.push(id);
+        var inviteCodes = [];
+        inviteCodes.push(inviteCode);
 
         var yesterday = new Date();
         yesterday.setDate(yesterday.getDate()-1);
@@ -190,6 +188,7 @@ module.exports = class SupportsManager {
             else {
                 this.loadingIds.push(user.user_id);
                 ids.push(user.user_id);
+                inviteCodes.push(user.friend_id);
             }
         }
 
@@ -204,21 +203,27 @@ module.exports = class SupportsManager {
             this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
             this.loadingInvites = this.loadingIds.filter(e => !ids.includes(e));
 
-            // TODO: Handle callbacks
-
+            // Handle callbacks
+            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
+                .forEach(e => console.log(e));
+            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
+                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bcmf));
+            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
             return;
         }
 
         var parsedUsers = await this.parseSupports(data);
-        console.log(parsedUsers);
+        //console.log(parsedUsers);
 
         console.log(yesterday.toUTCString());
 
         this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
         this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
 
-        // TODO Handle callbacks
-
+        // Handle callbacks
+        this.callbacks.filter(e => e.inviteCode == inviteCode)
+            .forEach(e => e.callback(true, e.message, e.initialMessage, e.inviteCode, e.user, e.bcmf));
+        this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
     }
 
     /** Friend Search - General Player Information */
@@ -250,7 +255,7 @@ module.exports = class SupportsManager {
             })
         };
         var result = await this.repeatQuery(options, 4);
-        console.log(result);
+        //console.log(result);
         return result;
     }
 
@@ -275,7 +280,7 @@ module.exports = class SupportsManager {
             })
         };
         var result = await this.repeatQuery(options, 4);
-        console.log(result);
+        //console.log(result);
         return result;
     }
 
@@ -307,7 +312,7 @@ module.exports = class SupportsManager {
     }
 
     async parseSupports(data) {
-        console.log(data);
+        //console.log(data);
         data = JSON.parse(data);
         if (data == undefined) {
             return undefined;

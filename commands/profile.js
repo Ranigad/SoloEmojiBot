@@ -291,10 +291,47 @@ module.exports = class Profile extends BaseCommand {
 
         entityManager.save(user);
 
-        var messageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`;
+        let initialMessageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`;
+        let messageTxt = initialMessageTxt;
+        messageTxt = await this.build_check_message(messageTxt, user.friend_id, user);
 
-        var gameUser = await entityManager.getRepository(MagiRecoUser)
+        let userId = undefined;
+
+        let gameUser = await entityManager.getRepository(MagiRecoUser)
             .findOne({where: {friend_id: user.friend_id}, relations: ["meguca", "meguca.masterMeguca"]});
+
+        if (gameUser != undefined && gameUser.user_id != undefined) userId = gameUser.user_id;
+
+        let message = await channel.send(messageTxt);
+        console.log(messageTxt);
+        messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
+        await message.edit("");
+        console.log(messageTxt);
+        await message.edit(messageTxt);
+        // TODO: Update data if necessary
+        if (true) { // Change to check if old data (after testing)
+            messageTxt += " Updating... <a:mokyuuwork:494356712883617812>";
+            await message.edit(messageTxt);
+            var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_check_msg,
+                message: message, initialmessage: initialMessageTxt, user: user, bcmf: this.build_check_message}
+            if (userId != undefined) {
+                this.bot.supportsManager.fetchUserWithId(request);
+            }
+            this.bot.supportsManager.fetchUserWithInvite(request);
+        }
+    }
+
+    async edit_check_msg(success, message, initialMessage, inviteCode, user, bcmf) {
+        var messageTxt = await bcmf(initialMessage, inviteCode, user);
+        if (success == false) messageTxt += "   Update failed - an error occurred.";
+        else messageTxt += "   The data was updated succesfully"
+        await message.edit("");
+        await message.edit(messageTxt);
+    }
+
+    async build_check_message(messageTxt, friendId, user) {
+        var gameUser = await entityManager.getRepository(MagiRecoUser)
+            .findOne({where: {friend_id: friendId}, relations: ["meguca", "meguca.masterMeguca"]});
         
         if (gameUser != undefined) {
             messageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${gameUser.display_name} **Rank**: ${gameUser.user_rank}`;
@@ -316,14 +353,8 @@ module.exports = class Profile extends BaseCommand {
 
             messageTxt += `\nUpdated: ${gameUser.updatetimestamp}`; 
         }
-
-        var message = await channel.send(messageTxt);
         console.log(messageTxt);
-        messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
-        await message.edit("");
-        console.log(messageTxt);
-        await message.edit(messageTxt);
-        // TODO: Update data if necessary
+        return messageTxt;
     }
 
     // Send follow / follow-back
