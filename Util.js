@@ -1,4 +1,7 @@
 "use strict";
+const tesseract = require('tesseract.js');
+const https = require('https');
+const fs = require('fs');
 
 const get_user_id_mention = (value, guild) => {
     console.log(value);
@@ -63,9 +66,41 @@ const log_message = (message, client) => {
 }
 
 
+const process_image = async (message) => {
+    let attachments = message.attachments;
+    if (attachments == undefined || attachments.array() == undefined || attachments.array().length == 0) return;
+    attachments = attachments.array();
+    console.log(attachments);
+    let attachment = attachments[0];
+    if (attachment.url == undefined) return;
+    let url = attachment.url;
+    let file_name = message.author.username + new Date().toUTCString();
+    let file = fs.createWriteStream(`temp/${file_name}`);
+    let request = https.get(url, async function(response) {
+        response.pipe(file).on('finish', async function() {
+            try {
+                let result = await tesseract.recognize(`temp/${file_name}`, {lang: 'jpn'});
+                let text = result.text;
+                //console.log(result);
+                let msg = ["この夕工ス卜には以下の開始条件がぁります", "環", "いろは", "のみのチ-ムでク工ス卜を開始"];
+                if (text.includes(msg[0]) && text.includes(msg[1]) && text.includes(msg[2]) && text.includes(msg[3])) {
+                    // Iroha only message
+                    message.reply("that battle requires you to only use Iroha *(Mokyuu Auto Reply)*");
+                }
+            }
+            catch (error) {
+                console.log(error);
+            }
+            fs.unlink(`temp/${file_name}`);
+        });
+    });
+}
+
+
 module.exports = {
     get_user_id_mention,
     get_user_id_or_error,
-    log_message
+    log_message,
+    process_image
 }
 

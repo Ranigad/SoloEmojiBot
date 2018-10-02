@@ -7,3 +7,5 @@ data/*
 search.js
 TestCommandHandler.js
 test.js
+temp/*
+*.traineddata
