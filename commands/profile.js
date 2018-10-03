@@ -457,6 +457,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async supports(channel, userid, selfcheck) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: userid});
         if (user == undefined || user.deleted == true) {
             if (selfcheck) {
@@ -1013,6 +1014,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async list() {
+        if (this.msg_if_restricted_channel(channel)) return;
         const users = await entityManager.createQueryBuilder(User, "user")
             .innerJoinAndMapOne("user.gameInfo", MagiRecoUser, "gameUser", "gameUser.friend_id = user.friend_id")
             .orderBy("user_rank", "DESC")
