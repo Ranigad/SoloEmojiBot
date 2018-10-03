@@ -1,7 +1,7 @@
 class Memoria {
-    constructor(id, mlb, level, meguca, masterMemoria) {
+    constructor(id, lbCount, level, meguca, masterMemoria) {
         this.id = id;
-        this.mlb = mlb;
+        this.lbCount = lbCount;
         this.level = level;
         this.meguca = meguca;
         this.masterMemoria = masterMemoria;

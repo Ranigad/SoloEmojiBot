@@ -427,12 +427,7 @@ module.exports = class SupportsManager {
 
                     var meme = new Memoria();
                     meme.masterMemoria = masterMeme;
-                    if (memeData.lbCount == 4) {
-                        meme.mlb = true;
-                    }
-                    else {
-                        meme.mlb = false;
-                    }
+                    meme.lbCount = memeData.lbCount;
                     meme.level = memeData.level;
                     meme.memoriaId = memeData.id;
 
