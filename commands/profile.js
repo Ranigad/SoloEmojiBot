@@ -14,6 +14,8 @@ const MasterMemoria = require('../model/MasterMemoria').MasterMemoria;
 const Memoria = require('../model/Memoria').Memoria;
 
 
+const production_server = process.env.PROD_SERVER;
+
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
         super(debug);
@@ -69,7 +71,7 @@ module.exports = class Profile extends BaseCommand {
                 var settings = ["id", "name"];
                 if (value && settings.includes(value)) {
                     if (value2) {
-                        this.set(channel, user, value, value2);
+                        this.set(channel, user.id, value, value2);
                     }
                     else {
                         channel.send(`Error: You need to provide your ${value}`).then(message => {
@@ -206,55 +208,138 @@ module.exports = class Profile extends BaseCommand {
 
     }
 
-    create(channel, discorduser, profile, displayname) {
-        // Create new profile, then send message and check if notifications want to be turned on
-        entityManager.getRepository(User).findOne({username: discorduser.id}).then(user => {
-            var mode = undefined;
+    async is_mutual(user_a, user_b) {
+        var friend = await this.check_friends(user_a, user_b);
+        if (friend.a_follows == true && friend.b_follows == true) return true;
+        else return false;
+    }
 
-            if (user != undefined && user.deleted == false) {
-                console.log("User already exists - updating");
-                mode = "updated";
-            }
-            else if (user != undefined) {
-                console.log("Restoring user");
-                user.deleted = false;
-                user.notifications = false;
-                mode = "created";
+    async does_follow(follower, followee) {
+        var friend = await this.check_friends(follower, followee);
+        if (friend.user_a == follower && friend.a_follows == true) return true;
+        else if (friend.user_b == follower && friend.b_follows == true) return true;
+        else return false;
+    }
+
+    async create(channel, discorduser, profile, displayname) {
+        // Create new profile, then send message and check if notifications want to be turned on
+        if (this.msg_if_restricted_channel(channel)) return;
+        var user = await entityManager.getRepository(User).findOne({username: discorduser.id});
+        var userid = discorduser.id;
+        var mode = undefined;
+        var recreated = false;
+
+        if (user != undefined && user.deleted == false) {
+            console.log("User already exists - updating");
+            mode = "updated";
+        }
+        else if (user != undefined) {
+            console.log("Restoring user");
+            user.deleted = false;
+            user.notifications = false;
+            mode = "created";
+            recreated = true;
+        }
+        else {
+            console.log("Creating new user");
+            user = new User();
+            user.addtimestamp = new Date().toUTCString();
+            mode = "created";
+        }
+
+        user.username = discorduser.id;
+        user.discordname = discorduser.username;
+        user.discriminator = discorduser.discriminator;
+        user.friend_id = profile;
+        user.displayname = displayname;
+
+        entityManager.save(user);
+
+        channel.send(`Your profile has been ${mode}`).then(message => {
+            if (mode == "created") {
+                channel.send(`Reply ;profile notify on to enable notifications from other players`).then(message => {
+                });
             }
             else {
-                console.log("Creating new user");
-                user = new User();
-                user.addtimestamp = new Date().toUTCString();
-                mode = "created";
+                message.delete(10000);
             }
+        });
 
-            user.username = discorduser.id;
-            user.discordname = discorduser.username;
-            user.discriminator = discorduser.discriminator;
-            user.friend_id = profile;
-            user.displayname = displayname;
+        if (recreated) {
+            const discordsender = this.bot.users.get(userid);
 
-            entityManager.save(user);
+            var mutuals = await this.mutuals_entities(userid);
+            for (var user of mutuals) {
+                const discordrecipient = this.bot.users.get(user.username);
+                user.discordname = discordrecipient.username;
+                user.discriminator = discordrecipient.discriminator;
+                entityManager.save(user);
 
-            channel.send(`Your profile has been ${mode}`).then(message => {
-                if (mode == "created") {
-                    channel.send(`Reply ;profile notify on to enable notifications from other players`).then(message => {
+                if (user.deleted == false && user.notifications) {
+                    discordrecipient.send(`Your former mutual follower, ${discordsender.discordname}#${discordsender.discriminator} recreated their profile`).then(message => {
+                        message.edit(`Your former mutual follower, <@${userid}> recreated their profile`);
                     });
                 }
-                else {
-                    message.delete(10000);
+            }
+
+            var following = await this.following_entities(userid);
+            for (var user of following) {
+                const discordrecipient = this.bot.users.get(user.username);
+                user.discordname = discordrecipient.username;
+                user.discriminator = discordrecipient.discriminator;
+                entityManager.save(user);
+    
+                var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
+                if (user.deleted == false && user.notifications && !mutual_relationship) {
+                        discordrecipient.send(`Your former follower, ${discordsender.discordname}#${discordsender.discriminator} recreated their profile`).then(message => {
+                        message.edit(`Your former follower, <@${userid}> recreated their profile`);
+                    });
                 }
+            }
+
+            var followers = await this.followers_entities(userid);
+            for (var user of followers) {
+                const discordrecipient = this.bot.users.get(user.username);
+                user.discordname = discordrecipient.username;
+                user.discriminator = discordrecipient.discriminator;
+                entityManager.save(user);
+    
+                var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
+                if (user.deleted == false && user.notifications && !mutual_relationship) {
+                        discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator}, who you had followed, recreated their profile`).then(message => {
+                        message.edit(`<@${userid}>, who you had followed, recreated their profile`);
+                    });
+                }
+            }
+        }
+    }
+
+    error_if_no_profile(user, channel) {
+        if (user == undefined || user.deleted == true) {
+            channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
+                message.delete(10000);
             });
-        });
+            return true;
+        }
+        return false;
+    }
+
+    msg_if_restricted_channel(channel) {
+        if (channel != undefined && channel.guild != undefined && channel.guild.id == this.production_server
+            && !channel.name.includes("bot")) {
+                channel.send("You can only use this command in the #bot-commands chanel").then(message => {
+                    message.delete(10000);
+                });
+                return true;
+        }
+        return false;
     }
 
     set(channel, userid, target, value) {
+        if (this.msg_if_restricted_channel(channel)) return;
         entityManager.getRepository(User).findOne({username: userid}).then(user => {
-            if (user == undefined || user.deleted == true) {
-                return channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
-                    message.delete(10000);
-                });
-            }
+            var error = this.error_if_no_profile(user, channel);
+            if (error) return;
             // Check which is being changed, then change:
             if (target === "id") {
                 typeorm.getConnection().createQueryBuilder()
@@ -463,12 +548,10 @@ module.exports = class Profile extends BaseCommand {
 
     // Send follow / follow-back
     async follow(channel, senderid, recipientid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(5000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         if (senderid == recipientid) {
             return channel.send("You cannot follow yourself").then(message => {
@@ -499,7 +582,7 @@ module.exports = class Profile extends BaseCommand {
                 });
             }
 
-            if ((friend.user_a == senderid && friend.a_follows == true) || (friend_user_b == senderid && friend.b_follows == true)) {
+            if ((friend.user_a == senderid && friend.a_follows == true) || (friend.user_b == senderid && friend.b_follows == true)) {
                 return channel.send(`You have already followed ${user.discordname}#${user.discriminator}`).then(message => {
                     message.edit(`You have already followed <@${user.username}>`);
                 });
@@ -585,12 +668,10 @@ module.exports = class Profile extends BaseCommand {
 
     // Mutual follows
     async mutuals(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await this.mutuals_entities(senderid);
 
@@ -650,12 +731,10 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async followers(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await this.followers_entities(senderid);
 
@@ -722,12 +801,10 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async following(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await this.following_entities(senderid);
 
@@ -770,12 +847,10 @@ module.exports = class Profile extends BaseCommand {
 
     /** @deprecated */
     async requests(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         var friends = await entityManager.getRepository(User)
             .createQueryBuilder("user")
@@ -823,12 +898,10 @@ module.exports = class Profile extends BaseCommand {
 
 
     async unfollow(channel, senderid, userid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
-        if (user == undefined || user.deleted == true) {
-            return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
-                message.delete(10000);
-            });
-        }
+        var error = this.error_if_no_profile(user, channel);
+        if (error) return;
 
         user = await entityManager.getRepository(User).findOne({username: userid});
         if (user == undefined || user.deleted == true) {
@@ -876,6 +949,14 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async delete(channel, userid) {
+        if (this.msg_if_restricted_channel(channel)) return;
+        var user = await entityManager.getRepository(User).findOne({username: userid});
+        if (user == undefined || user.deleted == true) {
+            return channel.send("Your profile does not exist or was already deleted").then(message => {
+                message.delete(10000);
+            });
+        }
+
         typeorm.getConnection().createQueryBuilder()
                 .update(User).set({deleted: true, notifications: false})
                 .where("username = :username", {username: userid})
@@ -888,12 +969,12 @@ module.exports = class Profile extends BaseCommand {
 
         var mutuals = await this.mutuals_entities(userid);
         for (var user of mutuals) {
-            if (user.deleted == false && user.notifications) {
-                const discordrecipient = this.bot.users.get(user.username);
-                user.discordname = discordrecipient.username;
-                user.discriminator = discordrecipient.discriminator;
-                entityManager.save(user);
+            const discordrecipient = this.bot.users.get(user.username);
+            user.discordname = discordrecipient.username;
+            user.discriminator = discordrecipient.discriminator;
+            entityManager.save(user);
 
+            if (user.deleted == false && user.notifications) {
                 discordrecipient.send(`Your mutual follower, ${discordsender.discordname}#${discordsender.discriminator} deleted their profile`).then(message => {
                     message.edit(`Your mutual follower, <@${userid}> deleted their profile`);
                 });
@@ -902,12 +983,13 @@ module.exports = class Profile extends BaseCommand {
 
         var following = await this.following_entities(userid);
         for (var user of following) {
-            if (user.deleted == false && user.notifications) {
-                const discordrecipient = this.bot.users.get(user.username);
-                user.discordname = discordrecipient.username;
-                user.discriminator = discordrecipient.discriminator;
-                entityManager.save(user);
+            const discordrecipient = this.bot.users.get(user.username);
+            user.discordname = discordrecipient.username;
+            user.discriminator = discordrecipient.discriminator;
+            entityManager.save(user);
 
+            var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
+            if (user.deleted == false && user.notifications && !mutual_relationship) {
                 discordrecipient.send(`Your follower, ${discordsender.discordname}#${discordsender.discriminator} deleted their profile`).then(message => {
                     message.edit(`Your follower, <@${userid}> deleted their profile`);
                 });
@@ -916,12 +998,13 @@ module.exports = class Profile extends BaseCommand {
 
         var followers = await this.followers_entities(userid);
         for (var user of followers) {
-            if (user.deleted == false && user.notifications) {
-                const discordrecipient = this.bot.users.get(user.username);
-                user.discordname = discordrecipient.username;
-                user.discriminator = discordrecipient.discriminator;
-                entityManager.save(user);
+            const discordrecipient = this.bot.users.get(user.username);
+            user.discordname = discordrecipient.username;
+            user.discriminator = discordrecipient.discriminator;
+            entityManager.save(user);
 
+            var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
+            if (user.deleted == false && user.notifications && !mutual_relationship) {
                 discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator}, who you follow, deleted their profile`).then(message => {
                     message.edit(`<@${userid}>, who you follow, deleted their profile`);
                 });
