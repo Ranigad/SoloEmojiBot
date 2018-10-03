@@ -68,11 +68,11 @@ const log_message = (message, client) => {
 
 const process_image = async (message) => {
     let attachments = message.attachments;
-    if (attachments == undefined || attachments.array() == undefined || attachments.array().length == 0) return;
+    if (attachments == undefined || attachments.array() == undefined || attachments.array().length != 1) return;
     attachments = attachments.array();
     console.log(attachments);
     let attachment = attachments[0];
-    if (attachment.url == undefined) return;
+    if (attachment.url == undefined || attachment.width == undefined) return;
     let url = attachment.url;
     let file_name = message.author.username + new Date().toUTCString();
     let file = fs.createWriteStream(`temp/${file_name}`);

@@ -38,7 +38,9 @@ client.on('ready', () => {
 client.on('message', msg => {
     if (msg.channel.type !== 'text') return;
     if (msg.author.id == client.user.id) return;
-    Util.process_image(msg);
+    if (msg.author.bot == false && !msg.channel.name.includes("art")) {
+        Util.process_image(msg);
+    }
     let parse = CH.handle(msg);
     if (parse && msg.author.bot == false) {
         EC.parseMessage(msg);
