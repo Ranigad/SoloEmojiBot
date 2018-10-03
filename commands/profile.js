@@ -8,6 +8,8 @@ const Friend = require('../model/Friend').Friend;
 const entityManager = typeorm.getManager();
 const Util = require('../Util.js');
 
+const production_server = process.env.PROD_SERVER;
+
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
         super(debug);
@@ -198,6 +200,7 @@ module.exports = class Profile extends BaseCommand {
 
     async create(channel, discorduser, profile, displayname) {
         // Create new profile, then send message and check if notifications want to be turned on
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: discorduser.id});
         var userid = discorduser.id;
         var mode = undefined;
@@ -298,7 +301,19 @@ module.exports = class Profile extends BaseCommand {
         return false;
     }
 
+    msg_if_restricted_channel(channel) {
+        if (channel != undefined && channel.guild != undefined && channel.guild.id == this.production_server
+            && !channel.name.includes("bot")) {
+                channel.send("You can only use this command in the #bot-commands chanel").then(message => {
+                    message.delete(10000);
+                });
+                return true;
+        }
+        return false;
+    }
+
     set(channel, userid, target, value) {
+        if (this.msg_if_restricted_channel(channel)) return;
         entityManager.getRepository(User).findOne({username: userid}).then(user => {
             var error = this.error_if_no_profile(user, channel);
             if (error) return;
@@ -360,6 +375,7 @@ module.exports = class Profile extends BaseCommand {
 
     // Send follow / follow-back
     async follow(channel, senderid, recipientid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         var error = this.error_if_no_profile(user, channel);
         if (error) return;
@@ -479,6 +495,7 @@ module.exports = class Profile extends BaseCommand {
 
     // Mutual follows
     async mutuals(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         var error = this.error_if_no_profile(user, channel);
         if (error) return;
@@ -541,6 +558,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async followers(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         var error = this.error_if_no_profile(user, channel);
         if (error) return;
@@ -610,6 +628,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async following(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         var error = this.error_if_no_profile(user, channel);
         if (error) return;
@@ -655,6 +674,7 @@ module.exports = class Profile extends BaseCommand {
 
     /** @deprecated */
     async requests(channel, senderid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         var error = this.error_if_no_profile(user, channel);
         if (error) return;
@@ -705,6 +725,7 @@ module.exports = class Profile extends BaseCommand {
 
 
     async unfollow(channel, senderid, userid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: senderid});
         var error = this.error_if_no_profile(user, channel);
         if (error) return;
@@ -755,6 +776,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async delete(channel, userid) {
+        if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: userid});
         if (user == undefined || user.deleted == true) {
             return channel.send("Your profile does not exist or was already deleted").then(message => {
