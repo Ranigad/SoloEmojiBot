@@ -174,7 +174,12 @@ module.exports = class Profile extends BaseCommand {
                 this.delete(channel, user.id);
                 break;
             case 'list':
-                this.list();
+                if (value) {
+                    let page = parseInt(value);
+                    console.log(page);
+                    this.list(channel, page);
+                }
+                else this.list(channel, 1);
                 break;
             default:
                 var userid = undefined;
@@ -1013,12 +1018,22 @@ module.exports = class Profile extends BaseCommand {
         }
     }
 
-    async list() {
+    async list(channel, page) {
+        if (page < 1) page = 1;
         if (this.msg_if_restricted_channel(channel)) return;
         const users = await entityManager.createQueryBuilder(User, "user")
             .innerJoinAndMapOne("user.gameInfo", MagiRecoUser, "gameUser", "gameUser.friend_id = user.friend_id")
-            .orderBy("user_rank", "DESC")
+            .orderBy("gameUser.user_rank", "DESC")
+            .take(10)
+            .skip((page - 1) * 10)
             .getMany();
+        let messageTxt = `**All Profiles (Page ${page}):**`;
+            for (var user of users) {
+            let userTxt = "\n★  " + await this.build_check_message("", user.friend_id, user);
+            
+            messageTxt += userTxt;
+        }
+        channel.send(messageTxt);
         console.log(users);
     }
 
