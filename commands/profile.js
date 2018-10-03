@@ -112,6 +112,20 @@ module.exports = class Profile extends BaseCommand {
                 }
                 this.check(channel, userid, selfcheck);
                 break;
+            case 'supports':
+                console.log("supports");
+                var userid = undefined;
+                var selfcheck = false;
+                if (value) {
+                    userid = new Util().get_user_id_or_error(value, channel);
+                    if (userid == undefined) return;
+                }
+                if (userid == undefined) {
+                    userid = user.id;
+                    selfcheck = true;
+                }
+                this.supports(channel, userid, selfcheck);
+                break;
             case 'follow':
                 console.log("follow");
                 if (value) {
@@ -354,6 +368,96 @@ module.exports = class Profile extends BaseCommand {
             messageTxt += `\nUpdated: ${gameUser.updatetimestamp}`; 
         }
         console.log(messageTxt);
+        return messageTxt;
+    }
+
+    async supports(channel, userid, selfcheck) {
+        var user = await entityManager.getRepository(User).findOne({username: userid});
+        if (user == undefined || user.deleted == true) {
+            if (selfcheck) {
+                return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                    message.delete(5000);
+                });
+            }
+            return channel.send("That user does not have a profile or their profile was deleted").then(message => {
+                message.delete(5000);
+            });
+        }
+
+        const discorduser = channel.guild.members.get(userid).user;
+        user.discordname = discorduser.username;
+        user.discriminator = discorduser.discriminator;
+
+        entityManager.save(user);
+
+        let initialMessageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`;
+        let messageTxt = initialMessageTxt;
+        messageTxt = await this.build_supports_message(messageTxt, user.friend_id, user);
+
+        let userId = undefined;
+
+        let gameUser = await entityManager.getRepository(MagiRecoUser)
+            .findOne({where: {friend_id: user.friend_id}, relations: ["meguca", "meguca.masterMeguca"]});
+
+        if (gameUser != undefined && gameUser.user_id != undefined) userId = gameUser.user_id;
+        else messageTxt += "\nNo support data exists for that player currently... ";
+
+        let message = await channel.send(messageTxt);
+        messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
+        await message.edit("");
+        await message.edit(messageTxt);
+        // TODO: Update data if necessary
+        // if (true) { // Change to check if old data (after testing)
+        //     messageTxt += " Updating... <a:mokyuuwork:494356712883617812>";
+        //     await message.edit(messageTxt);
+        //     var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_check_msg,
+        //         message: message, initialmessage: initialMessageTxt, user: user, bcmf: this.build_check_message}
+        //     if (userId != undefined) {
+        //         this.bot.supportsManager.fetchUserWithId(request);
+        //     }
+        //     this.bot.supportsManager.fetchUserWithInvite(request);
+        // }
+    }
+
+    async build_supports_message(messageTxt, friendId, user) {
+        var gameUser = await entityManager.getRepository(MagiRecoUser)
+            .findOne({where: {friend_id: friendId}, relations: ["meguca", "meguca.masterMeguca", "meguca.memes", "meguca.memes.masterMemoria"]});
+
+        if (gameUser != undefined) {
+            messageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${gameUser.display_name} **Rank**: ${gameUser.user_rank}`;
+            var girls = gameUser.meguca;
+            
+            if (girls != undefined && girls.length != 0) {
+                girls.sort((a,b) => (a.support_type > b.support_type) ? 1 : ((b.support_type > a.support_type) ? -1 : 0));
+
+                var attributes = ["<:att_void:494355788886704138>", "<:att_fire:494355788878315520>", "<:att_water:494355788681183233>", "<:att_timber:494355788916326401>", "<:att_light:494355788870057984>", "<:att_dark:494355788496764942>"];
+
+                for (var i = 0; i < girls.length; i++) {
+                    messageTxt += "\n";
+                    var attribute = girls[i].masterMeguca.meguca_type;
+                    if (attribute > 0 && attribute < 7) messageTxt += `${attributes[attribute - 1]} `;
+                    messageTxt += `**${(girls[i].nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name}** `;
+                    messageTxt += `・${girls[i].slots}s・Lv${girls[i].level}・${(girls[i].magia_level == 6) ? "Doppel" : "Magia" + girls[i].magia_level} `;
+                    messageTxt += `\n${girls[i].hp} HP・${girls[i].attack} ATK・${girls[i].defense} DEF`;
+
+                    for (var k = 0; k < girls[i].memes.length; k++) {
+                        let meme = girls[i].memes[k];
+                        let masterMeme = meme.masterMemoria;
+                        let rating = masterMeme.rating;
+                        let lbCount = meme.lbCount;
+                        console.log(lbCount);
+                        let level = meme.level;
+                        let maxLevel = (rating == 4) ? 30 + 5 * lbCount : 5 + rating * 5 + 5 * lbCount;
+                        let levelString = `${level}/${maxLevel}`;
+                        levelString = (lbCount == 4) ? "**Lvl " + levelString + " (MLB)**" : "Lvl " + levelString;
+                        let memeName = masterMeme.eng_name ? masterMeme.eng_name : masterMeme.jpn_name;
+                        messageTxt += `\n${memeName}・${levelString}`;
+                    }
+                }
+            }
+
+            messageTxt += `\nUpdated: ${gameUser.updatetimestamp}`; 
+        }
         return messageTxt;
     }
 
