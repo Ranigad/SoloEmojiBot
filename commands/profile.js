@@ -411,17 +411,17 @@ module.exports = class Profile extends BaseCommand {
         if (true) { // Change to check if old data (after testing)
             messageTxt += " Updating... <a:mokyuuwork:494356712883617812>";
             await message.edit(messageTxt);
-            var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_check_msg,
-                message: message, initialmessage: initialMessageTxt, user: user, bcmf: this.build_check_message}
+            var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_sent_message,
+                message: message, initialmessage: initialMessageTxt, user: user, bmfun: this.build_check_message}
             if (userId != undefined) {
                 this.bot.supportsManager.fetchUserWithId(request);
             }
-            this.bot.supportsManager.fetchUserWithInvite(request);
+            else this.bot.supportsManager.fetchUserWithInvite(request);
         }
     }
 
-    async edit_check_msg(success, message, initialMessage, inviteCode, user, bcmf) {
-        var messageTxt = await bcmf(initialMessage, inviteCode, user);
+    async edit_sent_message(success, message, initialMessage, inviteCode, user, build_message) {
+        var messageTxt = await build_message(initialMessage, inviteCode, user);
         if (success == false) messageTxt += "   Update failed - an error occurred.";
         else messageTxt += "   The data was updated succesfully"
         await message.edit("");
@@ -493,16 +493,16 @@ module.exports = class Profile extends BaseCommand {
         await message.edit("");
         await message.edit(messageTxt);
         // TODO: Update data if necessary
-        // if (true) { // Change to check if old data (after testing)
-        //     messageTxt += " Updating... <a:mokyuuwork:494356712883617812>";
-        //     await message.edit(messageTxt);
-        //     var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_check_msg,
-        //         message: message, initialmessage: initialMessageTxt, user: user, bcmf: this.build_check_message}
-        //     if (userId != undefined) {
-        //         this.bot.supportsManager.fetchUserWithId(request);
-        //     }
-        //     this.bot.supportsManager.fetchUserWithInvite(request);
-        // }
+        if (true) { // Change to check if old data (after testing)
+            messageTxt += " Updating... <a:mokyuuwork:494356712883617812>";
+            await message.edit(messageTxt);
+            var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_sent_message,
+                message: message, initialmessage: initialMessageTxt, user: user, bmfun: this.build_supports_message}
+            if (userId != undefined) {
+                this.bot.supportsManager.fetchUserWithId(request);
+            }
+            else this.bot.supportsManager.fetchUserWithInvite(request);
+        }
     }
 
     async build_supports_message(messageTxt, friendId, user) {

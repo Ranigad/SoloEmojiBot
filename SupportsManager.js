@@ -111,7 +111,7 @@ module.exports = class SupportsManager {
 
         if (ids == undefined || ids.length == 0 || ids[0] == undefined) {
             this.callbacks.filter(e => e.inviteCode == inviteCode)
-                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bcmf));
+                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
             this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
             this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
             return;
@@ -207,7 +207,7 @@ module.exports = class SupportsManager {
             this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
                 .forEach(e => console.log(e));
             this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
-                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bcmf));
+                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
             this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
             return;
         }
@@ -222,7 +222,7 @@ module.exports = class SupportsManager {
 
         // Handle callbacks
         this.callbacks.filter(e => e.inviteCode == inviteCode)
-            .forEach(e => e.callback(true, e.message, e.initialMessage, e.inviteCode, e.user, e.bcmf));
+            .forEach(e => e.callback(true, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
         this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
     }
 
