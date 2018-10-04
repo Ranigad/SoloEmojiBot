@@ -15,6 +15,7 @@ if (result.error) {
 const EmojiCounter = require('./EmojiParser.js');
 const Wiki = require("./wiki.js");
 const EC = new EmojiCounter();
+const Util = require("./Util.js");
 
 // Environment
 const prefix = process.env.DISCORD_PREFIX;
@@ -37,6 +38,9 @@ client.on('ready', () => {
 client.on('message', msg => {
     if (msg.channel.type !== 'text') return;
     if (msg.author.id == client.user.id) return;
+    if (msg.author.bot == false && !msg.channel.name.includes("art")) {
+        Util.process_image(msg);
+    }
     let parse = CH.handle(msg);
     if (parse && msg.author.bot == false) {
         EC.parseMessage(msg);
