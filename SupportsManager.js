@@ -100,16 +100,17 @@ module.exports = class SupportsManager {
 
         if (data == undefined) {
             console.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
+            this.callbacks.filter(e => e.inviteCode == inviteCode)
+                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
+            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
             this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
-
-            // TODO: Handle callbacks
-
             return;
         }
 
         var ids = this.parseFriends(data);
 
         if (ids == undefined || ids.length == 0 || ids[0] == undefined) {
+            console.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
             this.callbacks.filter(e => e.inviteCode == inviteCode)
                 .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
             this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
