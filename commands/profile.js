@@ -457,7 +457,6 @@ module.exports = class Profile extends BaseCommand {
 
             messageTxt += `\nUpdated: ${gameUser.updatetimestamp}`; 
         }
-        console.log(messageTxt);
         return messageTxt;
     }
 
@@ -1028,13 +1027,17 @@ module.exports = class Profile extends BaseCommand {
             .skip((page - 1) * 10)
             .getMany();
         let messageTxt = `**All Profiles (Page ${page}):**`;
-            for (var user of users) {
+        for (var user of users) {
             let userTxt = "\n★  " + await this.build_check_message("", user.friend_id, user);
-            
+
             messageTxt += userTxt;
         }
-        channel.send(messageTxt);
-        console.log(users);
+        let message = await channel.send(messageTxt);
+        for (var user of users) {
+            messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
+        }
+        await message.edit("");
+        await message.edit(messageTxt);
     }
 
 
