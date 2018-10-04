@@ -16,6 +16,9 @@
   "dependencies": {
     "bufferutil": "^4.0.0",
     "cheerio": "^1.0.0-rc.2",
+    "csv-parse": "^3.1.2",
+    "csv-stringify": "^4.3.1",
+    "csv-stringify-as-promised": "^2.0.3",
     "discord.js": "^11.3.2",
     "dotenv": "^5.0.1",
     "noodlejs": "^0.3.2",

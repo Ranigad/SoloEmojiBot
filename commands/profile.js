@@ -12,6 +12,7 @@ const MasterMeguca = require('../model/MasterMeguca').MasterMeguca;
 const Meguca = require('../model/Meguca').Meguca;
 const MasterMemoria = require('../model/MasterMemoria').MasterMemoria;
 const Memoria = require('../model/Memoria').Memoria;
+const translationHandler = require("../TranslationHandler.js");
 
 
 const production_server = process.env.PROD_SERVER;
@@ -181,6 +182,11 @@ module.exports = class Profile extends BaseCommand {
                 }
                 else this.list(channel, 1);
                 break;
+            case 'exporttranslations': 
+                if (channel.guild.id != production_server) {
+                    translationHandler.export_data(channel);
+                    break;
+                }
             default:
                 var userid = undefined;
                 var selfcheck = false;
