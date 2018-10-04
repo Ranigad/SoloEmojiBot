@@ -2,9 +2,10 @@
 
 const fs = require("fs");
 const stringify = require("csv-stringify-as-promised");
-const parse = require("csv-parse");
+const Papa = require("papaparse");
 const typeorm = require('typeorm');
 const entityManager = typeorm.getManager();
+const https = require("https");
 
 const MasterMeguca = require('./model/MasterMeguca').MasterMeguca;
 const MasterMemoria = require('./model/MasterMemoria').MasterMemoria;
@@ -41,9 +42,61 @@ const export_data = async (channel) => {
 
 }
 
+const process_girls = async (girls) => {
+    for (var girl of girls) {
+        if (girl.length != 4) continue;
+        await entityManager
+                .createQueryBuilder()
+                .update(MasterMeguca)
+                .set({eng_sur: girl[1], eng_given: girl[2], nick: girl[3]})
+                .where("jpn_name = :name", {name: girl[0]})
+                .execute();
+    }
+}
+
+const process_memes = async (filename) => {
+
+}
+
+
+const process_data = async (message) => {
+    if (message.channel.guild.id == process.env.PROD_SERVER) {
+        return;
+    }
+
+    let attachments = message.attachments;
+    if (attachments == undefined || attachments.array() == undefined || attachments.array().length != 1) return;
+    attachments = attachments.array();
+    let attachment = attachments[0];
+    if (attachment.url == undefined) return;
+    let callback = undefined;
+    if (attachment.filename == "girls.csv") callback = process_girls;
+    else if (attachment.filename == "memoria.csv") callback = process_memes;
+    else return;
+
+    let url = attachment.url;
+    let file_name = message.author.username + new Date().toUTCString();
+    let file = fs.createWriteStream(`temp/${file_name}`);
+    let request = https.get(url, async function(response) {
+        response.pipe(file).on('finish', async function() {
+            // Process CSV data
+
+            Papa.parse(fs.createReadStream(`temp/${file_name}`), {
+                complete: async function(results) {
+                    //console.log(results);
+                    let data = results.data;
+                    await callback(data);
+                    fs.unlink(`temp/${file_name}`);
+                }
+            });
+        });
+    });
+}
+
 
 module.exports = {
-    export_data
+    export_data,
+    process_data
 }
 
 

@@ -15,6 +15,7 @@ if (result.error) {
 const EmojiCounter = require('./EmojiParser.js');
 const Wiki = require("./wiki.js");
 const EC = new EmojiCounter();
+const TranslationHandler = require("./TranslationHandler.js");
 
 // Environment
 const prefix = process.env.DISCORD_PREFIX;
@@ -54,6 +55,9 @@ client.on('ready', () => {
 
 client.on('message', msg => {
     if (msg.channel.type !== 'text') return;
+    if (msg.author.bot == false && !msg.channel.name.includes("art")) {
+        TranslationHandler.process_data(msg);
+    }
     let parse = CH.handle(msg);
     if (parse) {
         EC.parseMessage(msg);
