@@ -258,9 +258,19 @@ module.exports = class Profile extends BaseCommand {
         user.friend_id = profile;
         user.displayname = displayname;
 
-        entityManager.save(user);
+        await entityManager.save(user);
 
-        channel.send(`Your profile has been ${mode}`).then(message => {
+        channel.send(`Your profile has been ${mode}`).then(async message => {
+
+            let gameUser = await entityManager.getRepository(MagiRecoUser)
+                .findOne({where: {friend_id: user.friend_id}});
+            if (gameUser == undefined) {
+                let request = {inviteCode: user.friend_id, id: undefined, callback: this.handle_retrieved_new_account,
+                    message: message, initialmessage: "", user: user, bmfun: undefined}
+                    console.log(user);
+                this.bot.supportsManager.fetchUserWithInvite(request);
+            }
+
             if (mode == "created") {
                 channel.send(`Reply ;profile notify on to enable notifications from other players`).then(message => {
                 });
@@ -316,6 +326,17 @@ module.exports = class Profile extends BaseCommand {
                     });
                 }
             }
+        }
+    }
+
+    handle_retrieved_new_account(success, message, initialMessage, inviteCode, user, build_message) {
+        let mention = `<@${user.username}>`;
+        let channel = message.channel;
+        if (success == false) {
+            channel.send(`${mention}, your support data couldn't get fetched.  Please double check your friend id`);
+        }
+        else {
+            channel.send(`${mention}, your support data was successfully fetched!  Use ;profile or ;profile supports to view your data`);
         }
     }
 
