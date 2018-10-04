@@ -568,7 +568,6 @@ module.exports = class Profile extends BaseCommand {
                         let masterMeme = meme.masterMemoria;
                         let rating = masterMeme.rating;
                         let lbCount = meme.lbCount;
-                        console.log(lbCount);
                         let level = meme.level;
                         let maxLevel = (rating == 4) ? 30 + 5 * lbCount : 5 + rating * 5 + 5 * lbCount;
                         let levelString = `${level}/${maxLevel}`;
