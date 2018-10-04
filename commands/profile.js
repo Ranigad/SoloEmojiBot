@@ -412,8 +412,11 @@ module.exports = class Profile extends BaseCommand {
         await message.edit("");
         console.log(messageTxt);
         await message.edit(messageTxt);
-        // TODO: Update data if necessary
-        if (true) { // Change to check if old data (after testing)
+        // Update data if necessary
+        let timeNow = Date.now();
+        let updateTime = Date.parse(gameUser.updatetimestamp);
+        let hours = Math.abs(timeNow - updateTime) / 36e5;
+        if (hours > 21) {
             messageTxt += " Updating... <a:mokyuuwork:494356712883617812>";
             await message.edit(messageTxt);
             var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_sent_message,
@@ -496,8 +499,11 @@ module.exports = class Profile extends BaseCommand {
         messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
         await message.edit("");
         await message.edit(messageTxt);
-        // TODO: Update data if necessary
-        if (true) { // Change to check if old data (after testing)
+        // Update data if necessary
+        let timeNow = Date.now();
+        let updateTime = Date.parse(gameUser.updatetimestamp);
+        let hours = Math.abs(timeNow - updateTime) / 36e5;
+        if (hours > 21) {
             messageTxt += " Updating... <a:mokyuuwork:494356712883617812>";
             await message.edit(messageTxt);
             var request = {inviteCode: user.friend_id, id: userId, callback: this.edit_sent_message,
