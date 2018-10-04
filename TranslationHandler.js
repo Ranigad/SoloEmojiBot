@@ -54,10 +54,17 @@ const process_girls = async (girls) => {
     }
 }
 
-const process_memes = async (filename) => {
-
+const process_memes = async (memes) => {
+    for (var meme of memes) {
+        if (meme.length != 2) continue;
+        await entityManager
+                .createQueryBuilder()
+                .update(MasterMemoria)
+                .set({eng_name: meme[1]})
+                .where("jpn_name = :name", {name: meme[0]})
+                .execute();
+    }
 }
-
 
 const process_data = async (message) => {
     if (message.channel.guild.id == process.env.PROD_SERVER) {
@@ -87,6 +94,7 @@ const process_data = async (message) => {
                     let data = results.data;
                     await callback(data);
                     fs.unlink(`temp/${file_name}`);
+                    message.reply("the translations were successfully updated");
                 }
             });
         });
