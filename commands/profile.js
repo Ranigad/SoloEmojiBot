@@ -480,7 +480,7 @@ module.exports = class Profile extends BaseCommand {
                 for (var i = 0; i < girls.length; i++) {
                     var attribute = girls[i].masterMeguca.meguca_type;
                     if (attribute > 0 && attribute < 7) messageTxt += `${attributes[attribute - 1]} `;
-                    messageTxt += `**${(girls[i].nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name}** `;
+                    messageTxt += `**${(girls[i].masterMeguca.nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name}** `;
                     messageTxt += `・${girls[i].slots}s・Lv${girls[i].level}・${(girls[i].magia_level == 6) ? "Doppel" : "Magia" + girls[i].magia_level} `;
                 }
             }
@@ -559,7 +559,7 @@ module.exports = class Profile extends BaseCommand {
                     messageTxt += "\n";
                     var attribute = girls[i].masterMeguca.meguca_type;
                     if (attribute > 0 && attribute < 7) messageTxt += `${attributes[attribute - 1]} `;
-                    messageTxt += `**${(girls[i].nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name}** `;
+                    messageTxt += `**${(girls[i].masterMeguca.eng_sur && girls[i].masterMeguca.eng_given) ? girls[i].masterMeguca.eng_sur + " " + girls[i].masterMeguca.eng_given : girls[i].masterMeguca.jpn_name}** `;
                     messageTxt += `・${girls[i].slots}s・Lv${girls[i].level}・${(girls[i].magia_level == 6) ? "Doppel" : "Magia" + girls[i].magia_level} `;
                     messageTxt += `\n${girls[i].hp} HP・${girls[i].attack} ATK・${girls[i].defense} DEF`;
 
