@@ -4,11 +4,16 @@ const https = require('https');
 const fs = require('fs');
 
 const get_user_id_mention = (value, guild) => {
-    console.log(value);
+    if (value == undefined) return {success: false, reason: 2};
+    //console.log(value);
     var userid = undefined;
     var regex1 = /<@\d+>/;
     var regex2 = /\d+/;
-    if (regex1.test(value)) {
+
+    let attempt1 = regex1.exec(value);
+    let attempt2 = regex2.exec(value);
+
+    if (attempt1 != null && attempt1.length == 1 && attempt1[0] == value) {
         userid = value.replace("<", "");
         userid = userid.replace("@", "");
         userid = userid.replace(">", "");
@@ -23,7 +28,7 @@ const get_user_id_mention = (value, guild) => {
             }
             userid = guild_member.user.id;
         }
-        else if (regex2.test(value)) {
+        else if (attempt2 != null && attempt2.length == 1 && attempt2[0] == value) {
             userid = value;
         }
         else {

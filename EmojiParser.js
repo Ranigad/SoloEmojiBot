@@ -122,11 +122,23 @@ module.exports = class EmojiParser {
         });
     }
 
+    reactionUserLookup(message, time, userid) {
+        let server = message.guild;
+        console.log("userLookup");
+        // "`Select * from dbname where userid = ${userid}`"
+        this.db.all(`SELECT emojiid, emojiname, COUNT(*) as total FROM ${this._tablename} WHERE reaction = 1 AND userid = '${userid}' AND time > ${this.getTime(time)} GROUP BY emojiname`, [], (err, data) => {
+            //console.log(data);
+            this.printEmojiCount(message, data);
+        });
+    }
+
     constructEmojiCount(message, emojis) {
         // Returns string to send to display emoji list.
         let count = "";
         let counts = [];
         let validEmojis = this.getEmojiList(message.guild);
+
+        if (emojis == undefined) return counts;
 
         let sortedEmojis = emojis.sort((a, b) => {
             return (a["total"] > b["total"] && -1) || (a["total"] < b["total"] && 1) || 0;
@@ -237,6 +249,8 @@ module.exports = class EmojiParser {
                 return 3600 * quantity;
             case 'd':
                 return 86400 * quantity;
+            case 'w':
+                return 86400 * 7 * quantity;
             case 'm':
                 return 2635200 * quantity;
             case 'y':
