@@ -636,9 +636,7 @@ module.exports = class Profile extends BaseCommand {
             });
 
             if (user.deleted == false && user.notifications) {
-                discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator} followed you back!  Make sure to follow them ingame`).then(message => {
-                    message.edit(`<@${senderid}> followed you back!  Make sure to follow them ingame`)
-                });
+                discordrecipient.send(`<@${senderid}> (${discordsender.username}) followed you back!  Make sure to follow them ingame`);
             }
             return;
         }
@@ -652,9 +650,7 @@ module.exports = class Profile extends BaseCommand {
         entityManager.save(friend);
 
         if (user.notifications) {
-            discordrecipient.send(`You have been followed by ${discordsender.discordname}#${discordsender.discriminator}!  Use ;profile friend to accept or ;profile check to view their info`).then(message => {
-                message.edit(`You have been followed by <@${senderid}>!  Use ;profile follow to follow back or ;profile check to view their info`)
-            });
+            discordrecipient.send(`You have been followed by <@${senderid}> (${discordsender.username})!  Use ;profile friend to accept or ;profile check to view their info`);
 
             return channel.send(`You have followed ${user.discordname}#${user.discriminator}!`).then(message => {
                 message.edit(`You have followed <@${user.username}>!`);
@@ -992,9 +988,7 @@ module.exports = class Profile extends BaseCommand {
         });
 
         if (bot_user.deleted == false && bot_user.notifications) {
-            user.send(`${sender.username}#${sender.discriminator} has unfollowed you`).then(message => {
-                message.edit(`<@${senderid}> has unfollowed you`);
-            });
+            user.send(`<@${senderid}> (${sender.username}) has unfollowed you`);
         }
     }
 
