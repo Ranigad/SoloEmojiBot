@@ -99,6 +99,7 @@ module.exports = class SupportsManager {
         var data = await this.queryFriendSearch(inviteCode);
 
         if (data == undefined) {
+            console.log(data);
             console.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
             this.callbacks.filter(e => e.inviteCode == inviteCode)
                 .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
@@ -202,7 +203,7 @@ module.exports = class SupportsManager {
         if (data == undefined) {
             console.log(`ERROR: Fetching users ${idString} (including ${inviteCode}) with support search failed`);
             this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
-            this.loadingInvites = this.loadingIds.filter(e => !ids.includes(e));
+            this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
 
             // Handle callbacks
             this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))

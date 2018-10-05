@@ -339,7 +339,7 @@ module.exports = class Profile extends BaseCommand {
         let mention = `<@${user.username}>`;
         let channel = message.channel;
         if (success == false) {
-            channel.send(`${mention}, your support data couldn't get fetched.  Please double check your friend id`);
+            channel.send(`${mention}, your support data couldn't get fetched.  Please double check your friend id and try again`);
         }
         else {
             channel.send(`${mention}, your support data was successfully fetched!  Use ;profile or ;profile supports to view your data`);
@@ -462,8 +462,9 @@ module.exports = class Profile extends BaseCommand {
 
     async edit_sent_message(success, message, initialMessage, inviteCode, user, build_message) {
         var messageTxt = await build_message(initialMessage, inviteCode, user);
-        if (success == false) messageTxt += "   Update failed - an error occurred.";
+        if (success == false) messageTxt = `<@${user.username}>: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}\nUpdate failed - an error occurred.`;
         else messageTxt += "   The data was updated succesfully"
+        messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
         await message.edit("");
         await message.edit(messageTxt);
     }
