@@ -68,11 +68,16 @@ const get_user_id_or_error = (value, channel, named = false) => {
 
 const log_message = (message, client) => {
     if (message == undefined || client == undefined) return;
+    let message_content = message.content;
+    for (var mention of message.mentions.users.array()) {
+        let regex = new RegExp(`<@${mention.id}>`,'g');
+        message_content = message_content.replace(regex, `<@<${mention.username}#${mention.discriminator}>>`);
+    }
     const server_id = process.env.SERVER_ID;
     const log_id = process.env.LOG_CHANNEL;
     const date = new Date();
     const date_string = date.toUTCString();
-    const full_msg = `${date_string}: #${message.channel.name} - ${message.author.tag}: ${message.content}`;
+    const full_msg = `${date_string}: #${message.channel.name} - ${message.author.tag}: ${message_content}`;
     const msg = full_msg.substr(0, 1999);
     client.guilds.get(server_id).channels.get(log_id).send(msg);
 }
