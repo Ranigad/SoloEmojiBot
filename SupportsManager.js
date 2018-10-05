@@ -71,7 +71,7 @@ module.exports = class SupportsManager {
     }
 
     testQueries() {
-        this.fetchUserWithInvite({inviteCode: "4HwUJJMf"});
+        this.fetchUserWithInvite({inviteCode: "396utQVZ"});
         //this.fetchUserWithId({id: "cd24b2f4-8b78-11e7-a2dd-062632d8f11c"});
     }
 
@@ -382,12 +382,15 @@ module.exports = class SupportsManager {
                 }
             }
 
+            let titleDict = {};
+
             if (!("userCharaList" in supportUser) || supportUser.userCharaList.length == 0) {
                 // No Characters - something probably isn't right
             }
             else {
                 for (var index in supportUser.userCharaList) {
                     var characterData = supportUser.userCharaList[index];
+                    //if (supportUser.inviteCode == "Q69KBCAA") console.log(characterData);//396utQVZ
                     if (!("chara" in characterData) || characterData.chara == undefined ||
                         !("doppel" in characterData.chara) || characterData.chara.doppel == undefined ||
                         !("id" in characterData.chara.doppel) || 
@@ -396,8 +399,13 @@ module.exports = class SupportsManager {
                             continue;
                     }
 
+                    let title = characterData.chara.title;
+                    if (title) {
+                        titleDict[characterData.chara.id] = title;
+                    }
+
                     if (doppelIds.includes(characterData.chara.doppel.id)) {
-                        doppelGirlNames.push(characterData.chara.name);
+                        doppelGirlNames.push({name: characterData.chara.name, title: title});
                     }
                 }
             }
@@ -443,6 +451,11 @@ module.exports = class SupportsManager {
                 for (var megucaIndex in supportUser.userCardList) {
                     var supportMeguca = supportUser.userCardList[megucaIndex];
                     var girlName = supportMeguca.card.cardName;
+                    var mainGirlName = girlName;
+                    var title = titleDict[supportMeguca.card.charaNo];
+                    //console.log(title);
+                    if (title) girlName = `${girlName} (${title})`;
+                    //console.log(girlName);
 
                     var masterMeguca = await entityManager.getRepository(MasterMeguca).findOne({jpn_name: girlName});
                     if (masterMeguca == null) {
@@ -473,7 +486,7 @@ module.exports = class SupportsManager {
                     meguca.hp = parseInt(supportMeguca.hp);
                     meguca.user = user;
 
-                    if (doppelGirlNames.includes(girlName)) {
+                    if (doppelGirlNames.filter(value => value.name == mainGirlName && value.title == title).length > 0) {
                         meguca.magia_level = 6;
                     }
 
