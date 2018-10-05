@@ -4,7 +4,7 @@ const rp = require('request-promise');
 
 // Event Timer: https://rice.qyu.be/lua-bin/event_timer.lua?msg=en
 
-module.exports = class React extends BaseCommand {
+module.exports = class EventCommand extends BaseCommand {
     constructor(debug=false) {
         super(debug);
     }
