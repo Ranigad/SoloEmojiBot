@@ -30,7 +30,7 @@ module.exports = class Profile extends BaseCommand {
         if (subcommand) {
             // check mention - subcommand becomes request? or check. Pass in mentioned user, check it's not self
             // check subcommand
-            let [command, user, channel, value, value2] = [subcommand.toLowerCase(), message.author, message.channel, etc, etc2 || 0];
+            let [command, user, channel, value, value2] = [subcommand, message.author, message.channel, etc, etc2 || 0];
 
             this.run(command, user, channel, value, value2);
         } else {
@@ -43,7 +43,7 @@ module.exports = class Profile extends BaseCommand {
 
 
     run(subcommand, user, channel, value, value2) {
-        switch(subcommand) {
+        switch(subcommand.toLowerCase()) {
             case 'recreate':
             case 'create':  // --
                 console.log("create");
