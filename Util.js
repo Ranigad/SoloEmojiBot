@@ -82,6 +82,16 @@ const log_message = (message, client) => {
     client.guilds.get(server_id).channels.get(log_id).send(msg);
 }
 
+const log_general = (message, client) => {
+    if (message == undefined || client == undefined) return;
+    const server_id = process.env.SERVER_ID;
+    const log_id = process.env.LOG_CHANNEL;
+    const date = new Date();
+    const date_string = date.toUTCString();
+    const full_msg = `${date_string}: **BOT_MESSAGE**: ${message}`;
+    const msg = full_msg.substr(0, 1999);
+    client.guilds.get(server_id).channels.get(log_id).send(msg);
+}
 
 const process_image = async (message) => {
     let attachments = message.attachments;
@@ -118,6 +128,7 @@ module.exports = {
     get_user_id_mention,
     get_user_id_or_error,
     log_message,
+    log_general,
     process_image
 }
 

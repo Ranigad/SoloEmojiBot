@@ -10,6 +10,7 @@ const MasterMemoria = require('./model/MasterMemoria').MasterMemoria;
 const Memoria = require('./model/Memoria').Memoria;
 const rp = require('request-promise');
 const LessThan = typeorm.LessThan;
+const Util = require("./Util.js");
 
 
 module.exports = class SupportsManager {
@@ -44,6 +45,7 @@ module.exports = class SupportsManager {
         };
         var proxy = await this.repeatQuery(options, 2);
         console.log(proxy);
+        Util.log_general(`Proxy: ${proxy}`, this.bot);
         if (proxy != undefined) {
             return `http://${proxy}`;
         }
@@ -81,6 +83,7 @@ module.exports = class SupportsManager {
 
         if (inviteCode == undefined) {
             console.log("Error: Cannot fetch user with undefined invite code");
+            Util.log_general("Error: Cannot fetch user with undefined invite code", this.bot);
             return;
         }
 
@@ -90,6 +93,7 @@ module.exports = class SupportsManager {
 
         if (this.loadingInvites.includes(inviteCode)) {
             console.log(`A fetch for user ${inviteCode} has already begun`);
+            Util.log_general(`A fetch for user ${inviteCode} has already begun`, this.bot);
             return;
         }
         else {
@@ -101,6 +105,7 @@ module.exports = class SupportsManager {
         if (data == undefined) {
             console.log(data);
             console.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
+            Util.log_general(`ERROR: Fetching user ${inviteCode} with friend search failed`, this.bot);
             this.callbacks.filter(e => e.inviteCode == inviteCode)
                 .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
             this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
@@ -131,6 +136,7 @@ module.exports = class SupportsManager {
 
         if (id == undefined) {
             console.log("Error: Cannot fetch user with undefined Id");
+            Util.log_general("Error: Cannot fetch user with undefined Id", this.bot);
             return;
         }
 
@@ -140,6 +146,7 @@ module.exports = class SupportsManager {
 
         if (this.loadingIds.includes(id)) {
             console.log(`A fetch for user ${id} has already begun`);
+            Util.log_general(`A fetch for user ${id} has already begun`, this.bot);
             return;
         }
         else {
@@ -202,6 +209,7 @@ module.exports = class SupportsManager {
 
         if (data == undefined) {
             console.log(`ERROR: Fetching users ${idString} (including ${inviteCode}) with support search failed`);
+            Util.log_general(`ERROR: Fetching users ${idString} (including ${inviteCode}) with support search failed`, this.bot);
             this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
             this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
 
@@ -528,6 +536,7 @@ module.exports = class SupportsManager {
             users.push(user);
         }
         console.log(`Parsed ${users.length} user accounts`);
+        Util.log_general(`Parsed ${users.length} user accounts`, this.bot);
         return users;
     }
 
