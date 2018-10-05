@@ -1064,6 +1064,7 @@ module.exports = class Profile extends BaseCommand {
         if (this.msg_if_restricted_channel(channel)) return;
         const users = await entityManager.createQueryBuilder(User, "user")
             .innerJoinAndMapOne("user.gameInfo", MagiRecoUser, "gameUser", "gameUser.friend_id = user.friend_id")
+            .where("user.deleted = :value", {value: false})
             .orderBy("gameUser.user_rank", "DESC")
             .take(10)
             .skip((page - 1) * 10)
