@@ -56,11 +56,11 @@ module.exports = class Profile extends BaseCommand {
             case 'recreate':
             case 'create':  // --
                 console.log("create");
-                if (value && value2) {
-                    this.create(channel, user, value, value2)
+                if (value) {
+                    this.create(channel, user, value)
                 }
                 else {
-                    channel.send(`Error: You need to provide your friend ID and display name`).then(message => {
+                    channel.send(`Error: You need to provide your friend ID`).then(message => {
                         message.delete(5000);
                     });
                 }
@@ -69,7 +69,7 @@ module.exports = class Profile extends BaseCommand {
             case 'change':
                 console.log("set");
                 console.log(value);
-                var settings = ["id", "name"];
+                var settings = ["id"];
                 if (value && settings.includes(value)) {
                     if (value2) {
                         this.set(channel, user.id, value, value2);
@@ -81,7 +81,7 @@ module.exports = class Profile extends BaseCommand {
                     }
                 }
                 else {
-                    channel.send(`Error: You need to set either an id or a name, e.g. ;profile ${subcommand} id Q69KBCAA`).then(message => {
+                    channel.send(`Error: You can only set an id, e.g. ;profile ${subcommand} id Q69KBCAA`).then(message => {
                         message.delete(5000);
                     });
                 }
@@ -232,7 +232,7 @@ module.exports = class Profile extends BaseCommand {
         else return false;
     }
 
-    async create(channel, discorduser, profile, displayname) {
+    async create(channel, discorduser, profile) {
         // Create new profile, then send message and check if notifications want to be turned on
         if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: discorduser.id});
@@ -262,7 +262,6 @@ module.exports = class Profile extends BaseCommand {
         user.discordname = discorduser.username;
         user.discriminator = discorduser.discriminator;
         user.friend_id = profile;
-        user.displayname = displayname;
 
         await entityManager.save(user);
 
@@ -348,7 +347,7 @@ module.exports = class Profile extends BaseCommand {
 
     error_if_no_profile(user, channel) {
         if (user == undefined || user.deleted == true) {
-            channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID> <display-name>").then(message => {
+            channel.send("Your profile was deleted or does not exist.  Use ;profile create <friend-ID>").then(message => {
                 message.delete(10000);
             });
             return true;
@@ -379,15 +378,6 @@ module.exports = class Profile extends BaseCommand {
                     .where("username = :username", {username: userid})
                     .execute();
                 channel.send("Your friend ID has been updated").then(message => {
-                    message.delete(10000);
-                });
-            }
-            else if (target === "name") {
-                typeorm.getConnection().createQueryBuilder()
-                    .update(User).set({displayname: value})
-                    .where("username = :username", {username: userid})
-                    .execute();
-                channel.send("Your game display name has been updated").then(message => {
                     message.delete(10000);
                 });
             }
@@ -422,7 +412,7 @@ module.exports = class Profile extends BaseCommand {
 
         entityManager.save(user);
 
-        let initialMessageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`;
+        let initialMessageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id}`;
         let messageTxt = initialMessageTxt;
         messageTxt = await this.build_check_message(messageTxt, user.friend_id, user);
 
@@ -462,7 +452,7 @@ module.exports = class Profile extends BaseCommand {
 
     async edit_sent_message(success, message, initialMessage, inviteCode, user, build_message) {
         var messageTxt = await build_message(initialMessage, inviteCode, user);
-        if (success == false) messageTxt = `<@${user.username}>: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}\nUpdate failed - an error occurred.`;
+        if (success == false) messageTxt = `<@${user.username}>: **Friend ID**: ${user.friend_id}\nUpdate failed - an error occurred.`;
         else messageTxt += "   The data was updated succesfully"
         messageTxt = messageTxt.replace(`${user.discordname}#${user.discriminator}`, `<@${user.username}>`);
         await message.edit("");
@@ -516,7 +506,7 @@ module.exports = class Profile extends BaseCommand {
 
         entityManager.save(user);
 
-        let initialMessageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id} **Display Name**: ${user.displayname}`;
+        let initialMessageTxt = `${user.discordname}#${user.discriminator}: **Friend ID**: ${user.friend_id}`;
         let messageTxt = initialMessageTxt;
         messageTxt = await this.build_supports_message(messageTxt, user.friend_id, user);
 
@@ -735,8 +725,11 @@ module.exports = class Profile extends BaseCommand {
 
         for (var i = 0; i < friends.length; i++) {
             if (friends[i].deleted == true) continue;
-            initialmessage += `\n★ ❤️ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
-            finalmessage += `\n★ ❤️ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            let gameUser = await entityManager.getRepository(MagiRecoUser)
+                .findOne({where: {friend_id: friends[i].friend_id}});
+            let userInfo = `${friends[i].friend_id}${(gameUser != undefined) ? " (" + gameUser.display_name + ")" : ""}`
+            initialmessage += `\n★ ❤️ ${friends[i].discordname}#${friends[i].discriminator}: ${userInfo}`;
+            finalmessage += `\n★ ❤️ <@${friends[i].username}>: ${userInfo}`;
             count++;
         }
 
@@ -805,8 +798,11 @@ module.exports = class Profile extends BaseCommand {
                 initialmessage += "❤️ ";
                 finalmessage += "❤️ ";
             }
-            initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
-            finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            let gameUser = await entityManager.getRepository(MagiRecoUser)
+                .findOne({where: {friend_id: friends[i].friend_id}});
+            let userInfo = `${friends[i].friend_id}${(gameUser != undefined) ? " (" + gameUser.display_name + ")" : ""}`
+            initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${userInfo}`;
+            finalmessage += `<@${friends[i].username}>: ${userInfo}`;
             count++;
         }
 
@@ -875,8 +871,11 @@ module.exports = class Profile extends BaseCommand {
                 initialmessage += "❤️ ";
                 finalmessage += "❤️ ";
             }
-            initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
-            finalmessage += `<@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            let gameUser = await entityManager.getRepository(MagiRecoUser)
+                .findOne({where: {friend_id: friends[i].friend_id}});
+            let userInfo = `${friends[i].friend_id}${(gameUser != undefined) ? " (" + gameUser.display_name + ")" : ""}`
+            initialmessage += `${friends[i].discordname}#${friends[i].discriminator}: ${userInfo}`;
+            finalmessage += `<@${friends[i].username}>: ${userInfo}`;
             count++;
         }
 
@@ -926,8 +925,11 @@ module.exports = class Profile extends BaseCommand {
 
         for (var i = 0; i < friends.length; i++) {
             if (friends[i].deleted == true) continue;
-            initialmessage += `\n★ ${friends[i].discordname}#${friends[i].discriminator}: ${friends[i].friend_id} (${friends[i].displayname})`;
-            finalmessage += `\n★ <@${friends[i].username}>: ${friends[i].friend_id} (${friends[i].displayname})`;
+            let gameUser = await entityManager.getRepository(MagiRecoUser)
+                .findOne({where: {friend_id: friends[i].friend_id}});
+            let userInfo = `${friends[i].friend_id}${(gameUser != undefined) ? " (" + gameUser.display_name + ")" : ""}`
+            initialmessage += `\n★ ${friends[i].discordname}#${friends[i].discriminator}: ${userInfo}`;
+            finalmessage += `\n★ <@${friends[i].username}>: ${userInfo}`;
             count++;
         }
 
