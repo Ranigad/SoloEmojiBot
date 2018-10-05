@@ -12,9 +12,9 @@ module.exports = new EntitySchema({
             type: "int",
             generated: true
         },
-        mlb: {
-            type: "boolean",
-            default: false
+        lbCount: {
+            type: "int",
+            default: 0
         },
         level: {
             type: "int",
