@@ -3,7 +3,7 @@ const tesseract = require('tesseract.js');
 const https = require('https');
 const fs = require('fs');
 
-const get_user_id_mention = (value, guild) => {
+const get_user_id_mention = (value, guild, named = false) => {
     if (value == undefined) return {success: false, reason: 2};
     //console.log(value);
     var userid = undefined;
@@ -31,6 +31,13 @@ const get_user_id_mention = (value, guild) => {
         else if (attempt2 != null && attempt2.length == 1 && attempt2[0] == value) {
             userid = value;
         }
+        else if (named) {
+            var guild_member = guild.members.find(member => member.user.username == value);
+            if (guild_member == undefined) {
+                return {success: false, reason: 3};
+            }
+            userid = guild_member.user.id;
+        }
         else {
             // Error - not ping, name&discriminator, or ID
             return {success: false, reason: 1};
@@ -39,9 +46,9 @@ const get_user_id_mention = (value, guild) => {
     return {success: true, userid: userid};
 }
 
-const get_user_id_or_error = (value, channel) => {
+const get_user_id_or_error = (value, channel, named = false) => {
     var guild = channel.guild;
-    var userdata = get_user_id_mention(value, guild);
+    var userdata = get_user_id_mention(value, guild, named);
     if (userdata.success == true) return userdata.userid;
     else {
         if (userdata.reason == 0) {
