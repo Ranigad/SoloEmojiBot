@@ -120,7 +120,7 @@ module.exports = class Profile extends BaseCommand {
                 var userid = undefined;
                 var selfcheck = false;
                 if (value) {
-                    userid = new Util().get_user_id_or_error(value, channel);
+                    userid = Util.get_user_id_or_error(value, channel);
                     if (userid == undefined) return;
                 }
                 if (userid == undefined) {
