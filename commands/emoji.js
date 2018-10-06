@@ -13,86 +13,86 @@ module.exports = class EmojiCommand extends BaseCommand {
     }
 
     run(...args) {
-        let [wiki, bot, message, [source, time, target]] = args[0];
+        let [wiki, bot, message, [first, second, third]] = args[0];
         const EC = new EmojiCounter();
-        console.log(`${source} | ${time} | ${target}`);
+        console.log(`${first} | ${second} | ${third}`);
 
         let mentions = message.mentions.members;
         console.log(mentions);
 
         const regex = /^([0-9]+)(s|m|w|h|d|y|min)$/gm;
         // User, server, emoji
-        if ((source === "emoji" || source === "e")) {
+        if ((first === "emoji" || first === "e")) {
             // emoji
 
-            if (!time) return;
+            if (!second) return;
 
-            if (time && time.match(regex) && target) {
-                return EC.emojiLookup(message, time, this.getEmojiAttr(message, target, "name"));
+            if (second && second.match(regex) && third) {
+                return EC.emojiLookup(message, second, this.getEmojiAttr(message, third, "name"));
             }
 
-            if (target && target.match(regex)) {
-                return EC.emojiLookup(message, target, this.getEmojiAttr(message, time, "name"));
+            if (third && third.match(regex)) {
+                return EC.emojiLookup(message, third, this.getEmojiAttr(message, second, "name"));
             }
 
-            return EC.emojiLookup(message, -1, this.getEmojiAttr(message, time, "name"));
-        } else if (source === "user" || source === "u") {
+            return EC.emojiLookup(message, -1, this.getEmojiAttr(message, second, "name"));
+        } else if (first === "user" || first === "u") {
             // user
 
-            let useriddata = Util.get_user_id_mention(target, message.channel.guild);
-            let useriddata2 = Util.get_user_id_mention(time, message.channel.guild);
+            let useriddata = Util.get_user_id_mention(third, message.channel.guild, true);
+            let useriddata2 = Util.get_user_id_mention(second, message.channel.guild, true);
 
             let userid = undefined;
             let timevalue = -1;
 
-            if (time) {
+            if (second) {
                 if (useriddata2.success) userid = useriddata2.userid;
-                else if (!time.match(regex)) {
+                else if (!second.match(regex)) {
                     return;
                 }
-                else timevalue = time;
+                else timevalue = second;
             }
 
-            if (target) {
+            if (third) {
                 if (useriddata.success && userid == undefined) userid = useriddata.userid;
                 else if (useriddata.success) return;
-                else if (target.match(regex) && timevalue == -1) timevalue = target;
+                else if (third.match(regex) && timevalue == -1) timevalue = third;
                 else return;
             }
 
             if (userid == undefined) userid = message.author.id;
 
             EC.userLookup(message, timevalue, userid);
-        } else if ((source === "server" || source === "s")) {
+        } else if ((first === "server" || first === "s")) {
             // server
-            // validate time
-            if (time && !time.match(regex)) {
+            // validate second
+            if (second && !second.match(regex)) {
                 return;
             }
 
-            EC.serverLookup(message, time);
+            EC.serverLookup(message, second);
 
-        } else if ((source === "reaction" || source === "r")) {
+        } else if ((first === "reaction" || first === "r")) {
             // server
-            // validate time
-            let useriddata = Util.get_user_id_mention(target, message.channel.guild);
-            let useriddata2 = Util.get_user_id_mention(time, message.channel.guild);
+            // validate second
+            let useriddata = Util.get_user_id_mention(third, message.channel.guild);
+            let useriddata2 = Util.get_user_id_mention(second, message.channel.guild);
 
             let userid = undefined;
             let timevalue = -1;
 
-            if (time) {
+            if (second) {
                 if (useriddata2.success) userid = useriddata2.userid;
-                else if (!time.match(regex)) {
+                else if (!second.match(regex)) {
                     return;
                 }
-                else timevalue = time;
+                else timevalue = second;
             }
 
-            if (target) {
+            if (third) {
                 if (useriddata.success && userid == undefined) userid = useriddata.userid;
                 else if (useriddata.success) return;
-                else if (target.match(regex) && timevalue == -1) timevalue = target;
+                else if (third.match(regex) && timevalue == -1) timevalue = third;
                 else return;
             }
 
@@ -102,42 +102,42 @@ module.exports = class EmojiCommand extends BaseCommand {
             else {
                 EC.reactionLookup(message, timevalue);
             }
-        } else if (time === undefined) {
+        } else if (second === undefined) {
             // ;emoji [arg]
-            time = -1;
-            let useriddata = Util.get_user_id_mention(source, message.channel.guild);
-            if (source && source.match(regex)) {
-                EC.serverLookup(message, source);
-            } else if (source === undefined) {
+            second = -1;
+            let useriddata = Util.get_user_id_mention(first, message.channel.guild);
+            if (first && first.match(regex)) {
+                EC.serverLookup(message, first);
+            } else if (first === undefined) {
                 EC.serverLookup(message);
             } else if (mentions.size > 0) {
-                EC.userLookup(message, time, mentions.first().id);
+                EC.userLookup(message, second, mentions.first().id);
             } else if (useriddata.success) {
-                EC.userLookup(message, time, useriddata.userid);
-            } else if (source) {
-                EC.emojiLookup(message, time, this.getEmojiAttr(message, source, "name")); //message.guild.emojis.find('name', source).id)
+                EC.userLookup(message, second, useriddata.userid);
+            } else if (first) {
+                EC.emojiLookup(message, second, this.getEmojiAttr(message, first, "name")); //message.guild.emojis.find('name', first).id)
             }
-        } else if (target === undefined) {
+        } else if (third === undefined) {
             // Scenarios: {<user> -> <time>, <emoji> -> <time>, <time> -> <user>, <time> -> <emoji>}
-            let useriddata = Util.get_user_id_mention(source, message.channel.guild);
-            let useriddata2 = Util.get_user_id_mention(time, message.channel.guild);
+            let useriddata = Util.get_user_id_mention(first, message.channel.guild);
+            let useriddata2 = Util.get_user_id_mention(second, message.channel.guild);
             
-            if (time.match(regex)) {
-                console.log("time matches");
+            if (second.match(regex)) {
+                console.log("second matches");
                 if (useriddata.success) {
-                    EC.userLookup(message, time, useriddata.userid);
+                    EC.userLookup(message, second, useriddata.userid);
                 }
                 else {
-                    EC.emojiLookup(message, time, this.getEmojiAttr(message, source, "name"));
+                    EC.emojiLookup(message, second, this.getEmojiAttr(message, first, "name"));
                 }
             }
-            else if (source.match(regex)) {
-                console.log("source matches");
+            else if (first.match(regex)) {
+                console.log("first matches");
                 if (useriddata2.success) {
-                    EC.userLookup(message, source, useriddata2.userid);
+                    EC.userLookup(message, first, useriddata2.userid);
                 }
                 else {
-                    EC.emojiLookup(message, source, this.getEmojiAttr(message, time, "name"));
+                    EC.emojiLookup(message, first, this.getEmojiAttr(message, second, "name"));
                 }
             }
         } else {
