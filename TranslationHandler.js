@@ -67,7 +67,7 @@ const process_memes = async (memes) => {
 }
 
 const process_data = async (message) => {
-    if (message.channel.guild.id == process.env.PROD_SERVER) {
+    if (message.channel.guild.id =! process.env.TEST_SERVER || message.guild.id == process.env.PROD_SERVER) {
         return;
     }
 

@@ -73,7 +73,7 @@ const log_message = (message, client) => {
         let regex = new RegExp(`<@${mention.id}>`,'g');
         message_content = message_content.replace(regex, `<@<${mention.username}#${mention.discriminator}>>`);
     }
-    const server_id = process.env.SERVER_ID;
+    const server_id = process.env.TEST_SERVER;
     const log_id = process.env.LOG_CHANNEL;
     const date = new Date();
     const date_string = date.toUTCString();
@@ -84,7 +84,7 @@ const log_message = (message, client) => {
 
 const log_general = (message, client) => {
     if (message == undefined || client == undefined) return;
-    const server_id = process.env.SERVER_ID;
+    const server_id = process.env.TEST_SERVER;
     const log_id = process.env.LOG_CHANNEL;
     const date = new Date();
     const date_string = date.toUTCString();
