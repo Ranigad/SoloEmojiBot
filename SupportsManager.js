@@ -448,6 +448,9 @@ module.exports = class SupportsManager {
                     meme.lbCount = memeData.lbCount;
                     meme.level = memeData.level;
                     meme.memoriaId = memeData.id;
+                    meme.hp = memeData.hp;
+                    meme.attack = memeData.attack;
+                    meme.defense = memeData.defense;
 
                     memes.push(meme);
                 }
@@ -512,6 +515,12 @@ module.exports = class SupportsManager {
                             return element.memoriaId == memeId;
                         });
                         if (meme != undefined) {
+                            meguca.hp += meme.hp;
+                            meguca.attack += meme.attack;
+                            meguca.defense += meme.defense;
+                            delete meme.hp;
+                            delete meme.attack;
+                            delete meme.defense;
                             meme.meguca = meguca;
                             delete meme.memoriaId;
                             allMemes.push(meme);
