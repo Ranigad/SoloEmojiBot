@@ -16,6 +16,7 @@ const translationHandler = require("../TranslationHandler.js");
 
 
 const production_server = process.env.PROD_SERVER;
+const test_server = process.env.TEST_SERVER;
 
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
@@ -350,11 +351,18 @@ module.exports = class Profile extends BaseCommand {
     }
 
     msg_if_restricted_channel(channel) {
-        if (channel != undefined && channel.guild != undefined && channel.guild.id == this.production_server
+        if (channel != undefined && channel.guild != undefined && channel.guild.id != this.test_server
             && !channel.name.includes("bot")) {
-                channel.send("You can only use this command in the #bot-commands chanel").then(message => {
-                    message.delete(10000);
-                });
+                if (channel.guild.id == this.production_server) {
+                    channel.send("You can only use this command in the #bot-commands chanel").then(message => {
+                        message.delete(10000);
+                    });
+                }
+                else {
+                    channel.send("You can only use this command in a bot chanel").then(message => {
+                        message.delete(10000);
+                    });
+                }
                 return true;
         }
         return false;
