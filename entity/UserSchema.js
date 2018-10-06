@@ -27,7 +27,7 @@ module.exports = new EntitySchema({
             type: "boolean"
         },
         addtimestamp: {
-            type: "date"
+            type: "datetime"
         },
         deleted: {
             type: "boolean",

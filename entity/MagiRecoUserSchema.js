@@ -21,27 +21,31 @@ module.exports = new EntitySchema({
             type: "int"
         },
         class_rank: {
-            type: "varchar"
+            type: "varchar",
+            nullable: true
         },
         last_access: {
             nullable: true,
-            type: "date"
+            type: "datetime"
         },
         comment: {
             default: "",
-            type: "varchar"
+            type: "varchar",
+            nullable: true
         },
         addtimestamp: {
-            type: "date"
+            type: "datetime"
         },
         updatetimestamp: {
-            type: "date"
+            type: "datetime",
+            nullable: true
         }
     },
     relations: {
         meguca: {
             target: "Meguca",
             type: "one-to-many",
+            inverseSide: "user",
             joinTable: false,
             cascade: true
         }

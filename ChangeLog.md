@@ -17,6 +17,21 @@
 
 ---
 
+## Version 2.0 (TBD)
+- Set the bot's game status to "Magia Record | ;help"
+- Add TypeORM for convenient database manipulation
+- Add logging for all bot commands and bot messages
+- Add ;react command to react with custom emoji
+- Add ;event command to parse an event's countdown
+- Add version 1 of the ;profile system, with profiles and follows
+- Add support capture and parsing for the profiles system
+- Add detection of Iroha-only quest images through OCR
+- Improve the emoji command, with multiple ways to tag users and other flexible options
+- Add reaction user lookup to emoji command
+- Skip logging bot emoji usage
+
+---
+
 ## Version 1.0 (6/10/18)
 - Added messageid to database
 - Reactional removal now removes entry from database
