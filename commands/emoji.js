@@ -4,90 +4,144 @@ const EmojiCounter = require('../EmojiParser.js');
 
 const BaseCommand = require('../BaseCommand.js');
 
-module.exports = class TestCommand extends BaseCommand {
+const Util = require('../Util.js');
+
+module.exports = class EmojiCommand extends BaseCommand {
 
     constructor(debug=false) {
         super(debug);
     }
 
     run(...args) {
-        let [wiki, bot, message, [source, time, target]] = args[0];
+        let [wiki, bot, message, [first, second, third]] = args[0];
         const EC = new EmojiCounter();
-        console.log(`${source} | ${time} | ${target}`);
+        console.log(`${first} | ${second} | ${third}`);
 
         let mentions = message.mentions.members;
         console.log(mentions);
 
-        const regex = /^([0-9]+)(s|m|h|d|y|min)$/gm;
+        const regex = /^([0-9]+)(s|m|w|h|d|y|min)$/gm;
         // User, server, emoji
-        if ((source === "emoji" || source === "e")) {
+        if ((first === "emoji" || first === "e")) {
             // emoji
-            [time, target] = [target, time]
-            if (time && !time.match(regex)){
+
+            if (!second) return;
+
+            if (second && second.match(regex) && third) {
+                return EC.emojiLookup(message, second, this.getEmojiAttr(message, third, "name"));
+            }
+
+            if (third && third.match(regex)) {
+                return EC.emojiLookup(message, third, this.getEmojiAttr(message, second, "name"));
+            }
+
+            return EC.emojiLookup(message, -1, this.getEmojiAttr(message, second, "name"));
+        } else if (first === "user" || first === "u") {
+            // user
+
+            let useriddata = Util.get_user_id_mention(third, message.channel.guild, true);
+            let useriddata2 = Util.get_user_id_mention(second, message.channel.guild, true);
+
+            let userid = undefined;
+            let timevalue = -1;
+
+            if (second) {
+                if (useriddata2.success) userid = useriddata2.userid;
+                else if (!second.match(regex)) {
+                    return;
+                }
+                else timevalue = second;
+            }
+
+            if (third) {
+                if (useriddata.success && userid == undefined) userid = useriddata.userid;
+                else if (useriddata.success) return;
+                else if (third.match(regex) && timevalue == -1) timevalue = third;
+                else return;
+            }
+
+            if (userid == undefined) userid = message.author.id;
+
+            EC.userLookup(message, timevalue, userid);
+        } else if ((first === "server" || first === "s")) {
+            // server
+            // validate second
+            if (second && !second.match(regex)) {
                 return;
             }
 
-            if (target) {
-                EC.emojiLookup(message, time, this.getEmojiAttr(message, target, "name")); //message.guild.emojis.find('name', target).id);   // emojiname
-            }
-        } else if (source === "user" || source === "u") {
-            // user
+            EC.serverLookup(message, second);
 
-            let userid = (mentions.size > 0 && mentions.first().id) || message.author.id;
+        } else if ((first === "reaction" || first === "r")) {
+            // server
+            // validate second
+            let useriddata = Util.get_user_id_mention(third, message.channel.guild);
+            let useriddata2 = Util.get_user_id_mention(second, message.channel.guild);
 
-            this.print(userid);
+            let userid = undefined;
+            let timevalue = -1;
 
-            if (time && !time.match(regex)) {
-                if (mentions.length <= 0) {
+            if (second) {
+                if (useriddata2.success) userid = useriddata2.userid;
+                else if (!second.match(regex)) {
                     return;
-                } else {
-                    time = -1;
                 }
+                else timevalue = second;
             }
 
-            if (userid) {
-                EC.userLookup(message, time, userid);   // username
-            }
-        } else if ((source === "server" || source === "s")) {
-            // server
-            // validate time
-            if (time && !time.match(regex)) {
-                return
+            if (third) {
+                if (useriddata.success && userid == undefined) userid = useriddata.userid;
+                else if (useriddata.success) return;
+                else if (third.match(regex) && timevalue == -1) timevalue = third;
+                else return;
             }
 
-            EC.serverLookup(message, time);
-
-        } else if ((source === "reaction" || source === "r")) {
-            // server
-            // validate time
-            if (time && !time.match(regex)) {
-             return
+            if (userid != undefined) {
+                EC.reactionUserLookup(message, timevalue, userid);
             }
-
-            EC.reactionLookup(message, time);
-
-        } else if (time === undefined) {
+            else {
+                EC.reactionLookup(message, timevalue);
+            }
+        } else if (second === undefined) {
             // ;emoji [arg]
-            time = -1;
-            if (source && source.match(regex)) {
-                EC.serverLookup(message, source);
-            } else if (source === undefined) {
+            second = -1;
+            let useriddata = Util.get_user_id_mention(first, message.channel.guild);
+            if (first && first.match(regex)) {
+                EC.serverLookup(message, first);
+            } else if (first === undefined) {
                 EC.serverLookup(message);
             } else if (mentions.size > 0) {
-                EC.userLookup(message, time, mentions.first().id);
-            } else if (source) {
-                EC.emojiLookup(message, time, this.getEmojiAttr(message, source, "name")); //message.guild.emojis.find('name', source).id)
+                EC.userLookup(message, second, mentions.first().id);
+            } else if (useriddata.success) {
+                EC.userLookup(message, second, useriddata.userid);
+            } else if (first) {
+                EC.emojiLookup(message, second, this.getEmojiAttr(message, first, "name")); //message.guild.emojis.find('name', first).id)
             }
-        } else if (target === undefined) {
-            if (time.match(regex)) {
-                if (mentions.size > 0) {
-                    EC.userLookup(message, time, mentions.first().id);
-                } else {
-                    EC.emojiLookup(message, time, this.getEmojiAttr(message, source, "name"));//message.guild.emojis.find('name', source).id);
+        } else if (third === undefined) {
+            // Scenarios: {<user> -> <time>, <emoji> -> <time>, <time> -> <user>, <time> -> <emoji>}
+            let useriddata = Util.get_user_id_mention(first, message.channel.guild);
+            let useriddata2 = Util.get_user_id_mention(second, message.channel.guild);
+            
+            if (second.match(regex)) {
+                console.log("second matches");
+                if (useriddata.success) {
+                    EC.userLookup(message, second, useriddata.userid);
+                }
+                else {
+                    EC.emojiLookup(message, second, this.getEmojiAttr(message, first, "name"));
+                }
+            }
+            else if (first.match(regex)) {
+                console.log("first matches");
+                if (useriddata2.success) {
+                    EC.userLookup(message, first, useriddata2.userid);
+                }
+                else {
+                    EC.emojiLookup(message, first, this.getEmojiAttr(message, second, "name"));
                 }
             }
         } else {
-            EC.printEmojiCount(message, []);
+            EC.serverLookup(message);
         }
     }
 

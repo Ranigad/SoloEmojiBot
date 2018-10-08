@@ -1,4 +1,67 @@
 {
+  "Profile": {
+    "description": "In-discord friend and profile system for Magia Record. Includes features such as fetching data from in-game profiles, a follower request system, notification system, and support look up.\n\n__**Subcommands**__",
+    "fields": [
+      {
+        "name": ";profile create in-game-friend-id",
+        "value": "Creates or, if previously deleted, restore your profile with your in-game friend ID. \n___\n"
+      },
+      {
+        "name": ";profile check @User/User#Tag/Discord UserID",
+        "value": "Displays condensed version of player data. \n___\n"
+      },
+      {
+        "name": ";profile supports @User/User#Tag/Discord UserID",
+        "value": "Displays detailed player data. \n___\n"
+      },
+      {
+        "name": ";profile notify on/off",
+        "value": "Enables or disables notifications. When on, the bot will send DM you on follows and your follower status. \n___\n"
+      },
+      {
+        "name": ";profile set in-game-friend-id",
+        "value": "Updates your profile's friend ID. \n___\n"
+      },
+      {
+        "name": ";profile follow/unfollow @User/User#Tag/Discord UserID",
+        "value": "Follow or unfollow a given user \n___\n"
+      },
+      {
+        "name": ";profile following/followers/mutuals",
+        "value": "Get a list of who you are **following**, your **followers**, and your **mutual** followers. \n___\n"
+      },
+      {
+        "name": ";profile list page-#",
+        "value": "List all profiles. 10 profiles are listed per page. Page number must be provided. \n___\n"
+      },
+      {
+        "name": ";profile delete",
+        "value": "Delete your profile. \n___\n"
+      }
+    ]
+  },
+  "Event": {
+    "description": "Provides information for the ongoing in-game events and a countdown to its conclusion \n___\n",
+    "fields": [
+      {
+        "name": "Usage",
+        "value": ";event"
+      }
+    ]
+    },
+  "React": {
+    "description": "Reacts to a message with a custom reaction from another server to allow user reactions. \n\n Will remove reaction after short period of time. \n___\n",
+    "fields": [
+      {
+        "name": "Usage",
+        "value": ";react message-id emote-name\n\nReact to message with matching message-id using reaction with matching name \n___\n"
+      },
+      {
+        "name": "Supported Servers",
+        "value": "PMMM:Magia Record\nMagireco Emotes For Discord Whales\n/r/MadokaMagica (pending)"
+      }
+      ]
+    },
   "Emoji": {
     "description": "Displays tracked emoji usage in messages and reactions. Only tallies currently active emojis. \n\n If nothing is added to the command, it will print the server's total usage. \n\n __**Subcommands**__",
     "fields": [
@@ -11,7 +74,7 @@
         "value": "Get emoji usage for yourself.\n___\n"
       },
       {
-        "name": "`;emoji u @someone` | `;emoji user @someone`\n\n",
+        "name": "`;emoji u @someone` | `;emoji user username#id`\n\n",
         "value": "Get emoji usage for a specific mentioned user.\n___\n"
       },
       {
@@ -19,8 +82,12 @@
         "value": "Get a list of usage by person of a currently active server emoji.\n___\n"
       },
       {
+        "name": "`;emoji reaction` | `;emoji r` | `;emoji reaction username#id`\n\n",
+        "value": "List reaction emoji usage either by server or by an optional user target"
+      },
+      {
         "name": "time ",
-        "value": ";emoji 1s | ;emoji u 2min | ;emoji e 3h | ;emoji @user 4d | ;emoji 5m | ;emoji 10y\n\nCan be added to the end of the command to limit the scope of time. Must be an integer combined with a valid key."
+        "value": ";emoji 1s | ;emoji u 2min | ;emoji 3h e | ;emoji @user 4d | ;emoji 5m | ;emoji 10y\n\nCan be add to the command to limit the scope of time. Must be an integer combined with a valid key."
       },
       {
         "name": "s",
@@ -55,59 +122,7 @@
     ]
   },
   "E": {
-  "description": "Displays tracked emoji usage in messages and reactions. Only tallies currently active emojis. \n\n If nothing is added to the command, it will print the server's total usage. \n\n __**Subcommands**__",
-  "fields": [
-    {
-      "name": "`;e` | `;e s` | `;e server`\n\n",
-      "value": "Get emoji usage for the current server.\n___\n"
-    },
-    {
-      "name": "`;e u` | `;e user`\n\n",
-      "value": "Get emoji usage for yourself.\n___\n"
-    },
-    {
-      "name": "`;e u @someone` | `;e user @someone`\n\n",
-      "value": "Get emoji usage for a specific mentioned user.\n___\n"
-    },
-    {
-      "name": "`;e thinking` | `;e emoji thinking`\n\n",
-      "value": "Get a list of usage by person of a currently active server emoji.\n___\n"
-    },
-    {
-      "name": "time ",
-      "value": ";e 1s | ;e u 2min | ;e e 3h | ;e @user 4d | ;e 5m | ;e 10y\n\nCan be added to the end of the command to limit the scope of time. Must be an integer combined with a valid key."
-    },
-    {
-      "name": "s",
-      "value": "seconds",
-      "inline": true
-    },
-    {
-      "name": "min",
-      "value": "minutes",
-      "inline": true
-    },
-    {
-      "name": "h",
-      "value": "hours",
-      "inline": true
-    },
-    {
-      "name": "d",
-      "value": "days",
-      "inline": true
-    },
-    {
-      "name": "m",
-      "value": "months",
-      "inline": true
-    },
-    {
-      "name": "y",
-      "value": "years",
-      "inline": true
-    }
-  ]
+  "description": "A shortcut for ;emoji"
 },
   "Wlink": {
       "description": "Generates a link by combining the server's registered wiki site and a user provided page name.\n___\n",
@@ -127,21 +142,7 @@
       ]
     },
   "W": {
-  "description": "Generates a link by combining the server's registered wiki site and a user provided page name.\n___\n",
-  "fields": [
-    {
-      "name": "Usage",
-      "value": ";w Example Page\n___\n"
-    },
-    {
-      "name": "Name Search",
-      "value": ";w Nanaka\n\nGiven first or last name, generates a link to character's page.\n___\n"
-    },
-    {
-      "name": "Shortcuts",
-      "value": "Users can create single keyword shortcuts using the `wadd` command. This command will first search through shortcuts to find pages before generating a link based on user provided text."
-    }
-  ]
+  "description": "A shortcut for ;wlink"
 },
   "Wadd": {"description": "Adds a single word keyword as a shortcut to a longer page for `wlink` for the server.\n___\n",
   "fields": [
@@ -178,6 +179,18 @@
       {
         "name": "wdelete",
         "value": "Delete a keyword created by `wadd`.\n___\n"
+      },
+      {
+        "name": "react or r",
+        "value": "Have the bot react to a given message with a custom reaction\n___\n"
+      },
+      {
+        "name": "event",
+        "value": "Provides information for the ongoing in-game events and a countdown to its conclusion"
+      },
+      {
+        "name": "profile",
+        "value": "Bot-managed friend and profile system for Magia Record Discord"
       }
     ]
   }

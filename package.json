@@ -4,15 +4,31 @@
   "description": "Bot for magia record discord",
   "main": "soloBot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^8.10.22",
+    "ts-node": "3.3.0",
+    "typescript": "2.5.2"
   },
   "author": "Ranigad",
   "license": "ISC",
   "dependencies": {
+    "bufferutil": "^4.0.0",
     "cheerio": "^1.0.0-rc.2",
+    "csv-parse": "^3.1.2",
+    "csv-stringify": "^4.3.1",
+    "csv-stringify-as-promised": "^2.0.3",
     "discord.js": "^11.3.2",
     "dotenv": "^5.0.1",
+    "noodlejs": "^0.3.2",
+    "papaparse": "^4.6.1",
+    "reflect-metadata": "^0.1.10",
     "request": "^2.85.0",
-    "sqlite3": "^4.0.0"
+    "request-promise": "^4.2.2",
+    "sqlite3": "^3.1.10",
+    "tesseract.js": "^1.0.10",
+    "typeorm": "0.2.7",
+    "uws": "^10.148.1"
   }
 }

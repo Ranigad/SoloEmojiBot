@@ -1,6 +1,7 @@
 "use strict";
 const fs = require('fs');
 const path = require('path');
+const Util = require('./Util.js');
 let wiki = new (require('./wiki.js').Wikia)();
 // Bot check before passing in
 
@@ -9,7 +10,7 @@ module.exports = class CommandHandler {
         this.commandDirectory = commandDirectory;
         this.prefix = prefix;
         this.debug = debug;
-        this.bot = false;
+        this.bot = bot;
         console.log(path.dirname(require.main.filename));
     }
 
@@ -35,6 +36,9 @@ module.exports = class CommandHandler {
         // 1. Parse message
         let parsedMessage = this.parser(message.content);
         if (!parsedMessage) return true; // Return if the prefix is not correct
+
+        // Log the command
+        Util.log_message(message, this.bot);
 
         let [command, args] = [parsedMessage["command"], parsedMessage["arguments"]];
 
