@@ -359,7 +359,7 @@ module.exports = class Profile extends BaseCommand {
                     });
                 }
                 else {
-                    channel.send("You can only use this command in a bot chanel").then(message => {
+                    channel.send("You can only use this command in a bot channel").then(message => {
                         message.delete(10000);
                     });
                 }
