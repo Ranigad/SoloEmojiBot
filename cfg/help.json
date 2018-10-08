@@ -4,39 +4,39 @@
     "fields": [
       {
         "name": ";profile create in-game-friend-id",
-        "value": "Creates or, if previously deleted, restore your profile with your in-game friend ID."
+        "value": "Creates or, if previously deleted, restore your profile with your in-game friend ID. \n___\n"
       },
       {
         "name": ";profile check @User/User#Tag/Discord UserID",
-        "value": "Displays condensed version of player data."
+        "value": "Displays condensed version of player data. \n___\n"
       },
       {
         "name": ";profile supports @User/User#Tag/Discord UserID",
-        "value": "Displays detailed player data."
+        "value": "Displays detailed player data. \n___\n"
       },
       {
         "name": ";profile notify on/off",
-        "value": "Enables or disables notifications. When on, the bot will send DM you on follows and your follower status."
+        "value": "Enables or disables notifications. When on, the bot will send DM you on follows and your follower status. \n___\n"
       },
       {
         "name": ";profile set in-game-friend-id",
-        "value": "Updates your profile's friend ID."
+        "value": "Updates your profile's friend ID. \n___\n"
       },
       {
         "name": ";profile follow/unfollow @User/User#Tag/Discord UserID",
-        "value": "Follow or unfollow a given user"
+        "value": "Follow or unfollow a given user \n___\n"
       },
       {
         "name": ";profile following/followers/mutuals",
-        "value": "Get a list of who you are **following**, your **followers**, and your **mutual** followers."
+        "value": "Get a list of who you are **following**, your **followers**, and your **mutual** followers. \n___\n"
       },
       {
         "name": ";profile list page-#",
-        "value": "List all profiles. 10 profiles are listed per page. Page number must be provided."
+        "value": "List all profiles. 10 profiles are listed per page. Page number must be provided. \n___\n"
       },
       {
         "name": ";profile delete",
-        "value": "Delete your profile."
+        "value": "Delete your profile. \n___\n"
       }
     ]
   },
@@ -50,7 +50,7 @@
     ]
     },
   "React": {
-    "description": "Reacts to a message with a custom reaction from another server to allow user reactions. \n\n Will remove reaction after short period of time.",
+    "description": "Reacts to a message with a custom reaction from another server to allow user reactions. \n\n Will remove reaction after short period of time. \n___\n",
     "fields": [
       {
         "name": "Usage",
