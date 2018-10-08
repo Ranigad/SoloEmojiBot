@@ -205,7 +205,7 @@ module.exports = class Profile extends BaseCommand {
                         }
                         else {
                             console.log("Error happened");
-                            return channel.send(`There was an error with your command: ";profile ${subcommand}".  Use ;profile help for supported commands`).then(message => {
+                            return channel.send(`There was an error with your command: ";profile ${subcommand}".  Use ;help profile for supported commands`).then(message => {
                                 message.delete(10000);
                             });
                         }
@@ -1053,14 +1053,15 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async list(channel, page) {
+        let itemsPerPage = 5;
         if (page < 1) page = 1;
         if (this.msg_if_restricted_channel(channel)) return;
         const users = await entityManager.createQueryBuilder(User, "user")
             .innerJoinAndMapOne("user.gameInfo", MagiRecoUser, "gameUser", "gameUser.friend_id = user.friend_id")
             .where("user.deleted = :value", {value: false})
             .orderBy("gameUser.user_rank", "DESC")
-            .take(10)
-            .skip((page - 1) * 10)
+            .take(itemsPerPage)
+            .skip((page - 1) * itemsPerPage)
             .getMany();
         let messageTxt = `**All Profiles (Page ${page}):**`;
         for (var user of users) {
