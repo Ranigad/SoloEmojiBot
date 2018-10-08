@@ -652,7 +652,7 @@ module.exports = class Profile extends BaseCommand {
         entityManager.save(friend);
 
         if (user.notifications) {
-            discordrecipient.send(`You have been followed by <@${senderid}> (${discordsender.username}) on Mokyuu Profiles!  Use ;profile friend to accept or ;profile check to view their info`);
+            discordrecipient.send(`You have been followed by <@${senderid}> (${discordsender.username}) on Mokyuu Profiles! In a bot commands channel, use ;profile follow ${user.discordname}#${user.discriminator} to accept or ;profile check ${user.discordname}#${user.discriminator} to view their info`);
 
             return channel.send(`You have followed ${user.discordname}#${user.discriminator}!`).then(message => {
                 message.edit(`You have followed <@${user.username}>!`);
