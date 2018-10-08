@@ -16,14 +16,17 @@ module.exports = class Help extends BaseCommand {
         if (page.length == 1) {
             let command = page[0].substring(0, 1).toUpperCase() + page[0].substring(1).toLowerCase();
             if (command in this.help) {
-                this.run(command, message.author);
+                this.run(command, message.author, message.guild && message.guild.id = "364704870177046531");
             }
         }
     }
 
-    run(command, channel) {
+    run(command, channel, madocord = false) {
         let embed = this.createEmbed(command);
         channel.send(embed);
+        if (madocord == true && command === "Help"){
+            channel.send("Please note: On the /r/MadokaMagica server, the prefix \"\\\" is supported instead of \";\"");
+        }
     }
 
     importHelpFile() {

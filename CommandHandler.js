@@ -18,9 +18,9 @@ module.exports = class CommandHandler {
         if (this.debug) console.log(message);
     }
 
-    parser(message) {
+    parser(message, prefix = this.prefix) {
         // 2. Extract message if proper prefix
-        if(!message.startsWith(this.prefix)) return false;
+        if(!message.startsWith(prefix)) return false;
         const args = message.slice(this.prefix.length).split(/ +/);
         const command = args.shift().toLowerCase();
         return {"command": command, "arguments": args}
@@ -34,7 +34,21 @@ module.exports = class CommandHandler {
     handle(message) {
         //-----------------------------------------------------------------------------------
         // 1. Parse message
-        let parsedMessage = this.parser(message.content);
+        
+        let parsedMessage = null;
+        //Change the prefix for the r/madokamagica server, unless the command is 'help'
+        if (message.guild && message.guild.id == "364704870177046531"){
+            parsedMessage = this.parser(message.content, "\\");
+            if (!parsedMessage){
+                parsedMessage = this.parser(message.content);
+                if (parsedMessage["command"] != "help"){
+                    parsedMessage = false;
+                }
+            }
+        }
+        else{
+            parsedMessage = this.parser(message.content);
+        }
         if (!parsedMessage) return true; // Return if the prefix is not correct
 
         // Log the command
