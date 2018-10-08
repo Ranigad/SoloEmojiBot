@@ -116,6 +116,7 @@ module.exports = class Profile extends BaseCommand {
                 }
                 this.check(channel, userid, selfcheck);
                 break;
+            case 'support':
             case 'supports':
                 console.log("supports");
                 var userid = undefined;
@@ -399,7 +400,7 @@ module.exports = class Profile extends BaseCommand {
         var user = await entityManager.getRepository(User).findOne({username: userid});
         if (user == undefined || user.deleted == true) {
             if (selfcheck) {
-                return channel.send("Your profile does not exist or was deleted.  Use ;profile create to create it").then(message => {
+                return channel.send("Your profile does not exist or was deleted.  Use ;profile create friend-id to create it").then(message => {
                     message.delete(5000);
                 });
             }
