@@ -16,7 +16,7 @@ module.exports = class Help extends BaseCommand {
         if (page.length == 1) {
             let command = page[0].substring(0, 1).toUpperCase() + page[0].substring(1).toLowerCase();
             if (command in this.help) {
-                this.run(command, message.author.dmChannel);
+                this.run(command, message.author);
             }
         }
     }
