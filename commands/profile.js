@@ -16,6 +16,7 @@ const translationHandler = require("../TranslationHandler.js");
 
 
 const production_server = process.env.PROD_SERVER;
+const test_server = process.env.TEST_SERVER;
 
 module.exports = class Profile extends BaseCommand {
     constructor(debug=false) {
@@ -296,9 +297,7 @@ module.exports = class Profile extends BaseCommand {
                 entityManager.save(user);
 
                 if (user.deleted == false && user.notifications) {
-                    discordrecipient.send(`Your former mutual follower, ${discordsender.discordname}#${discordsender.discriminator} recreated their profile`).then(message => {
-                        message.edit(`Your former mutual follower, <@${userid}> recreated their profile`);
-                    });
+                    discordrecipient.send(`Your former mutual follower, <@${userid}> (${discordsender.username}) recreated their Mokyuu Profiles profile`);
                 }
             }
 
@@ -311,9 +310,7 @@ module.exports = class Profile extends BaseCommand {
     
                 var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
                 if (user.deleted == false && user.notifications && !mutual_relationship) {
-                        discordrecipient.send(`Your former follower, ${discordsender.discordname}#${discordsender.discriminator} recreated their profile`).then(message => {
-                        message.edit(`Your former follower, <@${userid}> recreated their profile`);
-                    });
+                    discordrecipient.send(`Your former follower, <@${userid}> (${discordsender.username}) recreated their Mokyuu Profiles profile`);
                 }
             }
 
@@ -326,9 +323,7 @@ module.exports = class Profile extends BaseCommand {
     
                 var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
                 if (user.deleted == false && user.notifications && !mutual_relationship) {
-                        discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator}, who you had followed, recreated their profile`).then(message => {
-                        message.edit(`<@${userid}>, who you had followed, recreated their profile`);
-                    });
+                    discordrecipient.send(`<@${userid}> (${discordsender.username}), who you had followed, recreated their Mokyuu Profiles profile`);
                 }
             }
         }
@@ -356,11 +351,18 @@ module.exports = class Profile extends BaseCommand {
     }
 
     msg_if_restricted_channel(channel) {
-        if (channel != undefined && channel.guild != undefined && channel.guild.id == this.production_server
+        if (channel != undefined && channel.guild != undefined && channel.guild.id != this.test_server
             && !channel.name.includes("bot")) {
-                channel.send("You can only use this command in the #bot-commands chanel").then(message => {
-                    message.delete(10000);
-                });
+                if (channel.guild.id == this.production_server) {
+                    channel.send("You can only use this command in the #bot-commands chanel").then(message => {
+                        message.delete(10000);
+                    });
+                }
+                else {
+                    channel.send("You can only use this command in a bot chanel").then(message => {
+                        message.delete(10000);
+                    });
+                }
                 return true;
         }
         return false;
@@ -636,7 +638,7 @@ module.exports = class Profile extends BaseCommand {
             });
 
             if (user.deleted == false && user.notifications) {
-                discordrecipient.send(`<@${senderid}> (${discordsender.username}) followed you back!  Make sure to follow them ingame`);
+                discordrecipient.send(`<@${senderid}> (${discordsender.username}) followed you back on Mokyuu Profiles!  Make sure to follow them ingame`);
             }
             return;
         }
@@ -650,7 +652,7 @@ module.exports = class Profile extends BaseCommand {
         entityManager.save(friend);
 
         if (user.notifications) {
-            discordrecipient.send(`You have been followed by <@${senderid}> (${discordsender.username})!  Use ;profile friend to accept or ;profile check to view their info`);
+            discordrecipient.send(`You have been followed by <@${senderid}> (${discordsender.username}) on Mokyuu Profiles!  Use ;profile friend to accept or ;profile check to view their info`);
 
             return channel.send(`You have followed ${user.discordname}#${user.discriminator}!`).then(message => {
                 message.edit(`You have followed <@${user.username}>!`);
@@ -988,7 +990,7 @@ module.exports = class Profile extends BaseCommand {
         });
 
         if (bot_user.deleted == false && bot_user.notifications) {
-            user.send(`<@${senderid}> (${sender.username}) has unfollowed you`);
+            user.send(`<@${senderid}> (${sender.username}) has unfollowed you on Mokyuu Profiles`);
         }
     }
 
@@ -1019,9 +1021,7 @@ module.exports = class Profile extends BaseCommand {
             entityManager.save(user);
 
             if (user.deleted == false && user.notifications) {
-                discordrecipient.send(`Your mutual follower, ${discordsender.discordname}#${discordsender.discriminator} deleted their profile`).then(message => {
-                    message.edit(`Your mutual follower, <@${userid}> deleted their profile`);
-                });
+                discordrecipient.send(`Your mutual follower, <@${userid}> (${discordsender.username}) deleted their Mokyuu Profiles profile`);
             }
         }
 
@@ -1034,9 +1034,7 @@ module.exports = class Profile extends BaseCommand {
 
             var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
             if (user.deleted == false && user.notifications && !mutual_relationship) {
-                discordrecipient.send(`Your follower, ${discordsender.discordname}#${discordsender.discriminator} deleted their profile`).then(message => {
-                    message.edit(`Your follower, <@${userid}> deleted their profile`);
-                });
+                discordrecipient.send(`Your follower, <@${userid}> (${discordsender.username}) deleted their Mokyuu Profiles profile`);
             }
         }
 
@@ -1049,9 +1047,7 @@ module.exports = class Profile extends BaseCommand {
 
             var mutual_relationship = await this.is_mutual(discordsender.id, discordrecipient.id);
             if (user.deleted == false && user.notifications && !mutual_relationship) {
-                discordrecipient.send(`${discordsender.discordname}#${discordsender.discriminator}, who you follow, deleted their profile`).then(message => {
-                    message.edit(`<@${userid}>, who you follow, deleted their profile`);
-                });
+                discordrecipient.send(`<@${userid}> (${discordsender.username}), who you follow, deleted their Mokyuu Profiles profile`);
             }
         }
     }
