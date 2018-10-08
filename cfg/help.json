@@ -182,7 +182,7 @@
       },
       {
         "name": "react or r",
-        "value": "Have the bot react to a given message with a custom reaction\n\___\n" 
+        "value": "Have the bot react to a given message with a custom reaction\n___\n"
       },
       {
         "name": "event",
