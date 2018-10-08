@@ -60,7 +60,7 @@ module.exports = class Profile extends BaseCommand {
         } else if (value) {
             fullNameArray = [value];
         } else {
-            fullNameArray = [subcommand];
+            fullNameArray = [];
         }
         let fullName = fullNameArray.join(" ");
         switch(subcommand.toLowerCase()) {
