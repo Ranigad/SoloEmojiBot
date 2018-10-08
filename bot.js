@@ -16,6 +16,7 @@ const EmojiCounter = require('./EmojiParser.js');
 const Wiki = require("./wiki.js");
 const EC = new EmojiCounter();
 const Util = require("./Util.js");
+const TranslationHandler = require("./TranslationHandler.js");
 
 // Environment
 const prefix = process.env.DISCORD_PREFIX;
@@ -28,17 +29,37 @@ client.login(token);
 const CommandHandler = require('./CommandHandler.js');
 let CH = null;
 
+const SupportsManager = require('./SupportsManager.js');
+let SM = null;
+
 client.on('ready', () => {
+
+    SM = new SupportsManager();
+    client.supportsManager = SM;
+    SM.bot = client;
+
     CH = new CommandHandler(prefix, false, client);
     client.user.setPresence({game: {name: 'Magia Record | ;help'}})
         .then(console.log)
         .catch(console.error);
+    
+    let normal = [], animated = [];
+    client.guilds.get("471030229629009925").emojis.forEach(emoji => emoji.animated ? animated.push([emoji.id, emoji.name]) : normal.push([emoji.id, emoji.name]));
+
+    var message = "Static Emojis";
+    normal.forEach(emoji => message += `\n<:${emoji[1]}:${emoji[0]}> -- ${emoji[1]}, ${emoji[0]}`);
+    message += "\nAnimated Emojis";
+    animated.forEach(emoji => message += `\n<a:${emoji[1]}:${emoji[0]}> -- ${emoji[1]}, ${emoji[0]}`);
+    console.log(message);
+
+    //client.guilds.get("471030229629009925").channels.get("494359317638807572").send(message);
 });
 
 client.on('message', msg => {
     if (msg.channel.type !== 'text') return;
     if (msg.author.id == client.user.id) return;
     if (msg.author.bot == false && !msg.channel.name.includes("art")) {
+        TranslationHandler.process_data(msg);
         Util.process_image(msg);
     }
     let parse = CH.handle(msg);

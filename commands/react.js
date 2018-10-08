@@ -9,27 +9,26 @@ module.exports = class React extends BaseCommand {
         let [wiki, bot, message, cmdargs] = args;
         if (cmdargs.length != 2) {
             if (message.deletable) message.delete(10000)
-            return message.channel.send('You need to provide a message ID and an emote name, $react <message-ID> <emote-name>')
+            return message.channel.send('You need to provide a message ID and an emote name, ;react <message-ID> <emote-name>')
                 .then(message => {
                     message.delete(10000)
                 });
         }
 
-        var message_id = cmdargs[0];
-        var emoji = cmdargs[1];
+        let message_id = cmdargs[0];
+        let emoji = cmdargs[1];
 
-        this.run(message_id, emoji, message, bot);
+        this.run(message_id, emoji, message, bot.emojis);
     }
 
-    run(message_id, emoji_name, message, bot) {
-        var emojis = bot.emojis;
-        var emoji = emojis.find('name', emoji_name);
+    run(message_id, emoji_name, message, emojis) {
+        let emoji = emojis.find('name', emoji_name);
 
-        var mainmsg = message;
+        let mainmsg = message;
 
-        var channels = [];
+        let channels = [];
         if (message.channel.type == 'text') {
-            var guild = message.channel.guild;
+            let guild = message.guild;
             guild.channels.forEach(channel => {
                if (channel.type == 'text') {
                     channels.push(channel);
@@ -41,7 +40,7 @@ module.exports = class React extends BaseCommand {
         react_to_message(channels);
 
         function react_to_message(channels) {
-            var channel = channels.shift();
+            let channel = channels.shift();
             if (channel == undefined) {
                 mainmsg.channel.send('Could not find the given message.')
                 .then(message => {
