@@ -249,6 +249,7 @@ module.exports = class SupportsManager {
             proxy: proxy,
             gzip: true,
             headers: {
+                "User-Agent": "Mozilla/5.0 (Linux; Android 4.4.2; SAMSUNG-SM-N900A Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Crosswalk/23.53.589.4 Safari/537.36",
                 "content-Type": "application/json",
                 "user-id-fba9x88mae": "8badf00d-dead-4444-beef-deadbeefcafe",
                 "charset": "UTF-16",
@@ -281,6 +282,7 @@ module.exports = class SupportsManager {
             proxy: proxy,
             gzip: true,
             headers: {
+                "User-Agent": "Mozilla/5.0 (Linux; Android 4.4.2; SAMSUNG-SM-N900A Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Crosswalk/23.53.589.4 Safari/537.36",
                 "content-Type": "application/json",
                 "user-id-fba9x88mae": userid,
                 "f4s-client-ver": "1.5.6",
