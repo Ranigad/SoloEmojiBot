@@ -37,12 +37,14 @@ module.exports = class Help extends BaseCommand {
     }
 
     async createEmbed(command, prefix) {
+        if (prefix == "\\") {
+            prefix = "\\\\";
+        }
         let fullCommand = prefix + command.toLowerCase();
         let targetReg = new RegExp('{command}', 'g');
         let helpText = this.help[command];
 
         helpText = JSON.parse(JSON.stringify(helpText).replace(targetReg, fullCommand));
-
 
         helpText["color"] = 15105570;
         helpText["author"] = {"name": `${command} Command Help Text`};
