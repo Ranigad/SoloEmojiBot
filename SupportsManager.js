@@ -285,7 +285,7 @@ module.exports = class SupportsManager {
                 "User-Agent": "Mozilla/5.0 (Linux; Android 4.4.2; SAMSUNG-SM-N900A Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Crosswalk/23.53.589.4 Safari/537.36",
                 "content-Type": "application/json",
                 "user-id-fba9x88mae": userid,
-                "f4s-client-ver": "1.5.7",
+                "f4s-client-ver": "3",
             },
             body: JSON.stringify({
                 strUserIds: idString
