@@ -37,37 +37,12 @@ module.exports = class Help extends BaseCommand {
     }
 
     async createEmbed(command, prefix) {
-        let fullCommand = prefix + command;
-        //let orig_regex = new RegExp(process.env.DISCORD_PREFIX, 'g');
+        let fullCommand = prefix + command.toLowerCase();
         let targetReg = new RegExp('{command}', 'g');
         let helpText = this.help[command];
 
-        helpText["description"] = helpText["description"].replace(targetReg, fullCommand);
-        for (let field in helpText["fields"]) {
-            field["name"] = field["name"].replace(targetReg, fullCommand);
-            field["value"] = field["value"].replace(targetReg, fullCommand);
-        }
+        helpText = JSON.parse(JSON.stringify(helpText).replace(targetReg, fullCommand));
 
-        /*
-        for (var i in helpText) {
-            if (Array.isArray(helpText[i])) {
-                for (var j in helpText[i]) {
-                    if (typeof helpText[i][j] == "object") {
-                        for (var k in helpText[i][j]) {
-                            if (typeof helpText[i][j][k] == "string") {
-                                helpText[i][j][k] = helpText[i][j][k].replace(orig_regex, prefix);
-                            }
-                        }
-                    }
-                    if (typeof helpText[i][j] == "string") {
-                        helpText[i][j] = helpText[i][j].replace(orig_regex, prefix);
-                    }
-                }
-            }
-            else if (typeof helpText[i] == "string") {
-                helpText[i] = helpText[i].replace(orig_regex, prefix);
-            }
-        }*/
 
         helpText["color"] = 15105570;
         helpText["author"] = {"name": `${command} Command Help Text`};
