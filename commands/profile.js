@@ -1054,7 +1054,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async list(channel, page) {
-        let itemsPerPage = 5;
+        let itemsPerPage = 3;
         if (page < 1) page = 1;
         if (this.msg_if_restricted_channel(channel)) return;
         const users = await entityManager.createQueryBuilder(User, "user")
