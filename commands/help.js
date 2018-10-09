@@ -10,9 +10,9 @@ module.exports = class Help extends BaseCommand {
 
     handler(...args) {
         let [wiki, bot, message, page] = args;
-        this.bot = bot;
+        //this.bot = bot;
         this.message = message;
-
+        this.defaultPrefix = process.env.DISCORD_PREFIX;
         if (page.length == 0) {
             page = ["help"];
         }
@@ -26,15 +26,10 @@ module.exports = class Help extends BaseCommand {
     }
 
     async run(command, channel) {
-        let main_prefix = process.env.DISCORD_PREFIX;
-        let prefix = await Util.get_prefix(this.bot, this.message);
+        let prefix = await Util.get_prefix(this.defaultPrefix, this.message);
 
         let embed = await this.createEmbed(command, prefix);
         channel.send(embed);
-        if (main_prefix != prefix && this.message.content.startsWith(`${process.env.DISCORD_PREFIX}help`)) {
-            let message = "Pleases note, on this server, \"" + this.message.guild.name + "\", the prefix \"``" + prefix + "``\" is supported instead of \"``" + main_prefix + "``\"";
-            channel.send(message);
-        }
     }
 
     importHelpFile() {
@@ -42,9 +37,18 @@ module.exports = class Help extends BaseCommand {
     }
 
     async createEmbed(command, prefix) {
-        let orig_regex = new RegExp(process.env.DISCORD_PREFIX, 'g');
+        let fullCommand = prefix + command;
+        //let orig_regex = new RegExp(process.env.DISCORD_PREFIX, 'g');
+        let targetReg = new RegExp('{command}', 'g');
         let helpText = this.help[command];
 
+        helpText["description"] = helpText["description"].replace(targetReg, fullCommand);
+        for (let field in helpText["fields"]) {
+            field["name"] = field["name"].replace(targetReg, fullCommand);
+            field["value"] = field["value"].replace(targetReg, fullCommand);
+        }
+
+        /*
         for (var i in helpText) {
             if (Array.isArray(helpText[i])) {
                 for (var j in helpText[i]) {
@@ -63,7 +67,7 @@ module.exports = class Help extends BaseCommand {
             else if (typeof helpText[i] == "string") {
                 helpText[i] = helpText[i].replace(orig_regex, prefix);
             }
-        }
+        }*/
 
         helpText["color"] = 15105570;
         helpText["author"] = {"name": `${command} Command Help Text`};
