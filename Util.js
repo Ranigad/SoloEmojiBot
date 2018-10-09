@@ -2,6 +2,10 @@
 const tesseract = require('tesseract.js');
 const https = require('https');
 const fs = require('fs');
+const typeorm = require('typeorm');
+const entityManager = typeorm.getManager();
+const Guild = require("./model/Guild").Guild;
+
 
 const get_user_id_mention = (value, guild, named = false) => {
     if (value == undefined) return {success: false, reason: 2};
@@ -123,12 +127,24 @@ const process_image = async (message) => {
     });
 }
 
+const get_prefix = async (prefix, message) => {
+    if (message.guild != undefined && message.guild.id != undefined) {
+        let guild = await entityManager.createQueryBuilder(Guild, "guild")
+            .where("guild.guild_id = :id", {id: message.guild.id})
+            .getOne();
+        if (guild != undefined) {
+            prefix = guild.prefix;
+        }
+    }
+    return prefix;
+}
 
 module.exports = {
     get_user_id_mention,
     get_user_id_or_error,
     log_message,
     log_general,
-    process_image
+    process_image,
+    get_prefix
 }
 
