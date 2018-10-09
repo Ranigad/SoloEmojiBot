@@ -55,14 +55,14 @@ client.on('ready', () => {
     //client.guilds.get("471030229629009925").channels.get("494359317638807572").send(message);
 });
 
-client.on('message', msg => {
+client.on('message', async msg => {
     if (msg.channel.type !== 'text') return;
     if (msg.author.id == client.user.id) return;
     if (msg.author.bot == false && !msg.channel.name.includes("art")) {
         TranslationHandler.process_data(msg);
         Util.process_image(msg);
     }
-    let parse = CH.handle(msg);
+    let parse = await CH.handle(msg);
     if (parse && msg.author.bot == false) {
         EC.parseMessage(msg);
     }

@@ -18,10 +18,10 @@ module.exports = class CommandHandler {
         if (this.debug) console.log(message);
     }
 
-    parser(message) {
+    parser(message, prefix) {
         // 2. Extract message if proper prefix
-        if(!message.startsWith(this.prefix)) return false;
-        const args = message.slice(this.prefix.length).split(/ +/);
+        if(!(message.startsWith(prefix) || message.startsWith(`${process.env.DISCORD_PREFIX}help`))) return false;
+        const args = message.slice(prefix.length).split(/ +/);
         const command = args.shift().toLowerCase();
         return {"command": command, "arguments": args}
     }
@@ -31,10 +31,12 @@ module.exports = class CommandHandler {
     }
 
     // Takes in the message object received by the bot and takes appropriate action
-    handle(message) {
+    async handle(message) {
         //-----------------------------------------------------------------------------------
         // 1. Parse message
-        let parsedMessage = this.parser(message.content);
+        let prefix = await Util.get_prefix(this.bot, message);
+
+        let parsedMessage = this.parser(message.content, prefix);
         if (!parsedMessage) return true; // Return if the prefix is not correct
 
         // Log the command
