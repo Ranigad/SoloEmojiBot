@@ -8,7 +8,7 @@ let wiki = new (require('./wiki.js').Wikia)();
 module.exports = class CommandHandler {
     constructor(prefix, debug=false, bot=false, commandDirectory="./commands") {
         this.commandDirectory = commandDirectory;
-        this.prefix = prefix;
+        this.defaultPrefix = prefix;
         this.debug = debug;
         this.bot = bot;
         console.log(path.dirname(require.main.filename));
@@ -20,7 +20,7 @@ module.exports = class CommandHandler {
 
     parser(message, prefix) {
         // 2. Extract message if proper prefix
-        if(!(message.startsWith(prefix) || message.startsWith(`${process.env.DISCORD_PREFIX}help`))) return false;
+        if(!(message.startsWith(prefix))) return false;
         const args = message.slice(prefix.length).split(/ +/);
         const command = args.shift().toLowerCase();
         return {"command": command, "arguments": args}
@@ -34,7 +34,7 @@ module.exports = class CommandHandler {
     async handle(message) {
         //-----------------------------------------------------------------------------------
         // 1. Parse message
-        let prefix = await Util.get_prefix(this.bot, message);
+        let prefix = await Util.get_prefix(this.defaultPrefix, message);
 
         let parsedMessage = this.parser(message.content, prefix);
         if (!parsedMessage) return true; // Return if the prefix is not correct
