@@ -127,8 +127,7 @@ const process_image = async (message) => {
     });
 }
 
-const get_prefix = async (bot, message) => {
-    let prefix = process.env.DISCORD_PREFIX;
+const get_prefix = async (prefix, message) => {
     if (message.guild != undefined && message.guild.id != undefined) {
         let guild = await entityManager.createQueryBuilder(Guild, "guild")
             .where("guild.guild_id = :id", {id: message.guild.id})
