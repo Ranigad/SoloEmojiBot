@@ -118,8 +118,9 @@ module.exports = class Profile extends BaseCommand {
                 var selfcheck = false;
                 if (value) {
 
-                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
-                    if (userid == undefined) return;
+                    userid = Util.get_user_id_or_error(value, channel, true);
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) return;
                 }
                 if (userid == undefined) {
                     userid = user.id;
@@ -134,8 +135,9 @@ module.exports = class Profile extends BaseCommand {
                 var selfcheck = false;
                 if (value) {
                     
-                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
-                    if (userid == undefined) return;
+                    userid = Util.get_user_id_or_error(value, channel, true);
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) return;
                 }
                 if (userid == undefined) {
                     userid = user.id;
@@ -146,8 +148,9 @@ module.exports = class Profile extends BaseCommand {
             case 'follow':
                 console.log("follow");
                 if (value) {
-                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
-                    if (userid == undefined) {
+                    userid = Util.get_user_id_or_error(value, channel, true);
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) {
                         return;
                     }
                     this.follow(channel, user.id, userid);
@@ -173,8 +176,9 @@ module.exports = class Profile extends BaseCommand {
             case 'unfollow':
                 console.log("unfollow");
                 if (value) {
-                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
-                    if (userid == undefined) {
+                    userid = Util.get_user_id_or_error(value, channel, true);
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) {
                         return;
                     }
                     this.unfollow(channel, user.id, userid);
