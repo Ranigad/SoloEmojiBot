@@ -118,7 +118,7 @@ module.exports = class Profile extends BaseCommand {
                 var selfcheck = false;
                 if (value) {
 
-                    userid = Util.get_user_id_or_error(fullName, channel, true);
+                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
                     if (userid == undefined) return;
                 }
                 if (userid == undefined) {
@@ -133,7 +133,8 @@ module.exports = class Profile extends BaseCommand {
                 var userid = undefined;
                 var selfcheck = false;
                 if (value) {
-                    userid = Util.get_user_id_or_error(fullName, channel, true);
+                    
+                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
                     if (userid == undefined) return;
                 }
                 if (userid == undefined) {
@@ -145,7 +146,7 @@ module.exports = class Profile extends BaseCommand {
             case 'follow':
                 console.log("follow");
                 if (value) {
-                    var userid = Util.get_user_id_or_error(fullName, channel, true);
+                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
                     if (userid == undefined) {
                         return;
                     }
@@ -172,7 +173,7 @@ module.exports = class Profile extends BaseCommand {
             case 'unfollow':
                 console.log("unfollow");
                 if (value) {
-                    var userid = Util.get_user_id_or_error(fullName, channel, true);
+                    userid = Util.get_user_id_or_error(value, channel, true) || Util.get_user_id_or_error(fullName, channel, true);
                     if (userid == undefined) {
                         return;
                     }
@@ -206,6 +207,9 @@ module.exports = class Profile extends BaseCommand {
                 if (subcommand) {
                     fullName = ([subcommand].concat(fullNameArray)).join(" ");
                     var userdata = Util.get_user_id_mention(fullName, channel.guild, true);
+                    if (userdata.success == false) {
+                        userdata = Util.get_user_id_mention(subcommand, channel.guild, true);
+                    }
                     if (userdata.success == true) {
                         userid = userdata.userid;
                         this.check(channel, userid, selfcheck);
