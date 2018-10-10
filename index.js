@@ -1,5 +1,6 @@
 const typeorm = require("typeorm");
 const User = require("./model/User").User;
+const Guild = require("./model/Guild").Guild;
 
 typeorm.createConnection({
     "type": "sqlite",
@@ -13,7 +14,8 @@ typeorm.createConnection({
         require("./entity/MasterMegucaSchema"),
         require("./entity/MasterMemoriaSchema"),
         require("./entity/MemoriaSchema"),
-        require("./entity/FriendSchema")
+        require("./entity/FriendSchema"),
+        require("./entity/Guild")
     ]
 }).then(async connection => {
 
@@ -29,9 +31,16 @@ typeorm.createConnection({
     
     console.log("Loading users from the database...");
     const users = await connection.manager.find(User);
-    console.log("Loaded users: ", users);
+    //console.log("Loaded users: ", users);
     
-    console.log("Here you can setup and run express/koa/any other framework.");
     const discord = require('./bot.js')
-    
+
+    const guilds = await connection.manager.find(Guild);
+    if (guilds == undefined || guilds.length == 0) {
+        let testserver = new Guild("471030229629009925", "\\");
+        await connection.manager.save(testserver);
+        let madocord = new Guild("364704870177046531", "\\");
+        await connection.manager.save(madocord);
+    }
+
 }).catch(error => console.log(error));
