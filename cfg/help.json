@@ -186,7 +186,7 @@
       },
       {
         "name": "event",
-        "value": "Provides information for the ongoing in-game events and a countdown to its conclusion"
+        "value": "Provides information for the ongoing in-game events and a countdown to its conclusion\n___\n"
       },
       {
         "name": "p or profile",
