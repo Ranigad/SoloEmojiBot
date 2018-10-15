@@ -6,7 +6,7 @@ const path = require('path');
 module.exports = class EmojiParser {
 
     constructor() {
-        this.regex = /\<\:([\w]{2,})\:([\d]+)\>/g;
+        this.regex = /\<a?\:([\w]{2,})\:([\d]+)\>/g;
         this._dbname = "emojis.db";
         this._dbpath = "./data/"
         this._tablename = "emoji";  // time, emoji name, emoji id, user, actual emoji
