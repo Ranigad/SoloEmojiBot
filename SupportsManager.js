@@ -223,6 +223,21 @@ module.exports = class SupportsManager {
         }
 
         var parsedUsers = await this.parseSupports(data);
+
+        if (parsedUsers == undefined) {
+            console.log(`ERROR: Parsing support data for users ${idString} (including ${inviteCode}) with support search failed`);
+            Util.log_general(`ERROR: Parsing support data for users ${idString} (including ${inviteCode}) with support search failed`, this.bot);
+            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+            this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
+
+            // Handle callbacks
+            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
+                .forEach(e => console.log(e));
+            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
+                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
+            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
+            return;
+        }
         //console.log(parsedUsers);
 
         console.log(yesterday.toUTCString());
@@ -285,7 +300,7 @@ module.exports = class SupportsManager {
                 "User-Agent": "Mozilla/5.0 (Linux; Android 4.4.2; SAMSUNG-SM-N900A Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Crosswalk/23.53.589.4 Safari/537.36",
                 "content-Type": "application/json",
                 "user-id-fba9x88mae": userid,
-                "f4s-client-ver": "1.5.6",
+                "f4s-client-ver": "3",
             },
             body: JSON.stringify({
                 strUserIds: idString
@@ -331,12 +346,12 @@ module.exports = class SupportsManager {
         }
         if ("interrupt" in data || !("supportUserList" in data)) {
             console.log(`ERROR: The query failed: ${JSON.stringify(data)}`);
-            return;
+            return undefined;
         }
         if (data.supportUserList.length == 0) {
             console.log("No results");
             // Check if current data, notify users if nothing (typo suspected)
-            return;
+            return undefined;
         }
 
         var allMemes = [];

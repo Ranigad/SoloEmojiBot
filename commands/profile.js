@@ -35,16 +35,15 @@ module.exports = class Profile extends BaseCommand {
 */
 
     handler(...args) {
-        let [wiki, bot, message, [subcommand, etc, etc2]] = args;
+        let [wiki, bot, message, [subcommand, etc, etc2, ...remainder]] = args;
         this.bot = bot;
         if (subcommand) {
             // check mention - subcommand becomes request? or check. Pass in mentioned user, check it's not self
             // check subcommand
             let [command, user, channel, value, value2] = [subcommand, message.author, message.channel, etc, etc2 || 0];
-
-            this.run(command, user, channel, value, value2);
+            this.run(command, user, channel, value, value2, remainder.join(" "));
         } else {
-            this.run("check", message.author, message.channel, undefined);
+            this.run("check", message.author, message.channel, undefined, remainder.join(" "));
             console.log("check");
             // do a self profile check
         }
@@ -52,7 +51,18 @@ module.exports = class Profile extends BaseCommand {
 
 
 
-    run(subcommand, user, channel, value, value2) {
+    run(subcommand, user, channel, value, value2, extra) {
+        let fullNameArray = [];
+        if (extra) {
+            fullNameArray = [value, value2].concat(extra);
+        } else if (value2) {
+            fullNameArray = [value, value2];
+        } else if (value) {
+            fullNameArray = [value];
+        } else {
+            fullNameArray = [];
+        }
+        let fullName = fullNameArray.join(" ");
         switch(subcommand.toLowerCase()) {
             case 'recreate':
             case 'create':  // --
@@ -82,7 +92,7 @@ module.exports = class Profile extends BaseCommand {
                     }
                 }
                 else {
-                    channel.send(`Error: You can only set an id, e.g. ;profile ${subcommand} id Q69KBCAA`).then(message => {
+                    channel.send(`Error: Use \`;profile ${subcommand} id in-game-id\` to ${subcommand} your id.`).then(message => {
                         message.delete(5000);
                     });
                 }
@@ -107,8 +117,10 @@ module.exports = class Profile extends BaseCommand {
                 var userid = undefined;
                 var selfcheck = false;
                 if (value) {
+
                     userid = Util.get_user_id_or_error(value, channel, true);
-                    if (userid == undefined) return;
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) return;
                 }
                 if (userid == undefined) {
                     userid = user.id;
@@ -122,8 +134,10 @@ module.exports = class Profile extends BaseCommand {
                 var userid = undefined;
                 var selfcheck = false;
                 if (value) {
+                    
                     userid = Util.get_user_id_or_error(value, channel, true);
-                    if (userid == undefined) return;
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) return;
                 }
                 if (userid == undefined) {
                     userid = user.id;
@@ -134,8 +148,9 @@ module.exports = class Profile extends BaseCommand {
             case 'follow':
                 console.log("follow");
                 if (value) {
-                    var userid = Util.get_user_id_or_error(value, channel, true);
-                    if (userid == undefined) {
+                    userid = Util.get_user_id_or_error(value, channel, true);
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) {
                         return;
                     }
                     this.follow(channel, user.id, userid);
@@ -161,8 +176,9 @@ module.exports = class Profile extends BaseCommand {
             case 'unfollow':
                 console.log("unfollow");
                 if (value) {
-                    var userid = Util.get_user_id_or_error(value, channel, true);
-                    if (userid == undefined) {
+                    userid = Util.get_user_id_or_error(value, channel, true);
+                    let useridfull = Util.get_user_id_or_error(fullName, channel, true);
+                    if (userid == undefined && useridfull == undefined) {
                         return;
                     }
                     this.unfollow(channel, user.id, userid);
@@ -193,7 +209,11 @@ module.exports = class Profile extends BaseCommand {
                 var userid = undefined;
                 var selfcheck = false;
                 if (subcommand) {
-                    var userdata = Util.get_user_id_mention(subcommand, channel.guild, true);
+                    fullName = ([subcommand].concat(fullNameArray)).join(" ");
+                    var userdata = Util.get_user_id_mention(fullName, channel.guild, true);
+                    if (userdata.success == false) {
+                        userdata = Util.get_user_id_mention(subcommand, channel.guild, true);
+                    }
                     if (userdata.success == true) {
                         userid = userdata.userid;
                         this.check(channel, userid, selfcheck);
@@ -206,7 +226,7 @@ module.exports = class Profile extends BaseCommand {
                         }
                         else {
                             console.log("Error happened");
-                            return channel.send(`There was an error with your command: ";profile ${subcommand}".  Use ;help profile for supported commands`).then(message => {
+                            return channel.send(`There was an error with your command: ";profile ${fullName}".  Use ;help profile for supported commands`).then(message => {
                                 message.delete(10000);
                             });
                         }
@@ -479,7 +499,7 @@ module.exports = class Profile extends BaseCommand {
                 for (var i = 0; i < girls.length; i++) {
                     var attribute = girls[i].masterMeguca.meguca_type;
                     if (attribute > 0 && attribute < 7) messageTxt += `${attributes[attribute - 1]} `;
-                    messageTxt += `**${(girls[i].masterMeguca.nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name}** `;
+                    messageTxt += `**${(girls[i].masterMeguca.nick) ? girls[i].masterMeguca.nick : girls[i].masterMeguca.jpn_name}**`;
                     messageTxt += `・${girls[i].slots}s・Lv${girls[i].level}・${(girls[i].magia_level == 6) ? "Doppel" : "Magia" + girls[i].magia_level} `;
                 }
             }
@@ -653,7 +673,7 @@ module.exports = class Profile extends BaseCommand {
         entityManager.save(friend);
 
         if (user.notifications) {
-            discordrecipient.send(`You have been followed by <@${senderid}> (${discordsender.username}) on Mokyuu Profiles! In a bot commands channel, use ;profile follow ${user.discordname}#${user.discriminator} to accept or ;profile check ${user.discordname}#${user.discriminator} to view their info`);
+            discordrecipient.send(`You have been followed by <@${senderid}> (${discordsender.username}) on Mokyuu Profiles! In a bot commands channel, use ;profile follow ${discordsender.username}#${discordsender.discriminator} to accept or ;profile check ${discordsender.username}#${discordsender.discriminator} to view their info`);
 
             return channel.send(`You have followed ${user.discordname}#${user.discriminator}!`).then(message => {
                 message.edit(`You have followed <@${user.username}>!`);
@@ -1054,7 +1074,7 @@ module.exports = class Profile extends BaseCommand {
     }
 
     async list(channel, page) {
-        let itemsPerPage = 5;
+        let itemsPerPage = 3;
         if (page < 1) page = 1;
         if (this.msg_if_restricted_channel(channel)) return;
         const users = await entityManager.createQueryBuilder(User, "user")

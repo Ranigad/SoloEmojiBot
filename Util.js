@@ -2,27 +2,31 @@
 const tesseract = require('tesseract.js');
 const https = require('https');
 const fs = require('fs');
+const typeorm = require('typeorm');
+const entityManager = typeorm.getManager();
+const Guild = require("./model/Guild").Guild;
+
 
 const get_user_id_mention = (value, guild, named = false) => {
     if (value == undefined) return {success: false, reason: 2};
-    //console.log(value);
-    var userid = undefined;
-    var regex1 = /<@\d+>/;
-    var regex2 = /\d+/;
+    let userid = undefined;
+    let regex1 = /<@!?(\d+)>/;
+    let regex2 = /\d+/;
 
     let attempt1 = regex1.exec(value);
     let attempt2 = regex2.exec(value);
 
-    if (attempt1 != null && attempt1.length == 1 && attempt1[0] == value) {
-        userid = value.replace("<", "");
-        userid = userid.replace("@", "");
-        userid = userid.replace(">", "");
+    if (attempt1 != null) { // && attempt1.length == 1 && attempt1[0] == value) {
+        //userid = value.replace("<", "");
+        //userid = userid.replace("@", "");
+        //userid = userid.replace(">", "");
+        userid = attempt1[1];
     }
     else {
-        var words = value.split("#");
+        let words = value.split("#");
         if (words.length == 2) {
             let [name, discriminator] = [words[0]];
-            var guild_member = guild.members.find(member => member.user.username == name && member.user.discriminator);
+            let guild_member = guild.members.find(member => member.user.username == name && member.user.discriminator);
             if (guild_member == undefined) {
                 return {success: false, reason: 0};
             }
@@ -32,7 +36,7 @@ const get_user_id_mention = (value, guild, named = false) => {
             userid = value;
         }
         else if (named) {
-            var guild_member = guild.members.find(member => member.user.username == value);
+            let guild_member = guild.members.find(member => member.user.username == value);
             if (guild_member == undefined) {
                 return {success: false, reason: 3};
             }
@@ -47,8 +51,8 @@ const get_user_id_mention = (value, guild, named = false) => {
 }
 
 const get_user_id_or_error = (value, channel, named = false) => {
-    var guild = channel.guild;
-    var userdata = get_user_id_mention(value, guild, named);
+    let guild = channel.guild;
+    let userdata = get_user_id_mention(value, guild, named);
     if (userdata.success == true) return userdata.userid;
     else {
         if (userdata.reason == 0) {
@@ -123,12 +127,24 @@ const process_image = async (message) => {
     });
 }
 
+const get_prefix = async (prefix, message) => {
+    if (message.guild != undefined && message.guild.id != undefined) {
+        let guild = await entityManager.createQueryBuilder(Guild, "guild")
+            .where("guild.guild_id = :id", {id: message.guild.id})
+            .getOne();
+        if (guild != undefined) {
+            prefix = guild.prefix;
+        }
+    }
+    return prefix;
+}
 
 module.exports = {
     get_user_id_mention,
     get_user_id_or_error,
     log_message,
     log_general,
-    process_image
+    process_image,
+    get_prefix
 }
 
