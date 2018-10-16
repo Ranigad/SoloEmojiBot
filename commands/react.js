@@ -47,16 +47,17 @@ module.exports = class React extends BaseCommand {
 
         let mainmsg = message;
 
+        let initialId = message.channel.id;
         let channels = [];
+        channels.push(message.channel);
         if (message.channel.type == 'text') {
             let guild = message.guild;
             guild.channels.forEach(channel => {
-               if (channel.type == 'text') {
+               if (channel.type == 'text' && channel.id != initialId) {
                     channels.push(channel);
                 }
             })
         }
-        else channels.push(message.channel);
 
         let success = false;
         while (channels.length > 0) {
