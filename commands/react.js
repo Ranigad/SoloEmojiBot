@@ -13,20 +13,36 @@ module.exports = class React extends BaseCommand {
         this.emojis = bot.emojis;
 
         if (cmdargs.length != 2 && this.config == undefined) {
-            return this.send_error_message(`You need to provide a message ID and an emote name, ${commandPrefix}react <message-ID> <emote-name>`);
+            return this.send_error_message(message, `You need to provide a message ID and an emote name, ${commandPrefix}react <message-ID> <emote-name>`);
         }
         if (this.config != undefined) {
             if (this.config.option == "channel" && message.channel.type != "text") {
-                return this.send_error_message(`You cannot run ${commandPrefix}reactchannel in this chat`);
+                return this.send_error_message(message, `You cannot run ${commandPrefix}reactchannel in this chat`);
             }
             if (this.config.option == "channel" && cmdargs.length != 2) {
-                return this.send_error_message(`You need to provide a channel name or channel Id and an emote name, ${commandPrefix}react <channel> <emote-name>`);
+                return this.send_error_message(message, `You need to provide a channel name or channel Id and an emote name, ${commandPrefix}react <channel> <emote-name>`);
             }
             if (this.config.option == "channel" && cmdargs[0] == message.channel.id) {
                 return this.react_now(cmdargs[1], message.channel, message);
             }
+            if (this.config.option == "channel") {
+                let id_or_name = cmdargs[0];
+                let guild = message.guild;
+                let channels = guild.channels;
+                if (channels == undefined || channels.array() == undefined || channels.array().length < 1) {
+                    return this.send_error_message(message, "Could not find the given channel");
+                }
+                let channel = channels.find('id', id_or_name);
+                if (channel != undefined) return this.react_channel(cmdargs[1], channel, message);
+                channel = channels.find('name', id_or_name);
+                if (channel == undefined) {
+                    return this.send_error_message(message, "Could not find the given channel");
+                }
+                if (channel.name == id_or_name) return this.react_now(cmdargs[1], channel, message);
+                return this.react_channel(cmdargs[1], channel, message);
+            }
             if (this.config.option == "now" && cmdargs.length != 1) {
-                return this.send_error_message(`You need to provide an emote name, ${commandPrefix}reactnow <emote-name>`);
+                return this.send_error_message(message, `You need to provide an emote name, ${commandPrefix}reactnow <emote-name>`);
             }
             if (this.config.option == "now") {
                 return this.react_now(cmdargs[0], message.channel, message);
@@ -39,10 +55,23 @@ module.exports = class React extends BaseCommand {
         this.run(message_id, emoji, message);
     }
 
+    async react_channel(emoji_name, channel, message) {
+        let recent_message = channel.lastMessageID;
+        if (recent_message == undefined) {
+            return this.send_error_message(message, "Could not find a message in that channel");
+        }
+        let target = await channel.fetchMessage(recent_message);
+        if (target == undefined) {
+            return this.send_error_message(message, "Could not find a message in that channel");
+        }
+        let emoji = this.emojis.find('name', emoji_name);
+        this.react_to_message(target, emoji, message);
+    }
+
     async react_now(emoji_name, channel, message) {
         let messages = await channel.fetchMessages({ limit: 1, before: message.id });
-        if (messages == undefined || messages.array == undefined || messages.array.length == undefined) {
-            return this.send_error_message("Could not find a message to react to");
+        if (messages == undefined || messages.array() == undefined || messages.array().length < 1) {
+            return this.send_error_message(message, "Could not find a message to react to");
         }
         let target = messages.array()[0];
         let emoji = this.emojis.find('name', emoji_name);
