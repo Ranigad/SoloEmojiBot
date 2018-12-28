@@ -5,6 +5,7 @@ const fs = require('fs');
 const typeorm = require('typeorm');
 const entityManager = typeorm.getManager();
 const Guild = require("./model/Guild").Guild;
+const Role = require("./model/Role").Role;
 
 
 const get_user_id_mention = (value, guild, named = false) => {
@@ -139,12 +140,38 @@ const get_prefix = async (prefix, message) => {
     return prefix;
 }
 
+const verify_internal_role = async (discorduserid, required_role) => {
+    let role = await entityManager.createQueryBuilder(Role, "role")
+        .where("role.username = :id", {id: discorduserid})
+        .getOne();
+    if (role == undefined){ 
+        return false;
+    }
+
+    switch (required_role) {
+        case "developer":
+            return role.role == required_role;
+        case "admin":
+            if (role.role == "developer") return true;
+            else if (role.role == "admin") return true;
+            else return false;
+        case "helper":
+            if (role.role == "developer") return true;
+            else if (role.role == "admin") return true;
+            else if (role.role == "helper") return true;
+            else return false;
+    }
+
+    return false;
+}
+
 module.exports = {
     get_user_id_mention,
     get_user_id_or_error,
     log_message,
     log_general,
     process_image,
-    get_prefix
+    get_prefix,
+    verify_internal_role
 }
 

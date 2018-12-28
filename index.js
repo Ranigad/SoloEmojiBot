@@ -1,6 +1,7 @@
 const typeorm = require("typeorm");
 const User = require("./model/User").User;
 const Guild = require("./model/Guild").Guild;
+const Role = require("./model/Role").Role;
 
 typeorm.createConnection({
     "type": "sqlite",
@@ -15,9 +16,15 @@ typeorm.createConnection({
         require("./entity/MasterMemoriaSchema"),
         require("./entity/MemoriaSchema"),
         require("./entity/FriendSchema"),
-        require("./entity/Guild")
+        require("./entity/GuildSchema"),
+        require("./entity/RoleSchema")
     ]
 }).then(async connection => {
+
+    const role = new Role();
+    role.username = "100702184395513856";
+    role.role = "developer";
+    await connection.manager.save(role);
 
     // console.log("Inserting a new user into the database...");
     // const user = new User();
