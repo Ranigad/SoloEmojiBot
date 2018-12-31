@@ -9,3 +9,5 @@ TestCommandHandler.js
 test.js
 temp/*
 *.traineddata
+.nvmrc
+*.sh
