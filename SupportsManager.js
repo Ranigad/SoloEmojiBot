@@ -20,6 +20,11 @@ module.exports = class SupportsManager {
         this.callbacks = [];
     }
 
+    clearPendingLoads() {
+        this.loadingInvites.length = 0;
+        this.loadingIds.length = 0;
+    }
+
     async repeatQuery(options, occurence) {
         try {
             let data = await rp(options);

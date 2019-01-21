@@ -51,7 +51,7 @@ module.exports = class Profile extends BaseCommand {
 
 
 
-    run(subcommand, user, channel, value, value2, extra) {
+    async run(subcommand, user, channel, value, value2, extra) {
         let fullNameArray = [];
         if (extra) {
             fullNameArray = [value, value2].concat(extra);
@@ -205,6 +205,12 @@ module.exports = class Profile extends BaseCommand {
                     translationHandler.export_data(channel);
                     break;
                 }
+            case 'count':
+                let profilecount = await entityManager.getRepository(User).count();
+                channel.send(`There are currently ${profilecount} created profiles`).then(message => {
+                    message.delete(50000);
+                });
+                break;
             default:
                 var userid = undefined;
                 var selfcheck = false;

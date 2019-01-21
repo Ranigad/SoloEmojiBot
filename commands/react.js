@@ -1,75 +1,153 @@
 const BaseCommand = require('../BaseCommand.js');
+const Util = require('../Util.js');
 
 module.exports = class React extends BaseCommand {
-    constructor(debug=false) {
+    constructor(debug=false, config=undefined) {
         super(debug);
+        this.config = config;
     }
 
     handler(...args) {
         let [wiki, bot, message, cmdargs] = args;
-        if (cmdargs.length != 2) {
-            if (message.deletable) message.delete(10000)
-            return message.channel.send('You need to provide a message ID and an emote name, ;react <message-ID> <emote-name>')
-                .then(message => {
-                    message.delete(10000)
-                });
+        let commandPrefix = Util.get_prefix(process.env.DISCORD_PREFIX, message);
+        this.emojis = bot.emojis;
+
+        if (cmdargs.length != 2 && this.config == undefined) {
+            return this.send_error_message(message, `You need to provide a message ID and an emote name, ${commandPrefix}react <message-ID> <emote-name>`);
+        }
+        if (this.config != undefined) {
+            if (this.config.option == "channel" && message.channel.type != "text") {
+                return this.send_error_message(message, `You cannot run ${commandPrefix}reactchannel in this chat`);
+            }
+            if (this.config.option == "channel" && cmdargs.length != 2) {
+                return this.send_error_message(message, `You need to provide a channel name or channel Id and an emote name, ${commandPrefix}react <channel> <emote-name>`);
+            }
+            if (this.config.option == "channel" && cmdargs[0] == message.channel.id) {
+                return this.react_now(cmdargs[1], message.channel, message);
+            }
+            if (this.config.option == "channel") {
+                let id_or_name = cmdargs[0];
+                let guild = message.guild;
+                let channels = guild.channels;
+                if (channels == undefined || channels.array() == undefined || channels.array().length < 1) {
+                    return this.send_error_message(message, "Could not find the given channel");
+                }
+                let channel = channels.find('id', id_or_name);
+                if (channel != undefined) return this.react_channel(cmdargs[1], channel, message);
+                channel = channels.find('name', id_or_name);
+                if (channel == undefined) {
+                    return this.send_error_message(message, "Could not find the given channel");
+                }
+                if (channel.name == id_or_name) return this.react_now(cmdargs[1], channel, message);
+                return this.react_channel(cmdargs[1], channel, message);
+            }
+            if (this.config.option == "now" && cmdargs.length != 1) {
+                return this.send_error_message(message, `You need to provide an emote name, ${commandPrefix}reactnow <emote-name>`);
+            }
+            if (this.config.option == "now") {
+                return this.react_now(cmdargs[0], message.channel, message);
+            }
         }
 
         let message_id = cmdargs[0];
         let emoji = cmdargs[1];
 
-        this.run(message_id, emoji, message, bot.emojis);
+        this.run(message_id, emoji, message);
     }
 
-    run(message_id, emoji_name, message, emojis) {
-        let emoji = emojis.find('name', emoji_name);
+    async react_channel(emoji_name, channel, message) {
+        let recent_message = channel.lastMessageID;
+        if (recent_message == undefined) {
+            return this.send_error_message(message, "Could not find a message in that channel");
+        }
+        let target = await channel.fetchMessage(recent_message);
+        if (target == undefined) {
+            return this.send_error_message(message, "Could not find a message in that channel");
+        }
+        let emoji = this.emojis.find('name', emoji_name);
+        this.react_to_message(target, emoji, message);
+    }
+
+    async react_now(emoji_name, channel, message) {
+        let messages = await channel.fetchMessages({ limit: 1, before: message.id });
+        if (messages == undefined || messages.array() == undefined || messages.array().length < 1) {
+            return this.send_error_message(message, "Could not find a message to react to");
+        }
+        let target = messages.array()[0];
+        let emoji = this.emojis.find('name', emoji_name);
+        this.react_to_message(target, emoji, message);
+    }
+
+    send_error_message(user_msg, error) {
+        if (user_msg.deletable) user_msg.delete(10000)
+        return user_msg.channel.send(error)
+            .then(message => {
+                message.delete(10000)
+            });
+    }
+
+    async react_to_message(message, emoji, mainmsg) {
+        try {
+            let reaction = await message.react(emoji);
+            if (mainmsg.deletable) mainmsg.delete();
+
+            setTimeout(function() {
+                reaction.remove();
+            }, 20000);
+            return true;
+        }
+        catch(ex) {
+            mainmsg.channel.send(`Could not apply the given emote.`)
+            .then(message => {
+                message.delete(10000)
+            });
+            if (mainmsg.deletable) mainmsg.delete(10000)
+            return false;
+        }
+    }
+
+    async run(message_id, emoji_name, message) {
+        let emoji = this.emojis.find('name', emoji_name);
 
         let mainmsg = message;
 
+        let initialId = message.channel.id;
         let channels = [];
+        channels.push(message.channel);
         if (message.channel.type == 'text') {
             let guild = message.guild;
             guild.channels.forEach(channel => {
-               if (channel.type == 'text') {
+               if (channel.type == 'text' && channel.id != initialId) {
                     channels.push(channel);
                 }
             })
         }
-        else channels.push(message.channel);
 
-        react_to_message(channels);
-
-        function react_to_message(channels) {
+        let success = false;
+        while (channels.length > 0) {
             let channel = channels.shift();
-            if (channel == undefined) {
-                mainmsg.channel.send('Could not find the given message.')
-                .then(message => {
-                    message.delete(10000)
-                });
-                if (mainmsg.deletable) mainmsg.delete(10000);
-            }
-            channel.fetchMessage(message_id)
-            .then(message => {
-                message.react(emoji)
-                    .then((reaction) => {
-                        if (mainmsg.deletable) mainmsg.delete();
+            if (channel == undefined || channel.lastMessageID == undefined) continue;
+            try {
+                let message = await channel.fetchMessage(message_id);
 
-                        setTimeout(function() {
-                            reaction.remove();
-                        }, 20000)
-                    })
-                    .catch(() => {
-                        mainmsg.channel.send(`Could not apply the given emote.`)
-                        .then(message => {
-                            message.delete(10000)
-                        });
-                        if (mainmsg.deletable) mainmsg.delete(10000)
-                    });
-            })
-            .catch(() =>{
-                react_to_message(channels);
-            });
+                let applied = await this.react_to_message(message, emoji, mainmsg);
+
+                if (applied == false) return;
+                else success = true;
+            }
+            catch(ex) {
+                continue;
+            }
         }
+
+        if (success == false) {
+            mainmsg.channel.send('Could not find the given message.')
+            .then(message => {
+                message.delete(10000)
+            });
+            if (mainmsg.deletable) mainmsg.delete(10000);
+        }
+
     }
 
 }
