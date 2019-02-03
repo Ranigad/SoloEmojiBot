@@ -58,10 +58,28 @@
       },
       {
         "name": "Supported Servers",
-        "value": "PMMM:Magia Record\nMagireco Emotes For Discord Whales\n/r/MadokaMagica (pending)"
+        "value": "PMMM:Magia Record\nMagireco Emotes For Discord Whales\n/r/MadokaMagica"
       }
       ]
     },
+  "Reactchannel": {
+    "description": "Reacts to the latest message in a given channel with a specific emoji \n___\n",
+    "fields": [
+      {
+        "name": "Usage",
+        "value": "{command} channel-Id-or-name> emote-name"
+      }
+    ]
+  },
+  "Reactnow": {
+    "description": "Reacts to the last message in the current channel with a specific emoji \n___\n",
+    "fields": [
+      {
+        "name": "Usage",
+        "value": "{command} emote-name"
+      }
+    ]
+  },
   "Emoji": {
     "description": "Displays tracked emoji usage in messages and reactions. Only tallies currently active emojis. \n\n If nothing is added to the command, it will print the server's total usage. \n\n __**Subcommands**__",
     "fields": [
@@ -183,6 +201,14 @@
       {
         "name": "r or react",
         "value": "Have the bot react to a given message with a custom reaction\n___\n"
+      },
+      {
+        "name": "rc or reactchannel",
+        "value": "React to the latest message in a specific channel\n___\n"
+      },
+      {
+        "name": "rn or reactnow",
+        "value": "React to the latest message in the current channel\n___\n"
       },
       {
         "name": "event",
