@@ -17,6 +17,16 @@
 
 ---
 
+## Version 3.0 (TBD)
+- 
+- 
+- Update from JavaScript to TypeScript
+
+
+
+
+---
+
 ## Version 2.0 (TBD)
 - Set the bot's game status to "Magia Record | ;help"
 - Add TypeORM for convenient database manipulation

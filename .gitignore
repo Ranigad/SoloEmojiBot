@@ -4,8 +4,8 @@ cfg/
 node_modules/
 .env
 data/*
-search.js
-TestCommandHandler.js
-test.js
+search.ts
+TestCommandHandler.ts
+test.ts
 temp/*
 *.traineddata
