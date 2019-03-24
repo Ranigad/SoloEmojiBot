@@ -1,3 +1,5 @@
+.nvmrc
+*.sh
 *.idea
 *.iml
 cfg/
@@ -9,3 +11,5 @@ TestCommandHandler.ts
 test.ts
 temp/*
 *.traineddata
+.nvmrc
+*.sh
