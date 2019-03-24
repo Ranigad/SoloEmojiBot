@@ -6,7 +6,7 @@ const request = require('request');
 class Wikia {
 
     constructor() {
-        this.megucaGirlListURL = "http://magireco.wikia.com/wiki/Template:CharacterList";
+        this.megucaGirlListURL = "http://magireco.fandom.com/wiki/Template:CharacterList";
         this.externalFileName = "./data/wiki.json";
         this.megucaList = {};
         this.serverMap = {};
@@ -26,7 +26,7 @@ class Wikia {
     }
 
     setWiki(serverID, wikia) {
-        let wikilink = `${wikia}.wikia.com/wiki/`;
+        let wikilink = `${wikia}.fandom.com/wiki/`;
         this.serverMap[serverID] = wikilink;
         this.exportData();
         return wikilink;
