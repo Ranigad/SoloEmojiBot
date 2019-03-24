@@ -65,7 +65,7 @@ export class SupportsManager {
     }
 
     testFriendsParsing() {
-        var friendDataPath = path.normalize(`./data/friendsearch.tson`);
+        var friendDataPath = path.normalize(`./data/friendsearch.json`);
         var data = "";
         if (fs.existsSync(friendDataPath)) {
             data = fs.readFileSync(friendDataPath);
@@ -74,7 +74,7 @@ export class SupportsManager {
     }
 
     testSupportsParsing() {
-        var supportsPath = path.normalize(`./data/supports.tson`);
+        var supportsPath = path.normalize(`./data/supports.json`);
         var data = "";
         if (fs.existsSync(supportsPath)) {
             data = fs.readFileSync(supportsPath);

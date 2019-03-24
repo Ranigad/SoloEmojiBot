@@ -7,7 +7,7 @@ export class WUpdateCommand extends BaseCommand {
 
     constructor(debug=false) {
         super(debug);
-        this.girl_list = path.normalize(`${this.basePath}/data/megucas.tson`);
+        this.girl_list = path.normalize(`${this.basePath}/data/megucas.json`);
     }
 
     run(...args) {

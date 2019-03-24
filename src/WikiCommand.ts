@@ -7,7 +7,7 @@ export class WikiCommand extends BaseCommand {
 
     constructor(debug=false) {
         super(debug);
-        this.girl_list = path.normalize(`${this.basePath}/data/megucas.tson`);
+        this.girl_list = path.normalize(`${this.basePath}/data/megucas.json`);
         //this._basePath = path.normalize(`${this._basePath}/commands/wiki`);
     }
 
