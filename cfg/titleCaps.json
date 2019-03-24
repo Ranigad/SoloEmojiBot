@@ -1,1 +1,4 @@
-["a", "for", "so", "an", "in", "the", "and", "nor", "to", "at", "of", "up", "but", "on", "yet", "by", "or", "le", "la", "de", "ver.)"]
+{
+  "exceptions" : ["a", "for", "so", "an", "in", "the", "and", "nor", "to", "at", "of", "up", "but", "on", "yet", "by", "or", "le", "la", "de", "ver.)"],
+  "keywords" : ["haregi", "mizugi"]
+}

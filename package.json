@@ -2,9 +2,9 @@
   "name": "mokyuubot",
   "version": "1.0.0",
   "description": "Bot for magia record discord",
-  "main": "soloBot.js",
+  "main": "soloBot.ts",
   "scripts": {
-    "start": "node index.js"
+    "start": "ts-node src/index.ts"
   },
   "devDependencies": {
     "@types/node": "^8.10.22",
@@ -28,7 +28,7 @@
     "request-promise": "^4.2.2",
     "sqlite3": "^3.1.10",
     "tesseract.js": "^1.0.10",
-    "typeorm": "0.2.7",
+    "typeorm": "^0.3.0-alpha.22",
     "uws": "^10.148.1"
   }
 }

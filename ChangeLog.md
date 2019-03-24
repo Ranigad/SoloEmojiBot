@@ -17,7 +17,20 @@
 
 ---
 
-## Version 2.0 (TBD)
+## Version 3.0 (TBD)
+- Improved ;react command efficiency for same channel messages
+- Added ;reactchannel (;rc) <channel> <emote>
+- Added ;reactnow (;rn) <emote> for the current channel's last message
+- Added a roles system to get and assign roles to users
+- Added a special command to clear pending profile fetches
+- Update from JavaScript to TypeScript
+
+
+
+
+---
+
+## Version 2.0 (10/17/18)
 - Set the bot's game status to "Magia Record | ;help"
 - Add TypeORM for convenient database manipulation
 - Add logging for all bot commands and bot messages
