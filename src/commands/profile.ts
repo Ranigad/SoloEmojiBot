@@ -36,10 +36,10 @@ export class ProfileCommand extends BaseCommand {
         if (subcommand) {
             // check mention - subcommand becomes request? or check. Pass in mentioned user, check it's not self
             // check subcommand
-            let [command, user, channel, value, value2] = [subcommand, message.author, message.channel, etc, etc2 || 0];
-            this.run(command, user, channel, value, value2, remainder.join(" "));
+            let [command, user, member, channel, value, value2] = [subcommand, message.author, message.member, message.channel, etc, etc2 || 0];
+            this.run(command, user, member, channel, value, value2, remainder.join(" "));
         } else {
-            this.run("check", message.author, message.channel, undefined, remainder.join(" "), undefined);
+            this.run("check", message.author, message.member, message.channel, undefined, remainder.join(" "), undefined);
             console.log("check");
             // do a self profile check
         }
@@ -47,7 +47,7 @@ export class ProfileCommand extends BaseCommand {
 
 
 
-    async run(subcommand, user, channel, value, value2, extra) {
+    async run(subcommand, user, member, channel, value, value2, extra) {
         let fullNameArray = [];
         if (extra) {
             fullNameArray = [value, value2].concat(extra);
@@ -64,7 +64,7 @@ export class ProfileCommand extends BaseCommand {
             case 'create':  // --
                 console.log("create");
                 if (value) {
-                    this.create(channel, user, value)
+                    this.create(channel, user, member, value)
                 }
                 else {
                     channel.send(`Error: You need to provide your friend ID`).then(message => {
@@ -256,7 +256,7 @@ export class ProfileCommand extends BaseCommand {
         else return false;
     }
 
-    async create(channel, discorduser, profile) {
+    async create(channel, discorduser, servermember, profile) {
         // Create new profile, then send message and check if notifications want to be turned on
         if (this.msg_if_restricted_channel(channel)) return;
         var user = await entityManager.getRepository(User).findOne({username: discorduser.id});
@@ -285,6 +285,7 @@ export class ProfileCommand extends BaseCommand {
         user.username = discorduser.id;
         user.discordname = discorduser.username;
         user.discriminator = discorduser.discriminator;
+        user.displayname = servermember.nickname;
         user.friend_id = profile;
 
         await entityManager.save(user);
