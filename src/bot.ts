@@ -60,7 +60,6 @@ client.on('message', async msg => {
     if (msg.author.id == client.user.id) return;
     if (msg.author.bot == false && !msg.channel.name.includes("art")) {
         TranslationHandler.process_data(msg);
-        Util.process_image(msg);
     }
     let parse = await CH.handle(msg);
     if (parse && msg.author.bot == false) {
