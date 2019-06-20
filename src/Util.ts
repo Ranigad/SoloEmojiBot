@@ -72,14 +72,15 @@ export function get_user_id_or_error(value, channel, named = false) {
 }
 
 export async function log_message(message, client) {
-    if (message == undefined || client == undefined) return;
+    const server_id = process.env.TEST_SERVER;
+    const log_id = process.env.LOG_CHANNEL;
+    if (message == undefined || client == undefined || !server_id || !log_id) return;
+
     let message_content = message.content;
     for (var mention of message.mentions.users.array()) {
         let regex = new RegExp(`<@${mention.id}>`,'g');
         message_content = message_content.replace(regex, `<@<${mention.username}#${mention.discriminator}>>`);
     }
-    const server_id = process.env.TEST_SERVER;
-    const log_id = process.env.LOG_CHANNEL;
     const date = new Date();
     const date_string = date.toUTCString();
     const full_msg = `${date_string}: #${message.channel.name} - ${message.author.tag}: ${message_content}`;
@@ -88,9 +89,10 @@ export async function log_message(message, client) {
 }
 
 export async function log_general(message, client) {
-    if (message == undefined || client == undefined) return;
     const server_id = process.env.TEST_SERVER;
     const log_id = process.env.LOG_CHANNEL;
+    if (message == undefined || client == undefined || !server_id || !log_id) return;
+
     const date = new Date();
     const date_string = date.toUTCString();
     const full_msg = `${date_string}: **BOT_MESSAGE**: ${message}`;

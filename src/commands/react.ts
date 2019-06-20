@@ -13,7 +13,7 @@ export class ReactCommand extends BaseCommand {
 
     handler(...args) {
         let [wiki, bot, message, cmdargs] = args;
-        let commandPrefix = Util.get_prefix(process.env.DISCORD_PREFIX, message);
+        let commandPrefix = Util.get_prefix(process.env.DISCORD_PREFIX || ';', message);
         this.emojis = bot.emojis;
 
         if (cmdargs.length != 2 && this.config == undefined) {
