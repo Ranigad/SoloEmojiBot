@@ -1,2 +1,2 @@
-import {WLinkCommand} from './wlink';
+import {WLinkCommand} from "./wlink";
 export {WLinkCommand};

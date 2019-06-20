@@ -1,6 +1,8 @@
-const fs = require('fs');
-const cheerio = require('cheerio');
-const request = require('request');
+import { Logger } from "./Logger";
+
+import * as cheerio from "cheerio";
+import * as fs from "fs";
+import * as request from "request";
 
 export class Wikia {
     megucaGirlListURL: string;
@@ -30,7 +32,7 @@ export class Wikia {
     }
 
     setWiki(serverID, wikia) {
-        let wikilink = `${wikia}.fandom.com/wiki/`;
+        const wikilink = `${wikia}.fandom.com/wiki/`;
         this.serverMap[serverID] = wikilink;
         this.exportData();
         return wikilink;
@@ -40,7 +42,7 @@ export class Wikia {
         if (!(serverID in this.customPages)) {
             this.customPages[serverID] = {};
         }
-        console.log(shortcut);
+        Logger.log(shortcut);
 
         // Check validity
         /*
@@ -50,7 +52,7 @@ export class Wikia {
                 let valid = $('.noarticletext')[0];
                 return true;
             } else {
-                console.log(`Find page error: {err}`);
+                Logger.log(`Find page error: {err}`);
                 return false;
             }
         });*/
@@ -83,7 +85,7 @@ export class Wikia {
 /*
             let megucaCheck = matchMeguca(page);
 
-            if (megucaCheck.length != 0) {
+            if (megucaCheck.length !== 0) {
                 page = megucaCheck;
             }
 
@@ -93,7 +95,8 @@ export class Wikia {
 // */
             // page = this.customPages[server.id][page.toLowerCase()] || page;
 
-            return `${this.serverMap[server.id]}.fandom.com/wiki/${this.matchMeguca(page) || this.customPages[server.id][page.toLowerCase()] || page}`;
+            return `${this.serverMap[server.id]}.fandom.com/wiki/${this.matchMeguca(page)}`
+            || `${this.customPages[server.id][page.toLowerCase()] || page}`;
         } else {
             return -1;
         }
@@ -125,19 +128,19 @@ export class Wikia {
 // */
 
     exportData() {
-        let mappings = <any>{};
+        const mappings = {} as any;
         mappings.serverMap = this.serverMap;
         mappings.customPages = this.customPages;
         fs.writeFileSync(this.externalFileName, JSON.stringify(mappings));
     }
 
     importData() {
-        if(fs.existsSync(this.externalFileName)) {
-            let mappings = JSON.parse(fs.readFileSync(this.externalFileName));
+        if (fs.existsSync(this.externalFileName)) {
+            const mappings = JSON.parse(fs.readFileSync(this.externalFileName));
             this.serverMap = mappings.serverMap;
             this.customPages = mappings.customPages;
         } else {
-            console.error("Wiki data file not found.")
+            Logger.error("Wiki data file not found.");
         }
     }
 
@@ -151,15 +154,15 @@ export class Wikia {
         request(this.megucaGirlListURL, (err, response, body) => {
             if (err === null) {
                 const $ = cheerio.load(body);
-                this.megucaList = $('p').text().split('\n').join('').split(';');
-                //console.log(this.megucaList);
+                this.megucaList = $("p").text().split("\n").join("").split(";");
+                // Logger.log(this.megucaList);
                 // Save in ./data/megucas.json, should be an array of names
-                fs.writeFileSync('./data/megucas.json', JSON.stringify(this.megucaList), (err) => {
-                    console.log(err);
+                fs.writeFileSync("./data/megucas.json", JSON.stringify(this.megucaList), (werr) => {
+                    Logger.log(werr);
                 });
                 return true;
             } else {
-                console.log(`Update Meguca List Error: {err}`);
+                Logger.log(`Update Meguca List Error: {err}`);
                 return false;
             }
         });
@@ -171,16 +174,16 @@ export class Wikia {
         // let score = 100;
         this.megucaList.forEach((meguca) => {
             // Checks if the name is inside any of the elements
-            //if (meguca.includes(megucaName)) {
-            let splitName = meguca.split(' ');  // Divide full name into first/last
+            // if (meguca.includes(megucaName)) {
+            const splitName = meguca.split(" ");  // Divide full name into first/last
             splitName.forEach((name) => {
                 // Check passed in name against each name part
-                if (megucaName.toLowerCase() === name.toLowerCase()) matchedmeguca = splitName;//.join('_');
-                    //lowest = meguca;
-                    //score = name.length;
-                //}
+                if (megucaName.toLowerCase() === name.toLowerCase()) { matchedmeguca = splitName; }// .join('_');
+                    // lowest = meguca;
+                    // score = name.length;
+                // }
             });
-            //}
+            // }
         });
 
         return matchedmeguca;   // Returns array of split name due to new titleCase function (check if all work)

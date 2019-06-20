@@ -1,2 +1,2 @@
 import {ReactCommand} from "./react";
-export {ReactCommand}
+export {ReactCommand};

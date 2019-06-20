@@ -16,7 +16,12 @@
             "options": [
                 "ban-keywords"
             ]
-        }
+        },
+        "object-literal-sort-keys": false,
+        "forin": false,
+        "max-line-length": [true, 150],
+        "prefer-const": false,
+        "no-empty": false
     },
     "rulesDirectory": []
 }

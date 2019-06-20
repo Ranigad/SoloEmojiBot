@@ -21,6 +21,6 @@ export class MasterMemoria {
     })
     rating: number;
 
-    @OneToMany(() => Memoria, memo => memo.masterMemoria, {cascade: true})
+    @OneToMany(() => Memoria, (memo) => memo.masterMemoria, {cascade: true})
     memes: Memoria[];
 }

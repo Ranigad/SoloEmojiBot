@@ -1,17 +1,17 @@
 import {BaseCommand} from "./BaseCommand";
-const path = require('path');
+
+import * as path from "path";
 
 export class WikiCommand extends BaseCommand {
 
     girl_list: string;
 
-    constructor(debug=false) {
+    constructor(debug= false) {
         super(debug);
         this.girl_list = path.normalize(`${this.basePath}/data/megucas.json`);
-        //this._basePath = path.normalize(`${this._basePath}/commands/wiki`);
+        // this._basePath = path.normalize(`${this._basePath}/commands/wiki`);
     }
 
-    run(...args): void {
-    }
+    run(...args): void {}
 
 }
