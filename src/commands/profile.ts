@@ -257,7 +257,7 @@ export class ProfileCommand extends BaseCommand {
         return false;
     }
 
-    async create(channel, discorduser, profile) {
+    async create(channel, discorduser, servermember, profile) {
         // Create new profile, then send message and check if notifications want to be turned on
         if (this.msg_if_restricted_channel(channel)) { return; }
         let user = await entityManager.getRepository(User).findOne({username: discorduser.id});
@@ -284,6 +284,7 @@ export class ProfileCommand extends BaseCommand {
         user.username = discorduser.id;
         user.discordname = discorduser.username;
         user.discriminator = discorduser.discriminator;
+        user.displayname = servermember.nickname;
         user.friend_id = profile;
 
         await entityManager.save(user);
