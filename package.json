@@ -4,11 +4,14 @@
   "description": "Bot for magia record discord",
   "main": "soloBot.ts",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "lint": "tslint --project .",
+    "test": "npm run lint"
   },
   "devDependencies": {
     "@types/node": "^8.10.22",
     "ts-node": "3.3.0",
+    "tslint": "^5.17.0",
     "typescript": "2.5.2"
   },
   "author": "Ranigad",
@@ -26,7 +29,7 @@
     "reflect-metadata": "^0.1.10",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
-    "sqlite3": "^3.1.10",
+    "sqlite3": "^4.0.9",
     "tesseract.js": "^1.0.10",
     "typeorm": "^0.3.0-alpha.22",
     "uws": "^10.148.1"

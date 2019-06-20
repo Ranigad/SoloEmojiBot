@@ -1,0 +1,22 @@
+{
+    "defaultSeverity": "error",
+    "linterOptions": {
+        "exclude": [
+            "src/migration/**"
+        ]
+    },
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "trailing-comma": false,
+        "member-access": false,
+        "variable-name": {
+            "options": [
+                "ban-keywords"
+            ]
+        }
+    },
+    "rulesDirectory": []
+}
