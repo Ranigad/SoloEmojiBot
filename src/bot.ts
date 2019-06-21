@@ -19,8 +19,10 @@ import * as Util from "./Util";
 import * as TranslationHandler from "./TranslationHandler";
 
 // Environment
-const prefix = process.env.DISCORD_PREFIX;
+const prefix = process.env.DISCORD_PREFIX || ';';
 const token = process.env.DISCORD_TOKEN;
+const doNotSetPresence = process.env.IGNORE_PRESENCE;
+const emojiServer = process.env.EMOJI_SERVER || process.env.TEST_SERVER;
 
 client.login(token);
 
@@ -39,12 +41,14 @@ client.on('ready', () => {
     SM.bot = client;
 
     CH = new CommandHandler(prefix, false, client);
-    client.user.setPresence({game: {name: 'Magia Record | ;help'}})
-        .then(console.log)
-        .catch(console.error);
+    if(!doNotSetPresence) {
+        client.user.setPresence({game: {name: 'Magia Record | ;help'}})
+            .then(console.log)
+            .catch(console.error);
+    }
     
     let normal = [], animated = [];
-    client.guilds.get("471030229629009925").emojis.forEach(emoji => emoji.animated ? animated.push([emoji.id, emoji.name]) : normal.push([emoji.id, emoji.name]));
+    client.guilds.get(emojiServer).emojis.forEach(emoji => emoji.animated ? animated.push([emoji.id, emoji.name]) : normal.push([emoji.id, emoji.name]));
 
     let message = "Static Emojis";
     normal.forEach(emoji => message += `\n<:${emoji[1]}:${emoji[0]}> -- ${emoji[1]}, ${emoji[0]}`);
