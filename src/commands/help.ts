@@ -19,7 +19,7 @@ export class HelpCommand extends BaseCommand {
         let [wiki, bot, message, page] = args;
         // this.bot = bot;
         this.message = message;
-        this.defaultPrefix = process.env.DISCORD_PREFIX;
+        this.defaultPrefix = process.env.DISCORD_PREFIX || ';';
         if (page.length === 0) {
             page = ["help"];
         }

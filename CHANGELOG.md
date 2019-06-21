@@ -1,19 +1,3 @@
-# TODO
-
-#### General
-
-- Set up Kuro bot to begin testing, initial version will only do wiki commands
-- Privileges?
-
-#### Wiki
-- Move linking and title casing to wiki class
-- Only allow addition of shortcuts if to a valid page
-
-#### Emoji Parser
-- Make more robust, flag based parsing to generate custom query
-
-#### Twitterbot
-- Figure out embeds and embed previews in Discord post
 
 ---
 
@@ -24,9 +8,6 @@
 - Added a roles system to get and assign roles to users
 - Added a special command to clear pending profile fetches
 - Update from JavaScript to TypeScript
-
-
-
 
 ---
 
