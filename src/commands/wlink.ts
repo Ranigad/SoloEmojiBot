@@ -10,7 +10,7 @@ export class WLinkCommand extends BaseCommand {
     keywords: any;
     megucaList: any;
 
-    aliases = ["wlink", "w"];
+    static aliases = ["wlink", "w"];
 
     constructor(debug= false) {
         super(debug);

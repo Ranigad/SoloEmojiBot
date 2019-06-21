@@ -3,7 +3,7 @@ import { Logger } from "../Logger";
 
 export class WDeleteCommand extends BaseCommand {
 
-    aliases = ["wdelete"];
+    static aliases = ["wdelete"];
 
     constructor(debug= false) {
         super(debug);

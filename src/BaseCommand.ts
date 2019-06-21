@@ -3,13 +3,14 @@ import { Logger } from "./Logger";
 import * as path from "path";
 
 export abstract class BaseCommand {
+
+    static aliases: string[];
+
     _permissions: number;
     basePath: string;
     debug: boolean;
 
-    abstract aliases: string[];
-
-    protected constructor(debug = false) {
+    constructor(debug = false) {
         this.debug = debug;
         this._permissions = 0;
         this.basePath = path.win32.dirname(require.main.filename);

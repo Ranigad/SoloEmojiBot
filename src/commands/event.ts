@@ -8,7 +8,7 @@ import * as rp from "request-promise";
 
 export class EventCommand extends BaseCommand {
 
-    aliases = ["event"];
+    static aliases = ["event"];
 
     constructor(debug= false) {
         super(debug);

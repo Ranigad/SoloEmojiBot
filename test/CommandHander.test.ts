@@ -1,5 +1,5 @@
 
-import test from "ava";
+import test from "ava-ts";
 
 import { CommandHandler } from "../src/CommandHandler";
 

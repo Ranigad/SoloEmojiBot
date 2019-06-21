@@ -4,7 +4,7 @@ import * as Util from "../Util";
 export class DevelCommand extends BaseCommand {
     bot: any;
 
-    aliases = ["devel"];
+    static aliases = ["devel"];
 
     constructor(debug= false) {
         super(debug);

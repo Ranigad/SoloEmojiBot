@@ -38,7 +38,7 @@
     "request-promise": "^4.2.2",
     "sqlite3": "^4.0.9",
     "tesseract.js": "^1.0.10",
-    "typeorm": "^0.3.0-alpha.22",
+    "typeorm": "^0.3.0-alpha.23",
     "uws": "^10.148.1"
   }
 }

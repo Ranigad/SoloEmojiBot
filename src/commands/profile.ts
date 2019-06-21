@@ -16,7 +16,7 @@ export class ProfileCommand extends BaseCommand {
     production_server: string = process.env.PROD_SERVER;
     test_server: string = process.env.TEST_SERVER;
 
-    aliases = ["profile", "p"];
+    static aliases = ["profile", "p"];
 
     constructor(debug= false) {
         super(debug);

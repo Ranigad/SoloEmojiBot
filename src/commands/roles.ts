@@ -13,7 +13,7 @@ export class RolesCommand extends BaseCommand {
 
     bot: any;
 
-    aliases = ["roles"];
+    static aliases = ["roles"];
 
     constructor(debug: boolean = false) {
         super(debug);

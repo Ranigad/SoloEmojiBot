@@ -42,7 +42,7 @@ client.on("ready", () => {
     (client as any).supportsManager = SM;
     SM.bot = client;
 
-    CH = new CommandHandler(prefix, false, client);
+    CH = new CommandHandler(prefix, client, false);
     if(!doNotSetPresence) {
         client.user.setPresence({game: {name: 'Magia Record | ;help'}})
             .then(console.log)

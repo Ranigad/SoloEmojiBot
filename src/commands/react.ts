@@ -6,7 +6,7 @@ export class ReactCommand extends BaseCommand {
     config: any;
     emojis: any;
 
-    aliases = ["react", "r"];
+    static aliases = ["react", "r"];
 
     constructor(debug = false, config) {
         super(debug);

@@ -67,7 +67,10 @@ export function get_user_id_or_error(value, channel, named = false) {
 }
 
 export async function log_message(message, client) {
-    if (message === undefined || client === undefined) { return; }
+    const server_id = process.env.TEST_SERVER;
+    const log_id = process.env.LOG_CHANNEL;
+
+    if (message === undefined || client === undefined || !server_id || !log_id) { return; }
     let message_content = message.content;
     for (const mention of message.mentions.users.array()) {
         const regex = new RegExp(`<@${mention.id}>`, "g");
@@ -84,7 +87,7 @@ export async function log_general(message, client) {
     if (message === undefined || client === undefined) { return; }
     const server_id = process.env.TEST_SERVER;
     const log_id = process.env.LOG_CHANNEL;
-    if (message == undefined || client == undefined || !server_id || !log_id) return;
+    if (message == undefined || client == undefined || !server_id || !log_id) { return; }
 
     const date = new Date();
     const date_string = date.toUTCString();
@@ -146,12 +149,12 @@ export async function verify_internal_role(discorduserid, required_role) {
         case "developer":
             return role.role === required_role;
         case "admin":
-            if (role.role === "developer") { return true; } 
-            else if (role.role === "admin") { return true; } 
+            if (role.role === "developer") { return true; }
+            else if (role.role === "admin") { return true; }
             else { return false; }
         case "helper":
-            if (role.role === "developer") { return true; } 
-            else if (role.role === "admin") { return true; } 
+            if (role.role === "developer") { return true; }
+            else if (role.role === "admin") { return true; }
             else { return role.role === "helper"; }
     }
 }

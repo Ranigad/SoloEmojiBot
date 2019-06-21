@@ -7,7 +7,7 @@ export class WUpdateCommand extends BaseCommand {
     basePath: any;
     girl_list: any;
 
-    aliases = ["wupdate"];
+    static aliases = ["wupdate"];
 
     constructor(debug= false) {
         super(debug);

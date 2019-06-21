@@ -3,7 +3,7 @@ import { Logger } from "../Logger";
 
 export class WAddCommand extends BaseCommand {
 
-    aliases = ["wadd"];
+    static aliases = ["wadd"];
 
     constructor(debug= false) {
         super(debug);

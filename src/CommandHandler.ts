@@ -1,23 +1,21 @@
 
-import * as fs from "fs";
 import * as path from "path";
 import * as Util from "./Util";
-import { Wikia } from "./wiki";
 
+import { Wikia } from "./wiki";
 const wiki = new Wikia();
 
 import { Logger } from "./Logger";
 
-import { BaseCommand } from "./BaseCommand";
 import * as Commands from "./commands";
 
 // Bot check before passing in
 
 export class CommandHandler {
 
-    private aliases: { [key: string]: BaseCommand } = {};
+    private aliases = {};
 
-    constructor(private defaultPrefix: string, private bot, private debug = false, private commandDirectory= "commands") {
+    constructor(private defaultPrefix: string, private bot, private debug = false) {
         Logger.log(path.dirname(require.main.filename));
         this.initAliases();
     }
@@ -34,13 +32,6 @@ export class CommandHandler {
         return {command, arguments: args};
     }
 
-    isCommand(command: string) {
-        if (command === undefined) {
-            return false;
-        }
-        return fs.existsSync(`./src/${this.commandDirectory}/${command}.ts`);
-    }
-
     // Takes in the message object received by the bot and takes appropriate action
     async handle(message) {
         // -----------------------------------------------------------------------------------
@@ -51,20 +42,11 @@ export class CommandHandler {
         if (!parsedMessage) { return true; } // Return if the prefix is not correct
 
         // Log the command
-        const promise = Util.log_message(message, this.bot);
+        Util.log_message(message, this.bot);
 
         const [command, args] = [parsedMessage.command, parsedMessage.arguments];
 
         this.debug_print("parser", command, args);
-
-        // -----------------------------------------------------------------------------------
-        // 2. Get the command
-        if (!this.isCommand(command)) {
-            this.debug_print("commandcheck");
-            return true;
-        } else {
-            Logger.log("Command exists");
-        }
 
         const commandInstance = this.getCommandClassInstance(command, false);
 
@@ -82,19 +64,6 @@ export class CommandHandler {
 
     }
 
-    getCommandClassInstance(command: string, debug: boolean) {
-        const commandClass = this.getCommandClass(command);
-        if (commandClass === undefined) { return undefined; }
-        return new commandClass(debug);
-    }
-
-    getCommandClass(command: string) {
-        switch (command) {
-            default:
-                return undefined;
-        }
-    }
-
     debug_print(section, ...message) {
         if (section === "parser") {
             this.print(`1. ${section.toUpperCase()} | ${message[0]} | ${message[1]}`);
@@ -109,12 +78,19 @@ export class CommandHandler {
 
     private initAliases() {
         Object.keys(Commands).forEach((cmdName) => {
-            const cmdProto = new Commands[cmdName]();
+            const cmdProto = Commands[cmdName];
 
             cmdProto.aliases.forEach((alias) => {
                 if (this.aliases[alias]) { throw new Error(`Command at alias "${alias}" already exists.`); }
                 this.aliases[alias] = cmdProto;
             });
         });
+    }
+
+    private getCommandClassInstance(command: string, debug: boolean) {
+        const commandClass = this.aliases[command];
+        if (!commandClass) { return; }
+
+        return new commandClass(debug);
     }
 }

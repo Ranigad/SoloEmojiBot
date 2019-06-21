@@ -8,7 +8,7 @@ export class HelpCommand extends BaseCommand {
     message: any;
     defaultPrefix: string;
 
-    aliases = ["help", "h"];
+    static aliases = ["help", "h"];
 
     constructor(debug= false) {
         super(debug);

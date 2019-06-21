@@ -2,7 +2,7 @@ import {BaseCommand} from "../BaseCommand";
 
 export class WSetCommand extends BaseCommand {
 
-    aliases = ["wset"];
+    static aliases = ["wset"];
 
     constructor(debug= false) {
         super(debug);

@@ -7,7 +7,7 @@ const sqlite3 = sqlite.verbose();
 
 export class LogEmojisCommand extends BaseCommand {
 
-    aliases = ["logemojis"];
+    static aliases = ["logemojis"];
 
     constructor(debug= false) {
         super(debug);

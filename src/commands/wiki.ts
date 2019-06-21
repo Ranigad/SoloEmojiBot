@@ -6,7 +6,7 @@ export class WikiCommand extends BaseCommand {
 
     girl_list: string;
 
-    aliases = ["wiki"];
+    static aliases = ["wiki"];
 
     constructor(debug= false) {
         super(debug);
