@@ -20,7 +20,7 @@ export class WAddCommand extends BaseCommand {
         if (shortcut) {
             if (page.length) {
                 wiki.addShortcut(serverID, shortcut, page);
-                message.channel.send(`Wikia set! <http:\/\/${wiki.linkWikia(serverID, [])}>`);
+                message.channel.send(`Shortcut page set! <http:\/\/${wiki.linkWikia(serverID, [shortcut])}>`);
                 return true;
             } else {
                 this.print("Not enough arguments: needs a page to link.", Logger.error);

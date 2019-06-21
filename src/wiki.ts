@@ -3,17 +3,21 @@ import { Logger } from "./Logger";
 import * as cheerio from "cheerio";
 import * as fs from "fs";
 import * as request from "request";
+import * as path from "path";
 
 export class Wikia {
     megucaGirlListURL: string;
     externalFileName: string;
+    basePath: string
     megucaList: any;
     serverMap: any;
     customPages: any;
 
     constructor() {
         this.megucaGirlListURL = "http://magireco.fandom.com/wiki/Template:CharacterList";
-        this.externalFileName = "./data/wiki.json";
+        this.basePath = path.win32.dirname(require.main.filename);
+        this.basePath = this.basePath.substring(0, this.basePath.length - 4);
+        this.externalFileName = this.basePath + "/data/wiki.json";
         this.megucaList = {};
         this.serverMap = {};
         this.customPages = {};
@@ -76,11 +80,11 @@ export class Wikia {
         }
     }
 
-    linkWikia(server, page) {
-        if (server.id in this.serverMap) {
+    linkWikia(serverID, page) {
+        if (serverID in this.serverMap) {
             page = page.join("_");
-            if (this.customPages[server.id] === undefined) {
-                this.customPages[server.id] = {};
+            if (this.customPages[serverID] === undefined) {
+                this.customPages[serverID] = {};
             }
 /*
             let megucaCheck = matchMeguca(page);
@@ -89,14 +93,13 @@ export class Wikia {
                 page = megucaCheck;
             }
 
-            if (page.toLowerCase() in this.customPages[server.id]) {
-                page = this.customPages[server.id][page];
+            if (page.toLowerCase() in this.customPages[serverID]) {
+                page = this.customPages[serverID][page];
             }
 // */
-            // page = this.customPages[server.id][page.toLowerCase()] || page;
+            // page = this.customPages[serverID][page.toLowerCase()] || page;
 
-            return `${this.serverMap[server.id]}.fandom.com/wiki/${this.matchMeguca(page)}`
-            || `${this.customPages[server.id][page.toLowerCase()] || page}`;
+            return `${this.serverMap[serverID]}${this.matchMeguca(page) || this.customPages[serverID][page.toLowerCase()] || page}`;
         } else {
             return -1;
         }

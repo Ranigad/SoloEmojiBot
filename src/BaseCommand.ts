@@ -13,7 +13,7 @@ export abstract class BaseCommand {
         this.basePath = path.win32.dirname(require.main.filename);
         // this.basePath = this.basePath.slice(this.basePath.length - 4, 4);
         this.basePath = this.basePath.substring(0, this.basePath.length - 4);
-        Logger.log(this.basePath);
+        // Logger.log(this.basePath);
     }
 
     set permissions(role) {
