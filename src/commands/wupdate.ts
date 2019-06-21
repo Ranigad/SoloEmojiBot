@@ -7,6 +7,8 @@ export class WUpdateCommand extends BaseCommand {
     basePath: any;
     girl_list: any;
 
+    aliases = ["wupdate"];
+
     constructor(debug= false) {
         super(debug);
         this.girl_list = path.normalize(`${this.basePath}/data/megucas.json`);

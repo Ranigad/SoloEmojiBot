@@ -2,6 +2,9 @@ import {BaseCommand} from "../BaseCommand";
 import { Logger } from "../Logger";
 
 export class WDeleteCommand extends BaseCommand {
+
+    aliases = ["wdelete"];
+
     constructor(debug= false) {
         super(debug);
         // this._wiki = wiki;

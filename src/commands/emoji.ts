@@ -5,6 +5,8 @@ import * as Util from "../Util";
 
 export class EmojiCommand extends BaseCommand {
 
+    aliases = ["emoji", "e"];
+
     constructor(debug= false) {
         super(debug);
     }

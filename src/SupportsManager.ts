@@ -194,10 +194,10 @@ export class SupportsManager {
             if (ids.length === 15) {
                 break;
             }
-            if (this.loadingIds.includes(user.user_id) || ids.includes(user.user_id)) {
+            if (this.loadingIds.includes(+user.user_id) || ids.includes(user.user_id)) {
                 continue;
             } else {
-                this.loadingIds.push(user.user_id);
+                this.loadingIds.push(+user.user_id);
                 ids.push(user.user_id);
                 inviteCodes.push(user.friend_id);
             }

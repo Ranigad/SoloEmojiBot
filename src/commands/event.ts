@@ -7,6 +7,9 @@ import * as rp from "request-promise";
 // Event Timer: https://rice.qyu.be/lua-bin/event_timer.lua?msg=en
 
 export class EventCommand extends BaseCommand {
+
+    aliases = ["event"];
+
     constructor(debug= false) {
         super(debug);
     }

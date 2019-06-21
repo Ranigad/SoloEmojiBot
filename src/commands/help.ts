@@ -8,6 +8,8 @@ export class HelpCommand extends BaseCommand {
     message: any;
     defaultPrefix: string;
 
+    aliases = ["help", "h"];
+
     constructor(debug= false) {
         super(debug);
         this.importHelpFile();
@@ -38,7 +40,7 @@ export class HelpCommand extends BaseCommand {
     }
 
     importHelpFile() {
-        this.help = JSON.parse(fs.readFileSync(`${this.basePath}/cfg/help.json`));
+        this.help = JSON.parse(fs.readFileSync(`${this.basePath}/cfg/help.json`, "utf-8"));
     }
 
     async createEmbed(command, prefix) {

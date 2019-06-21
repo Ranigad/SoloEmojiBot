@@ -16,6 +16,8 @@ export class ProfileCommand extends BaseCommand {
     production_server: string = process.env.PROD_SERVER;
     test_server: string = process.env.TEST_SERVER;
 
+    aliases = ["profile", "p"];
+
     constructor(debug= false) {
         super(debug);
         this.permissions = 0;
@@ -65,7 +67,7 @@ export class ProfileCommand extends BaseCommand {
             case "create":  // --
                 Logger.log("create");
                 if (value) {
-                    this.create(channel, user, value);
+                    this.create(channel, user, value, null);
                 } else {
                     channel.send(`Error: You need to provide your friend ID`).then((message) => {
                         message.delete(5000);
@@ -277,7 +279,7 @@ export class ProfileCommand extends BaseCommand {
         } else {
             Logger.log("Creating new user");
             user = new User();
-            user.addtimestamp = new Date().toUTCString();
+            user.addtimestamp = new Date();
             mode = "created";
         }
 
@@ -460,7 +462,7 @@ export class ProfileCommand extends BaseCommand {
         let updateneeded = false;
         if (gameUser === undefined) { updateneeded = true; } else {
             const timeNow = Date.now();
-            const updateTime = Date.parse(gameUser.updatetimestamp);
+            const updateTime = Date.parse(gameUser.updatetimestamp.toUTCString());
             const hours = Math.abs(timeNow - updateTime) / 36e5;
             if (hours > 21) { updateneeded = true; }
         }
@@ -569,7 +571,7 @@ export class ProfileCommand extends BaseCommand {
         let updateneeded = false;
         if (gameUser === undefined) { updateneeded = true; } else {
             const timeNow = Date.now();
-            const updateTime = Date.parse(gameUser.updatetimestamp);
+            const updateTime = Date.parse(gameUser.updatetimestamp.toUTCString());
             const hours = Math.abs(timeNow - updateTime) / 36e5;
             if (hours > 21) { updateneeded = true; }
         }
@@ -611,10 +613,10 @@ export class ProfileCommand extends BaseCommand {
 
                 for (const girl of girls) {
                     messageTxt += "\n";
-                    const attribute = girls.masterMeguca.meguca_type;
+                    const attribute = girl.masterMeguca.meguca_type;
                     if (attribute > 0 && attribute < 7) { messageTxt += `${attributes[attribute - 1]} `; }
                     messageTxt += `**${(girl.masterMeguca.eng_sur && girl.masterMeguca.eng_given)
-                        ? girls.masterMeguca.eng_sur + " " + girl.masterMeguca.eng_given
+                        ? girl.masterMeguca.eng_sur + " " + girl.masterMeguca.eng_given
                         : (girl.masterMeguca.nick) ? girl.masterMeguca.nick : girl.masterMeguca.jpn_name}** `;
                     messageTxt += `・${girl.slots}s・Lv${girl.level}・${(girl.magia_level === 6) ? "Doppel" : "Magia" + girl.magia_level} `;
                     messageTxt += `\n${girl.hp} HP・${girl.attack} ATK・${girl.defense} DEF`;
@@ -853,7 +855,7 @@ export class ProfileCommand extends BaseCommand {
 
         for (const friend of friends) {
             if (friend.deleted === true) { continue; }
-            const friendship = await this.check_friends(senderid, friends[i].username);
+            const friendship = await this.check_friends(senderid, friend.username);
             initialmessage += "\n★ ";
             finalmessage += "\n★ ";
             if (friendship !== undefined && friendship.a_follows === true && friendship.b_follows === true) {
@@ -926,8 +928,8 @@ export class ProfileCommand extends BaseCommand {
         let count = 0;
 
         for (const friend of friends) {
-            if (friends.deleted === true) { continue; }
-            const friendship = await this.check_friends(senderid, friends[i].username);
+            if (friend.deleted === true) { continue; }
+            const friendship = await this.check_friends(senderid, friend.username);
             initialmessage += "\n★ ";
             finalmessage += "\n★ ";
             if (friendship && friendship.a_follows === true && friendship.b_follows === true) {

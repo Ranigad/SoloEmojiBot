@@ -10,16 +10,18 @@ export class WLinkCommand extends BaseCommand {
     keywords: any;
     megucaList: any;
 
+    aliases = ["wlink", "w"];
+
     constructor(debug= false) {
         super(debug);
         // this._wiki = wiki;
         const megucaPath = path.normalize(`${this.basePath}/data/megucas.json`);
-        this.megucaList = (fs.existsSync(megucaPath) && JSON.parse(fs.readFileSync(megucaPath))) || [];
+        this.megucaList = (fs.existsSync(megucaPath) && JSON.parse(fs.readFileSync(megucaPath, "utf-8"))) || [];
 
         const titleCapsPath = path.normalize(`${this.basePath}/cfg/titleCaps.json`);
 
         if (fs.existsSync(titleCapsPath)) {
-            this.title_file = JSON.parse(fs.readFileSync(titleCapsPath));
+            this.title_file = JSON.parse(fs.readFileSync(titleCapsPath, "utf-8"));
             this.title_caps = this.title_file.exceptions;
             this.keywords = this.title_file.keywords;
         } else {

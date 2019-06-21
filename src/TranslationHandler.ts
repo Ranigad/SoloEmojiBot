@@ -29,12 +29,14 @@ export async function export_data(channel) {
 
     try {
         let output = await stringify(memeArray);
-        await fs.writeFile(`temp/memoria-${now}.csv`, output);
+        fs.writeFileSync(`temp/memoria-${now}.csv`, output);
+
         output = await stringify(girlArray);
-        await fs.writeFile(`temp/girls-${now}.csv`, output);
+        fs.writeFileSync(`temp/girls-${now}.csv`, output);
+
         await channel.send({files: [`temp/memoria-${now}.csv`, `temp/girls-${now}.csv`]});
-        fs.unlink(`temp/memoria-${now}.csv`);
-        fs.unlink(`temp/girls-${now}.csv`);
+        fs.unlinkSync(`temp/memoria-${now}.csv`);
+        fs.unlinkSync(`temp/girls-${now}.csv`);
     } catch (err) {
         Logger.log(err);
     }
@@ -98,7 +100,7 @@ export const process_data = async (message) => {
                     // Logger.log(results);
                     const data = results.data;
                     await callback(data);
-                    fs.unlink(`temp/${file_name}`);
+                    fs.unlinkSync(`temp/${file_name}`);
                     message.reply("the translations were successfully updated");
                 }
             });

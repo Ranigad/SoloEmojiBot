@@ -1,6 +1,10 @@
 import {BaseCommand} from "../BaseCommand";
+import { Logger } from "../Logger";
 
 export class WAddCommand extends BaseCommand {
+
+    aliases = ["wadd"];
+
     constructor(debug= false) {
         super(debug);
         // this._wiki = wiki;

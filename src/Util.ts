@@ -117,7 +117,7 @@ export async function process_image(message) {
             } catch (error) {
                 Logger.log(error);
             }
-            fs.unlink(`temp/${file_name}`);
+            fs.unlinkSync(`temp/${file_name}`);
         });
     });
 }

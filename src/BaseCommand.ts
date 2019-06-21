@@ -7,6 +7,8 @@ export abstract class BaseCommand {
     basePath: string;
     debug: boolean;
 
+    abstract aliases: string[];
+
     protected constructor(debug = false) {
         this.debug = debug;
         this._permissions = 0;

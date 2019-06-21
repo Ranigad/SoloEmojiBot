@@ -3,10 +3,10 @@
 
 export class Logger {
   static log(...args) {
-    Logger.log(...args);
+    console.log(...args);
   }
 
   static error(...args) {
-    Logger.error(...args);
+    console.error(...args);
   }
 }

@@ -6,6 +6,9 @@ import * as sqlite from "sqlite3";
 const sqlite3 = sqlite.verbose();
 
 export class LogEmojisCommand extends BaseCommand {
+
+    aliases = ["logemojis"];
+
     constructor(debug= false) {
         super(debug);
     }

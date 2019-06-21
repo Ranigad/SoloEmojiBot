@@ -63,7 +63,7 @@ client.on("ready", () => {
 client.on("message", async (msg) => {
     if (msg.channel.type !== "text") { return; }
     if (msg.author.id === client.user.id) { return; }
-    if (msg.author.bot === false && !msg.channel.name.includes("art")) {
+    if (msg.author.bot === false && !(msg.channel as any).name.includes("art")) {
         TranslationHandler.process_data(msg);
     }
     const parse = await CH.handle(msg);
@@ -79,7 +79,7 @@ client.on("messageReactionAdd", (reaction, user) => {
     Logger.log(
         `${(new Date()).toLocaleString()}
         | Reaction
-        | ${emoji.name} in ${server.name} by ${user.username} in ${reaction.message.channel.name}`
+        | ${emoji.name} in ${server.name} by ${user.username} in ${(reaction.message.channel as any).name}`
     );
     EC.dbadd(emoji.name, emoji.id, user.username, user.id, server.name, server.id, 1, reaction.message.id);
 });
@@ -91,7 +91,7 @@ client.on("messageReactionRemove", (reaction, user) => {
     Logger.log(
         `${(new Date()).toLocaleString()}
         | Remove Reaction
-        | ${emoji.name} in ${server.name} by ${user.username} in ${reaction.message.channel.name}`
+        | ${emoji.name} in ${server.name} by ${user.username} in ${(reaction.message.channel as any).name}`
     );
     EC.dbremove(emoji.name, user.id, server.id, 1, reaction.message.id);
 });

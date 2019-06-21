@@ -8,28 +8,18 @@ const wiki = new Wikia();
 
 import { Logger } from "./Logger";
 
-import {DevelCommand} from "./commands/devel";
-import {EmojiCommand} from "./commands/emoji";
-import {EventCommand} from "./commands/event";
-import {HelpCommand} from "./commands/help";
-import {LogEmojisCommand} from "./commands/logemojis";
-import {ProfileCommand} from "./commands/profile";
-import {ReactCommand} from "./commands/react";
-import {ReactChannelCommand} from "./commands/reactchannel";
-import {ReactNowCommand} from "./commands/reactnow";
-import {RolesCommand} from "./commands/roles";
-import {WAddCommand} from "./commands/wadd";
-import {WDeleteCommand} from "./commands/wdelete";
-import {WLinkCommand} from "./commands/wlink";
-import {WSetCommand} from "./commands/wset";
-import {WUpdateCommand} from "./commands/wupdate";
+import { BaseCommand } from "./BaseCommand";
+import * as Commands from "./commands";
 
 // Bot check before passing in
 
 export class CommandHandler {
 
-    constructor(private prefix, private bot, private debug = false, private commandDirectory= "commands") {
+    private aliases: { [key: string]: BaseCommand } = {};
+
+    constructor(private defaultPrefix: string, private bot, private debug = false, private commandDirectory= "commands") {
         Logger.log(path.dirname(require.main.filename));
+        this.initAliases();
     }
 
     print(message) {
@@ -100,43 +90,6 @@ export class CommandHandler {
 
     getCommandClass(command: string) {
         switch (command) {
-            case "devel":
-                return DevelCommand;
-            case "e":
-            case "emoji":
-                return EmojiCommand;
-            case "event":
-                return EventCommand;
-            case "h":
-            case "help":
-                return HelpCommand;
-            case "logemojis":
-                return LogEmojisCommand;
-            case "p":
-            case "profile":
-                return ProfileCommand;
-            case "r":
-            case "react":
-                return ReactCommand;
-            case "rc":
-            case "reactchannel":
-                return ReactChannelCommand;
-            case "rn":
-            case "reactnow":
-                return ReactNowCommand;
-            case "roles":
-                return RolesCommand;
-            case "w":
-            case "wlink":
-                return WLinkCommand;
-            case "wadd":
-                return WAddCommand;
-            case "wdelete":
-                return WDeleteCommand;
-            case "wset":
-                return WSetCommand;
-            case "wupdate":
-                return WUpdateCommand;
             default:
                 return undefined;
         }
@@ -152,5 +105,16 @@ export class CommandHandler {
         } else if (section === "help") {
             this.print(`0. ${section.toUpperCase()}`);
         }
+    }
+
+    private initAliases() {
+        Object.keys(Commands).forEach((cmdName) => {
+            const cmdProto = new Commands[cmdName]();
+
+            cmdProto.aliases.forEach((alias) => {
+                if (this.aliases[alias]) { throw new Error(`Command at alias "${alias}" already exists.`); }
+                this.aliases[alias] = cmdProto;
+            });
+        });
     }
 }

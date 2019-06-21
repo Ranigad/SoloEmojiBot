@@ -2,13 +2,13 @@ import { Logger } from "./Logger";
 
 import * as cheerio from "cheerio";
 import * as fs from "fs";
-import * as request from "request";
 import * as path from "path";
+import * as request from "request";
 
 export class Wikia {
     megucaGirlListURL: string;
     externalFileName: string;
-    basePath: string
+    basePath: string;
     megucaList: any;
     serverMap: any;
     customPages: any;
@@ -139,7 +139,7 @@ export class Wikia {
 
     importData() {
         if (fs.existsSync(this.externalFileName)) {
-            const mappings = JSON.parse(fs.readFileSync(this.externalFileName));
+            const mappings = JSON.parse(fs.readFileSync(this.externalFileName, "utf-8"));
             this.serverMap = mappings.serverMap;
             this.customPages = mappings.customPages;
         } else {
@@ -160,9 +160,7 @@ export class Wikia {
                 this.megucaList = $("p").text().split("\n").join("").split(";");
                 // Logger.log(this.megucaList);
                 // Save in ./data/megucas.json, should be an array of names
-                fs.writeFileSync("./data/megucas.json", JSON.stringify(this.megucaList), (werr) => {
-                    Logger.log(werr);
-                });
+                fs.writeFileSync("./data/megucas.json", JSON.stringify(this.megucaList));
                 return true;
             } else {
                 Logger.log(`Update Meguca List Error: {err}`);

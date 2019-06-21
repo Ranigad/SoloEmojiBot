@@ -13,6 +13,8 @@ export class RolesCommand extends BaseCommand {
 
     bot: any;
 
+    aliases = ["roles"];
+
     constructor(debug: boolean = false) {
         super(debug);
     }
@@ -78,7 +80,7 @@ export class RolesCommand extends BaseCommand {
                 return channel.send(`You have assigned the role "${role_title}" to that user`).then((message) => {
                     message.delete(10000);
                 });
-            case "get":
+            case "get": {
                 let userid;
                 let userid_data = Util.get_user_id_mention(value, channel, true);
 
@@ -104,7 +106,8 @@ export class RolesCommand extends BaseCommand {
                 return channel.send(`That user has the role ${role.role}`).then((message) => {
                     message.delete(10000);
                 });
-            case "removeall":
+            }
+            case "removeall": {
                 let userid;
                 const userid_data = Util.get_user_id_mention(value, channel, true);
 
@@ -147,6 +150,7 @@ export class RolesCommand extends BaseCommand {
                 return channel.send(messageText).then((message) => {
                     message.delete(10000);
                 });
+            }
         }
     }
 
