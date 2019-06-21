@@ -4,14 +4,24 @@
   "description": "Bot for magia record discord",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "lint": "tslint --project .",
+    "lint:fix": "npm run lint -- --fix",
+    "test:unit": "ava-ts test/**.test.ts",
+    "test": "npm run lint && npm run test:unit"
   },
   "devDependencies": {
     "@types/node": "^8.10.22",
+    "ava": "^2.1.0",
+    "ava-ts": "^0.25.2",
     "ts-node": "3.3.0",
+    "tslint": "^5.17.0",
     "typescript": "2.5.2"
   },
   "author": "Ranigad",
+  "engines": {
+    "node": "10.11.0"
+  },
   "license": "ISC",
   "dependencies": {
     "bufferutil": "^4.0.0",
@@ -28,7 +38,7 @@
     "request-promise": "^4.2.2",
     "sqlite3": "^4.0.9",
     "tesseract.js": "^1.0.10",
-    "typeorm": "^0.3.0-alpha.22",
+    "typeorm": "^0.3.0-alpha.23",
     "uws": "^10.148.1"
   }
 }
