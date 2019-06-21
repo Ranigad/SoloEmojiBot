@@ -146,8 +146,12 @@ export async function verify_internal_role(discorduserid, required_role) {
         case "developer":
             return role.role === required_role;
         case "admin":
-            if (role.role === "developer") { return true; } else if (role.role === "admin") { return true; } else { return false; }
+            if (role.role === "developer") { return true; } 
+            else if (role.role === "admin") { return true; } 
+            else { return false; }
         case "helper":
-            if (role.role === "developer") { return true; } else if (role.role === "admin") { return true; } else { return role.role === "helper"; }
+            if (role.role === "developer") { return true; } 
+            else if (role.role === "admin") { return true; } 
+            else { return role.role === "helper"; }
     }
 }
