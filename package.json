@@ -2,7 +2,7 @@
   "name": "mokyuubot",
   "version": "1.0.0",
   "description": "Bot for magia record discord",
-  "main": "src/index.ts",
+  "main": "soloBot.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
     "lint": "tslint --project .",
