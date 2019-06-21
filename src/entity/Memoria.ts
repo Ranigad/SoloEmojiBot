@@ -1,6 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
-import {Meguca} from "./Meguca";
 import {MasterMemoria} from "./MasterMemoria";
+import {Meguca} from "./Meguca";
 
 @Entity()
 export class Memoria {
@@ -17,9 +17,9 @@ export class Memoria {
     })
     level: number;
 
-    @ManyToOne(() => MasterMemoria, masterMemoria => masterMemoria.memes, {cascade: false})
+    @ManyToOne(() => MasterMemoria, (masterMemoria) => masterMemoria.memes, {cascade: false})
     masterMemoria: MasterMemoria;
 
-    @ManyToOne(() => Meguca, meguca => meguca.memes, {cascade: false})
+    @ManyToOne(() => Meguca, (meguca) => meguca.memes, {cascade: false})
     meguca: Meguca;
 }

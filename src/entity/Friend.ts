@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Friend {
@@ -21,4 +21,3 @@ export class Friend {
     })
     b_follows: boolean;
 }
-

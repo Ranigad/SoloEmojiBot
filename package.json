@@ -2,16 +2,21 @@
   "name": "mokyuubot",
   "version": "1.0.0",
   "description": "Bot for magia record discord",
-  "main": "src/index.ts",
+  "main": "soloBot.ts",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "lint": "tslint --project .",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "npm run lint"
   },
   "devDependencies": {
     "@types/node": "^8.10.22",
     "ts-node": "3.3.0",
+    "tslint": "^5.17.0",
     "typescript": "2.5.2"
   },
   "author": "Ranigad",
+  "engines": { "node" : "10.11.0" },
   "license": "ISC",
   "dependencies": {
     "bufferutil": "^4.0.0",

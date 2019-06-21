@@ -1,7 +1,7 @@
 import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {MagiRecoUser} from "./MagiRecoUser";
 import {MasterMeguca} from "./MasterMeguca";
 import {Memoria} from "./Memoria";
-import {MagiRecoUser} from "./MagiRecoUser";
 
 @Entity()
 export class Meguca {
@@ -51,12 +51,12 @@ export class Meguca {
     })
     hp: number;
 
-    @ManyToOne(() => MasterMeguca, masterMeguca => masterMeguca.meguca, {cascade: false})
+    @ManyToOne(() => MasterMeguca, (masterMeguca) => masterMeguca.meguca, {cascade: false})
     masterMeguca: MasterMeguca;
 
-    @OneToMany(() => Memoria, memo => memo.meguca, {cascade: true})
+    @OneToMany(() => Memoria, (memo) => memo.meguca, {cascade: true})
     memes: Memoria[];
 
-    @ManyToOne(() => MagiRecoUser, user => user.meguca, {cascade: false})
+    @ManyToOne(() => MagiRecoUser, (user) => user.meguca, {cascade: false})
     user: MagiRecoUser;
 }

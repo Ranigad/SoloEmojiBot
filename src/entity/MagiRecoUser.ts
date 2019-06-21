@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import {Meguca} from "./Meguca";
 
 @Entity()
@@ -41,7 +41,7 @@ export class MagiRecoUser {
     })
     updatetimestamp: Date;
 
-    @OneToMany(() => Meguca, meguca => meguca.user, {cascade: true})
+    @OneToMany(() => Meguca, (meguca) => meguca.user, {cascade: true})
     meguca: Meguca[];
 
 }

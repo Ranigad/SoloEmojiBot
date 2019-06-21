@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column } from "typeorm";
+import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class Guild {
@@ -8,4 +8,3 @@ export class Guild {
     @Column()
     prefix: string;
 }
-

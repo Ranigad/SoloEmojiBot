@@ -26,6 +26,6 @@ export class MasterMeguca {
     })
     meguca_type: number;
 
-    @OneToMany(() => Meguca, meguca => meguca.masterMeguca, {cascade: true})
+    @OneToMany(() => Meguca, (meguca) => meguca.masterMeguca, {cascade: true})
     meguca: Meguca[];
 }

@@ -1,29 +1,30 @@
 import {BaseCommand} from "../BaseCommand";
-const sqlite3 = require('sqlite3').verbose();
-const fs = require('fs');
+
+import * as fs from "fs";
+
+import * as sqlite from "sqlite3";
+const sqlite3 = sqlite.verbose();
 
 export class LogEmojisCommand extends BaseCommand {
-    constructor(debug=false) {
+    constructor(debug= false) {
         super(debug);
     }
 
-    run(...args) {
+    run(...args) {}
 
-    }
-
-    logemojis(){
-        let db = new sqlite3.Database(`./data/emojis.db`);
+    logemojis() {
+        const db = new sqlite3.Database(`./data/emojis.db`);
         db.all("SELECT * FROM emoji", (err, data) => {
             fs.writeFileSync("./data/emojilog.json", JSON.stringify(data));
-            //console.log(data)
+            // Logger.log(data)
         });
     }
 
     backupemojis() {
-        let db = new sqlite3.Database(`./data/emojis.db`);
+        const db = new sqlite3.Database(`./data/emojis.db`);
         db.all("SELECT * FROM emoji", (err, data) => {
             fs.writeFileSync("./data/emojilog.json", JSON.stringify(data));
-            //console.log(data)
+            // Logger.log(data)
         });
     }
 }

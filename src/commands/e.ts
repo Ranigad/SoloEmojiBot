@@ -1,2 +1,2 @@
 import {EmojiCommand} from "./emoji";
-export {EmojiCommand}
+export {EmojiCommand};

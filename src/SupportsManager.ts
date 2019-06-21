@@ -1,16 +1,18 @@
-const path = require('path');
-const fs = require('fs');
-const typeorm = require('typeorm');
+
+import * as fs from "fs";
+import * as path from "path";
+import * as rp from "request-promise";
+import * as typeorm from "typeorm";
+
+import { Logger } from "./Logger";
+
 const entityManager = typeorm.getManager();
 import {MagiRecoUser} from "./entity/MagiRecoUser";
 import {MasterMeguca} from "./entity/MasterMeguca";
-import {Meguca} from "./entity/Meguca";
 import {MasterMemoria} from "./entity/MasterMemoria";
+import {Meguca} from "./entity/Meguca";
 import {Memoria} from "./entity/Memoria";
 import * as Util from "./Util";
-
-const rp = require('request-promise');
-
 
 export class SupportsManager {
 
@@ -32,145 +34,136 @@ export class SupportsManager {
 
     async repeatQuery(options, occurence) {
         try {
-            let data = await rp(options);
+            const data = await rp(options);
             return data;
-        }
-        catch (error) {
-            console.log(error);
+        } catch (error) {
+            Logger.log(error);
             occurence--;
             if (occurence > 0) {
-                if (options.proxy != undefined) {
+                if (options.proxy !== undefined) {
                     options.proxy = await this.getProxy();
                 }
                 this.repeatQuery(options, occurence);
-            }
-            else return undefined;
+            } else { return undefined; }
         }
     }
 
     async getProxy() {
-        var options = {
+        const options = {
             method: "GET",
             uri: "https://rice.qyu.be/cgi-bin/pixiedust.sh",
         };
-        var proxy = await this.repeatQuery(options, 2);
-        console.log(proxy);
+        const proxy = await this.repeatQuery(options, 2);
+        Logger.log(proxy);
         Util.log_general(`Proxy: ${proxy}`, this.bot);
-        if (proxy != undefined) {
+        if (proxy !== undefined) {
             return `http://${proxy}`;
-        }
-        else {
+        } else {
             return undefined;
         }
     }
 
     testFriendsParsing() {
-        var friendDataPath = path.normalize(`./data/friendsearch.json`);
-        var data = "";
+        const friendDataPath = path.normalize(`./data/friendsearch.json`);
         if (fs.existsSync(friendDataPath)) {
-            data = fs.readFileSync(friendDataPath);
+            this.parseFriends(fs.readFileSync(friendDataPath));
         }
-        this.parseFriends(data);
     }
 
     testSupportsParsing() {
-        var supportsPath = path.normalize(`./data/supports.json`);
-        var data = "";
+        const supportsPath = path.normalize(`./data/supports.json`);
         if (fs.existsSync(supportsPath)) {
-            data = fs.readFileSync(supportsPath);
+            this.parseSupports(fs.readFileSync(supportsPath));
         }
-        this.parseSupports(data);
     }
 
     testQueries() {
         this.fetchUserWithInvite({inviteCode: "396utQVZ"});
-        //this.fetchUserWithId({id: "cd24b2f4-8b78-11e7-a2dd-062632d8f11c"});
+        // this.fetchUserWithId({id: "cd24b2f4-8b78-11e7-a2dd-062632d8f11c"});
     }
 
     async fetchUserWithInvite(inviteCodeRequest) {
-        var inviteCode = inviteCodeRequest.inviteCode;
-        var callback = inviteCodeRequest.callback;
+        const inviteCode = inviteCodeRequest.inviteCode;
+        const callback = inviteCodeRequest.callback;
 
-        if (inviteCode == undefined) {
-            console.log("Error: Cannot fetch user with undefined invite code");
+        if (inviteCode === undefined) {
+            Logger.log("Error: Cannot fetch user with undefined invite code");
             Util.log_general("Error: Cannot fetch user with undefined invite code", this.bot);
             return;
         }
 
-        if (callback != undefined) {
+        if (callback !== undefined) {
             this.callbacks.push(inviteCodeRequest);
         }
 
         if (this.loadingInvites.includes(inviteCode)) {
-            console.log(`A fetch for user ${inviteCode} has already begun`);
+            Logger.log(`A fetch for user ${inviteCode} has already begun`);
             Util.log_general(`A fetch for user ${inviteCode} has already begun`, this.bot);
             return;
-        }
-        else {
+        } else {
             this.loadingInvites.push(inviteCode);
         }
 
-        var data = await this.queryFriendSearch(inviteCode);
+        const data = await this.queryFriendSearch(inviteCode);
 
-        if (data == undefined) {
-            console.log(data);
-            console.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
+        if (data === undefined) {
+            Logger.log(data);
+            Logger.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
             Util.log_general(`ERROR: Fetching user ${inviteCode} with friend search failed`, this.bot);
-            this.callbacks.filter(e => e.inviteCode == inviteCode)
-                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
-            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
-            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+            this.callbacks.filter((e) => e.inviteCode === inviteCode)
+                .forEach((e) => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
+            this.callbacks = this.callbacks.filter((e) => e.inviteCode !== inviteCode);
+            this.loadingInvites = this.loadingInvites.filter((e) => e !== inviteCode);
             return;
         }
 
-        var ids = this.parseFriends(data);
+        const ids = this.parseFriends(data);
 
-        if (ids == undefined || ids.length == 0 || ids[0] == undefined) {
-            console.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
-            this.callbacks.filter(e => e.inviteCode == inviteCode)
-                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
-            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
-            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
+        if (ids === undefined || ids.length === 0 || ids[0] === undefined) {
+            Logger.log(`ERROR: Fetching user ${inviteCode} with friend search failed`);
+            this.callbacks.filter((e) => e.inviteCode === inviteCode)
+                .forEach((e) => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
+            this.callbacks = this.callbacks.filter((e) => e.inviteCode !== inviteCode);
+            this.loadingInvites = this.loadingInvites.filter((e) => e !== inviteCode);
             return;
         }
 
-        var id = ids[0];
+        const id = ids[0];
 
         await this.fetchUserWithId(id);
     }
 
     async fetchUserWithId(idRequest) {
-        var id = idRequest.id;
-        var callback = idRequest.callback;
-        var inviteCode = idRequest.inviteCode;
+        const id = idRequest.id;
+        const callback = idRequest.callback;
+        const inviteCode = idRequest.inviteCode;
 
-        if (id == undefined) {
-            console.log("Error: Cannot fetch user with undefined Id");
+        if (id === undefined) {
+            Logger.log("Error: Cannot fetch user with undefined Id");
             Util.log_general("Error: Cannot fetch user with undefined Id", this.bot);
             return;
         }
 
-        if (callback != undefined) {
+        if (callback !== undefined) {
             this.callbacks.push(idRequest);
         }
 
         if (this.loadingIds.includes(id)) {
-            console.log(`A fetch for user ${id} has already begun`);
+            Logger.log(`A fetch for user ${id} has already begun`);
             Util.log_general(`A fetch for user ${id} has already begun`, this.bot);
             return;
-        }
-        else {
+        } else {
             this.loadingIds.push(id);
         }
 
-        var ids = [];
+        const ids = [];
         ids.push(id);
-        var inviteCodes = [];
+        const inviteCodes = [];
         inviteCodes.push(inviteCode);
 
-        var yesterday = new Date();
-        yesterday.setDate(yesterday.getDate()-1);
-        console.log(yesterday.toUTCString());
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        Logger.log(yesterday.toUTCString());
         // const users = await entityManager.createQueryBuilder("user")
         //     .from(MagiRecoUser, "user")
         //     .where("user.updatetimestamp < :date", {date: yesterday})
@@ -180,100 +173,101 @@ export class SupportsManager {
         //     .find({
         //         where: {updatetimestamp: LessThan(yesterday.toUTCString())}
         //     });
-        
-        // console.log(entityManager.createQueryBuilder(MagiRecoUser)
+
+        // Logger.log(entityManager.createQueryBuilder(MagiRecoUser)
         // .where({updatetimestamp: LessThan(yesterday.toUTCString())}).getSql());
 
         const sql = await entityManager.createQueryBuilder(MagiRecoUser, "user")
             .where("user.updatetimestamp < :date", {date: yesterday.toUTCString()})
             .orderBy("user.updatetimestamp", "ASC")
             .getSql();
-        console.log(sql);
+        Logger.log(sql);
 
         const users = await entityManager.createQueryBuilder(MagiRecoUser, "user")
             .where("user.updatetimestamp < :date", {date: yesterday.toUTCString()})
             .orderBy("user.updatetimestamp", "ASC")
             .getMany();
 
-        for (var user of users) {
-            console.log(user.user_id);
-            console.log(user.updatetimestamp);
-            if (ids.length == 15) {
+        for (const user of users) {
+            Logger.log(user.user_id);
+            Logger.log(user.updatetimestamp);
+            if (ids.length === 15) {
                 break;
             }
             if (this.loadingIds.includes(user.user_id) || ids.includes(user.user_id)) {
                 continue;
-            }
-            else {
+            } else {
                 this.loadingIds.push(user.user_id);
                 ids.push(user.user_id);
                 inviteCodes.push(user.friend_id);
             }
         }
 
-        console.log(JSON.stringify(ids));
-        var idString = ids.join();
-        console.log(idString);
+        Logger.log(JSON.stringify(ids));
+        const idString = ids.join();
+        Logger.log(idString);
 
-        var data = await this.querySupportSearch(idString);
+        const data = await this.querySupportSearch(idString);
 
-        if (data == undefined) {
-            console.log(`ERROR: Fetching users ${idString} (including ${inviteCode}) with support search failed`);
+        if (data === undefined) {
+            Logger.log(`ERROR: Fetching users ${idString} (including ${inviteCode}) with support search failed`);
             Util.log_general(`ERROR: Fetching users ${idString} (including ${inviteCode}) with support search failed`, this.bot);
-            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
-            this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
+            this.loadingInvites = this.loadingInvites.filter((e) => e !== inviteCode);
+            this.loadingIds = this.loadingIds.filter((e) => !ids.includes(e));
 
             // Handle callbacks
-            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
-                .forEach(e => console.log(e));
-            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
-                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
-            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
+            this.callbacks.filter((e) => inviteCodes.includes(e.inviteCode))
+                .forEach((e) => Logger.log(e));
+            this.callbacks.filter((e) => inviteCodes.includes(e.inviteCode))
+                .forEach((e) => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
+            this.callbacks = this.callbacks.filter((e) => e.inviteCode !== inviteCode);
             return;
         }
 
-        var parsedUsers = await this.parseSupports(data);
+        const parsedUsers = await this.parseSupports(data);
 
-        if (parsedUsers == undefined) {
-            console.log(`ERROR: Parsing support data for users ${idString} (including ${inviteCode}) with support search failed`);
+        if (parsedUsers === undefined) {
+            Logger.log(`ERROR: Parsing support data for users ${idString} (including ${inviteCode}) with support search failed`);
             Util.log_general(`ERROR: Parsing support data for users ${idString} (including ${inviteCode}) with support search failed`, this.bot);
-            this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
-            this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
+            this.loadingInvites = this.loadingInvites.filter((e) => e !== inviteCode);
+            this.loadingIds = this.loadingIds.filter((e) => !ids.includes(e));
 
             // Handle callbacks
-            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
-                .forEach(e => console.log(e));
-            this.callbacks.filter(e => inviteCodes.includes(e.inviteCode))
-                .forEach(e => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
-            this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
+            this.callbacks.filter((e) => inviteCodes.includes(e.inviteCode))
+                .forEach((e) => Logger.log(e));
+            this.callbacks.filter((e) => inviteCodes.includes(e.inviteCode))
+                .forEach((e) => e.callback(false, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
+            this.callbacks = this.callbacks.filter((e) => e.inviteCode !== inviteCode);
             return;
         }
-        //console.log(parsedUsers);
+        // Logger.log(parsedUsers);
 
-        console.log(yesterday.toUTCString());
+        Logger.log(yesterday.toUTCString());
 
-        this.loadingInvites = this.loadingInvites.filter(e => e != inviteCode);
-        this.loadingIds = this.loadingIds.filter(e => !ids.includes(e));
+        this.loadingInvites = this.loadingInvites.filter((e) => e !== inviteCode);
+        this.loadingIds = this.loadingIds.filter((e) => !ids.includes(e));
 
         // Handle callbacks
-        this.callbacks.filter(e => e.inviteCode == inviteCode)
-            .forEach(e => e.callback(true, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
-        this.callbacks = this.callbacks.filter(e => e.inviteCode != inviteCode);
+        this.callbacks.filter((e) => e.inviteCode === inviteCode)
+            .forEach((e) => e.callback(true, e.message, e.initialMessage, e.inviteCode, e.user, e.bmfun));
+        this.callbacks = this.callbacks.filter((e) => e.inviteCode !== inviteCode);
     }
 
     /** Friend Search - General Player Information */
     async queryFriendSearch(inviteCode) {
-        var query_string = `inviteCode: ${inviteCode}`;
+        const query_string = `inviteCode: ${inviteCode}`;
 
-        var url = "https://android.magi-reco.com/search/friend_search/_search";
-        var proxy = await this.getProxy();
+        const url = "https://android.magi-reco.com/search/friend_search/_search";
+        const proxy = await this.getProxy();
 
-        var options = {
+        const options = {
             method: "POST",
             uri: url,
-            proxy: proxy,
+            proxy,
             gzip: true,
             headers: {
+
+                // tslint:disable-next-line
                 "User-Agent": "Mozilla/5.0 (Linux; Android 4.4.2; SAMSUNG-SM-N900A Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Crosswalk/23.53.589.4 Safari/537.36",
                 "content-Type": "application/json",
                 "user-id-fba9x88mae": "8badf00d-dead-4444-beef-deadbeefcafe",
@@ -290,22 +284,23 @@ export class SupportsManager {
                 size: 50,
             })
         };
-        //console.log(result);
+        // Logger.log(result);
         return await this.repeatQuery(options, 4);
     }
 
     /** Support Select - Support Data */
     async querySupportSearch(idString) {
         const userid = process.env.USER_ID;
-        var url = "https://android.magi-reco.com/magica/api/page/SupportSelect";
-        var proxy = await this.getProxy();
+        const url = "https://android.magi-reco.com/magica/api/page/SupportSelect";
+        const proxy = await this.getProxy();
 
-        var options = {
+        const options = {
             method: "POST",
             uri: url,
-            proxy: proxy,
+            proxy,
             gzip: true,
             headers: {
+                // tslint:disable-next-line
                 "User-Agent": "Mozilla/5.0 (Linux; Android 4.4.2; SAMSUNG-SM-N900A Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Crosswalk/23.53.589.4 Safari/537.36",
                 "content-Type": "application/json",
                 "user-id-fba9x88mae": userid,
@@ -315,74 +310,74 @@ export class SupportsManager {
                 strUserIds: idString
             })
         };
-        var result = await this.repeatQuery(options, 4);
-        //console.log(result);
+        const result = await this.repeatQuery(options, 4);
+        // Logger.log(result);
         return result;
     }
 
     parseFriends(data) {
-        console.log(data);
+        Logger.log(data);
         data = JSON.parse(data);
-        if (data == undefined) {
+        if (data === undefined) {
             return undefined;
         }
-        if ("resultCode" in data){
-            console.log(`ERROR: The query failed: ${data.resultCode}`);
+        if ("resultCode" in data) {
+            Logger.log(`ERROR: The query failed: ${data.resultCode}`);
             return undefined;
         }
         if (data.hits.total <= 0) {
-            console.log("No results");
+            Logger.log("No results");
             // Check if current data, notify users if nothing (typo suspected)
             return undefined;
         }
 
-        var results = [];
+        const results = [];
 
         for (const hit of data.hits.hits) {
-            var result = {id: hit.fields["id"][0], inviteCode: hit.fields["inviteCode"][0]};
+            const result = {id: hit.fields.id[0], inviteCode: hit.fields.inviteCode[0]};
             results.push(result);
         }
 
-        console.log(results);
+        Logger.log(results);
         return results;
     }
 
     async parseSupports(data) {
-        //console.log(data);
+        // Logger.log(data);
         data = JSON.parse(data);
-        if (data == undefined) {
+        if (data === undefined) {
             return undefined;
         }
         if ("interrupt" in data || !("supportUserList" in data)) {
-            console.log(`ERROR: The query failed: ${JSON.stringify(data)}`);
+            Logger.log(`ERROR: The query failed: ${JSON.stringify(data)}`);
             return undefined;
         }
-        if (data.supportUserList.length == 0) {
-            console.log("No results");
+        if (data.supportUserList.length === 0) {
+            Logger.log("No results");
             // Check if current data, notify users if nothing (typo suspected)
             return undefined;
         }
 
-        var allMemes = [];
-        var memes: Memoria[];
-        var allGirls = [];
-        var doppelIds: number[];
-        var doppelGirlNames: any[];
+        const allMemes = [];
+        let memes: Memoria[];
+        const allGirls = [];
+        let doppelIds: number[];
+        let doppelGirlNames: any[];
 
-        var userIds = [];
+        const userIds = [];
 
-        var user: any = new MagiRecoUser();
-        for (var supportUserIndex in data.supportUserList) {
+        let user: any = new MagiRecoUser();
+        for (const supportUserIndex in data.supportUserList) {
             memes = [];
             doppelIds = [];
             doppelGirlNames = [];
 
-            var supportUser = data.supportUserList[supportUserIndex];
+            const supportUser = data.supportUserList[supportUserIndex];
 
             userIds.push(supportUser.userId);
 
-            var user: any = await entityManager.getRepository(MagiRecoUser).findOne({user_id: supportUser.userId});
-            if (user == undefined) {
+            user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: supportUser.userId});
+            if (user === undefined) {
                 user = new MagiRecoUser();
                 user.addtimestamp = new Date();
             }
@@ -397,8 +392,8 @@ export class SupportsManager {
             user = await entityManager.save(user);
 
             user = await entityManager.getRepository(MagiRecoUser).findOne({where: {user_id: supportUser.userId}, relations: ["meguca"]});
-            var savedGirls = user.meguca;
-            for (var girl in savedGirls) {
+            const savedGirls = user.meguca;
+            for (const girl in savedGirls) {
                 await typeorm.getConnection().createQueryBuilder()
                     .delete()
                     .from(Memoria)
@@ -407,69 +402,65 @@ export class SupportsManager {
                 await entityManager.remove(savedGirls[girl]);
             }
 
-            if (!("userDoppelList" in supportUser) || supportUser.userDoppelList.length == 0) {
+            if (!("userDoppelList" in supportUser) || supportUser.userDoppelList.length === 0) {
                 // No Doppels
-            }
-            else {
-                for (var index in supportUser.userDoppelList) {
-                    var doppelData = supportUser.userDoppelList[index];
+            } else {
+                for (const index in supportUser.userDoppelList) {
+                    const doppelData = supportUser.userDoppelList[index];
                     doppelIds.push(doppelData.doppelId);
                 }
             }
 
-            let titleDict = {};
+            const titleDict = {};
 
-            if (!("userCharaList" in supportUser) || supportUser.userCharaList.length == 0) {
+            if (!("userCharaList" in supportUser) || supportUser.userCharaList.length === 0) {
                 // No Characters - something probably isn't right
-            }
-            else {
-                for (var index in supportUser.userCharaList) {
-                    var characterData = supportUser.userCharaList[index];
-                    //if (supportUser.inviteCode == "Q69KBCAA") console.log(characterData);//396utQVZ
-                    if (!("chara" in characterData) || characterData.chara == undefined ||
-                        !("doppel" in characterData.chara) || characterData.chara.doppel == undefined ||
-                        !("id" in characterData.chara.doppel) || 
-                        characterData.chara.doppel.id == undefined ||
-                        !("name" in characterData.chara) || characterData.chara.name == undefined) {
+            } else {
+                for (const index in supportUser.userCharaList) {
+                    const characterData = supportUser.userCharaList[index];
+                    // if (supportUser.inviteCode === "Q69KBCAA") Logger.log(characterData);//396utQVZ
+                    if (!("chara" in characterData) || characterData.chara === undefined ||
+                        !("doppel" in characterData.chara) || characterData.chara.doppel === undefined ||
+                        !("id" in characterData.chara.doppel) ||
+                        characterData.chara.doppel.id === undefined ||
+                        !("name" in characterData.chara) || characterData.chara.name === undefined) {
                             continue;
                     }
 
-                    let title = characterData.chara.title;
+                    const title = characterData.chara.title;
                     if (title) {
                         titleDict[characterData.chara.id] = title;
                     }
 
                     if (doppelIds.includes(characterData.chara.doppel.id)) {
-                        doppelGirlNames.push({name: characterData.chara.name, title: title});
+                        doppelGirlNames.push({name: characterData.chara.name, title});
                     }
                 }
             }
 
-            if (!("userPieceList" in supportUser) || supportUser.userPieceList.length == 0) {
+            if (!("userPieceList" in supportUser) || supportUser.userPieceList.length === 0) {
                 // No Memoria
-            }
-            else {
-                for (var memeIndex in supportUser.userPieceList) {
-                    var memeData = supportUser.userPieceList[memeIndex];
-                    var memeName = memeData.piece.pieceName;
+            } else {
+                for (const memeIndex in supportUser.userPieceList) {
+                    const memeData = supportUser.userPieceList[memeIndex];
+                    const memeName = memeData.piece.pieceName;
 
-                    var masterMeme = await entityManager.getRepository(MasterMemoria).findOne({jpn_name: memeName});
-                    if (masterMeme == null) {
+                    let masterMeme = await entityManager.getRepository(MasterMemoria).findOne({jpn_name: memeName});
+                    if (masterMeme === null) {
                         masterMeme = new MasterMemoria();
                         masterMeme.jpn_name = memeName;
-                        if (memeData.piece.pieceType == "SKILL") {
+                        if (memeData.piece.pieceType === "SKILL") {
                             masterMeme.active = false;
-                        }
-                        else {
+                        } else {
                             masterMeme.active = true;
                         }
 
-                        masterMeme.rating = parseInt(memeData.piece.rank.replace("RANK_", ""));
+                        masterMeme.rating = parseInt(memeData.piece.rank.replace("RANK_", ""), 10);
 
                         masterMeme = await entityManager.save(masterMeme);
                     }
 
-                    var meme: any = new Memoria();
+                    const meme: any = new Memoria();
                     meme.masterMemoria = masterMeme;
                     meme.lbCount = memeData.lbCount;
                     meme.level = memeData.level;
@@ -482,65 +473,65 @@ export class SupportsManager {
                 }
             }
 
-            if (!("userCardList" in supportUser) || supportUser.userCardList.length == 0) {
+            if (!("userCardList" in supportUser) || supportUser.userCardList.length === 0) {
                 // No Supports
-            }
-            else {
-                for (var megucaIndex in supportUser.userCardList) {
-                    var supportMeguca = supportUser.userCardList[megucaIndex];
-                    var girlName = supportMeguca.card.cardName;
-                    var mainGirlName = girlName;
-                    var title = titleDict[supportMeguca.card.charaNo];
-                    //console.log(title);
-                    if (title) girlName = `${girlName} (${title})`;
-                    //console.log(girlName);
+            } else {
+                for (const megucaIndex in supportUser.userCardList) {
+                    const supportMeguca = supportUser.userCardList[megucaIndex];
+                    let girlName = supportMeguca.card.cardName;
+                    const mainGirlName = girlName;
+                    const title = titleDict[supportMeguca.card.charaNo];
+                    // Logger.log(title);
+                    if (title) { girlName = `${girlName} (${title})`; }
+                    // Logger.log(girlName);
 
-                    var masterMeguca = await entityManager.getRepository(MasterMeguca).findOne({jpn_name: girlName});
-                    if (masterMeguca == null) {
-                        var girlAtt = supportMeguca.card.attributeId;
+                    let masterMeguca = await entityManager.getRepository(MasterMeguca).findOne({jpn_name: girlName});
+                    if (masterMeguca === null) {
+                        const girlAtt = supportMeguca.card.attributeId;
 
-                        var attributes = ["VOID","FIRE","WATER", "TIMBER", "LIGHT", "DARK"];
-                        var attributeVal = attributes.indexOf(girlAtt);
+                        const attributes = ["VOID", "FIRE", "WATER", "TIMBER", "LIGHT", "DARK"];
+                        let attributeVal = attributes.indexOf(girlAtt);
 
-                        if (attributeVal != -1) attributeVal++;
+                        if (attributeVal !== -1) { attributeVal++; }
 
                         masterMeguca = new MasterMeguca();
                         masterMeguca.jpn_name = girlName;
-                        masterMeguca.meguca_type= attributeVal;
+                        masterMeguca.meguca_type = attributeVal;
 
                         masterMeguca = await entityManager.save(masterMeguca);
                     }
 
-                    var meguca = new Meguca();
+                    const meguca = new Meguca();
                     meguca.masterMeguca = masterMeguca;
-                    var positionIdNum = parseInt(megucaIndex) + 1;
-                    var positionId = "questPositionId" + positionIdNum;
-                    meguca.support_type = parseInt(supportUser.userDeck[positionId]);
-                    meguca.level = parseInt(supportMeguca.level);
-                    meguca.magia_level = parseInt(supportMeguca.magiaLevel);
-                    meguca.revision = parseInt(supportMeguca.revision);
-                    meguca.attack = parseInt(supportMeguca.attack);
-                    meguca.defense = parseInt(supportMeguca.defense);
-                    meguca.hp = parseInt(supportMeguca.hp);
+                    const positionIdNum = parseInt(megucaIndex, 10) + 1;
+                    const positionId = "questPositionId" + positionIdNum;
+                    meguca.support_type = parseInt(supportUser.userDeck[positionId], 10);
+                    meguca.level = parseInt(supportMeguca.level, 10);
+                    meguca.magia_level = parseInt(supportMeguca.magiaLevel, 10);
+                    meguca.revision = parseInt(supportMeguca.revision, 10);
+                    meguca.attack = parseInt(supportMeguca.attack, 10);
+                    meguca.defense = parseInt(supportMeguca.defense, 10);
+                    meguca.hp = parseInt(supportMeguca.hp, 10);
                     meguca.user = user;
 
-                    if (doppelGirlNames.filter(value => value.name == mainGirlName && value.title == title).length > 0) {
+                    const checkDoppel = doppelGirlNames.filter((value) => value.name === mainGirlName && value.title === title);
+                    if (checkDoppel.length > 0) {
                         meguca.magia_level = 6;
                     }
 
-                    var slots = meguca.revision + 1;
-                    for (var i = 1; i <= slots; i++) {
-                        var field = "userPieceId0" + positionIdNum + i;
-                        if (!(field in supportUser.userDeck) || supportUser.userDeck[field] == undefined) {
+                    let slots = meguca.revision + 1;
+                    for (let i = 1; i <= slots; i++) {
+                        const field = "userPieceId0" + positionIdNum + i;
+                        if (!(field in supportUser.userDeck) || supportUser.userDeck[field] === undefined) {
                             slots--;
                             continue;
                         }
 
-                        var memeId = supportUser.userDeck[field];
-                        var meme: any = memes.find(function(element) {
-                            return element.id == memeId;
+                        const memeId = supportUser.userDeck[field];
+                        const meme: any = memes.find((element) => {
+                            return element.id === memeId;
                         });
-                        if (meme != undefined) {
+                        if (meme !== undefined) {
                             meguca.hp += meme.hp;
                             meguca.attack += meme.attack;
                             meguca.defense += meme.defense;
@@ -550,8 +541,7 @@ export class SupportsManager {
                             meme.meguca = meguca;
                             delete meme.memoriaId;
                             allMemes.push(meme);
-                        }
-                        else slots--;
+                        } else { slots--; }
                     }
 
                     meguca.slots = slots;
@@ -564,17 +554,15 @@ export class SupportsManager {
         await entityManager.save(allGirls);
         await entityManager.save(allMemes);
 
-        var users = [];
-        for (var userIdIndex in userIds) {
-            var userId = userIds[userIdIndex];
+        const users = [];
+        for (const userIdIndex in userIds) {
+            const userId = userIds[userIdIndex];
             user = await entityManager.getRepository(MagiRecoUser).findOne({user_id: userId});
             users.push(user);
         }
-        console.log(`Parsed ${users.length} user accounts`);
+        Logger.log(`Parsed ${users.length} user accounts`);
         Util.log_general(`Parsed ${users.length} user accounts`, this.bot);
         return users;
     }
 
-
 }
-

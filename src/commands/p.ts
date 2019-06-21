@@ -1,2 +1,2 @@
 import {ProfileCommand} from "./profile";
-export {ProfileCommand}
+export {ProfileCommand};

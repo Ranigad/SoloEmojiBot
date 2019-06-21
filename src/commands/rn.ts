@@ -1,2 +1,2 @@
 import {ReactNowCommand} from "./reactnow";
-export {ReactNowCommand}
+export {ReactNowCommand};
