@@ -22,7 +22,7 @@
     "discord.js": "^11.3.2",
     "dotenv": "^5.0.1",
     "noodlejs": "^0.3.2",
-    "papaparse": "^4.6.1",
+    "papaparse": "^5.2.0",
     "reflect-metadata": "^0.1.10",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
